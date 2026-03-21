@@ -5,17 +5,14 @@
 #   Ubuntu 22/24/25
 # ═══════════════════════════════════════════════════════
 
-# Colores
 R='\033[0;31m' G='\033[0;32m' Y='\033[1;33m'
 C='\033[0;36m' W='\033[1;37m' P='\033[0;35m'
-B='\033[0;34m' NC='\033[0m' BOLD='\033[1m'
+B='\033[0;34m' NC='\033[0m'
 
-# Directorios
 DIR_SCRIPTS="/etc/sshfreeltm"
 DIR_SERVICES="/etc/systemd/system"
 mkdir -p $DIR_SCRIPTS
 
-# ── Banner ──
 banner() {
     clear
     echo -e "${C}"
@@ -28,7 +25,6 @@ banner() {
 
 sep() { echo -e "${B}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"; }
 
-# ── Verificar si servicio está activo ──
 status_service() {
     local name=$1
     if systemctl is-active --quiet "$name" 2>/dev/null; then
@@ -49,7 +45,7 @@ status_port() {
 }
 
 # ══════════════════════════════════════════
-#   WEBSOCKET PYTHON (Proxy3 WS)
+#   WEBSOCKET PYTHON
 # ══════════════════════════════════════════
 
 instalar_ws() {
@@ -58,55 +54,29 @@ instalar_ws() {
     echo -e "  ${Y}Configurar WebSocket Python (Proxy3 WS)${NC}"
     sep
     echo ""
-
-    # Puerto WS
-    echo -e "  ${W}Puerto WebSocket (ej: 80):${NC}"
-    read -p "  Puerto: " WS_PORT
+    read -p "  Puerto WebSocket (ej: 80): " WS_PORT
     WS_PORT=${WS_PORT:-80}
-
-    # Puerto redireccion
-    echo ""
-    echo -e "  ${W}Puerto local SSH/Dropbear (ej: 22):${NC}"
-    read -p "  Puerto local: " SSH_PORT
+    read -p "  Puerto local SSH (ej: 22): " SSH_PORT
     SSH_PORT=${SSH_PORT:-22}
-
-    # Response
     echo ""
     sep
-    echo -e "  ${W}RESPONDE DE CABECERA (101, 200, 400, etc)${NC}"
-    echo -e "  ${Y}NOTA: Para OVER WEBSOCKET usa [ 101 ]${NC}"
-    sep
+    echo -e "  ${W}RESPONSE (101 para WebSocket, 200 default):${NC}"
     read -p "  RESPONSE: " STATUS_RESP
     STATUS_RESP=${STATUS_RESP:-200}
-
-    # Mini banner
     echo ""
-    sep
-    echo -e "  ${W}Mini-Banner (texto que aparece en la conexión):${NC}"
-    read -p "  Banner: " BANNER_MSG
+    read -p "  Mini-Banner: " BANNER_MSG
     BANNER_MSG=${BANNER_MSG:-"SSHFREE LTM by DarkZFull"}
-
-    # Encabezado
     echo ""
     sep
     echo -e "  ${W}Encabezado personalizado (ENTER para default):${NC}"
-    echo -e "  ${Y}Ejemplo: \\r\\nContent-length: 0\\r\\n\\r\\nHTTP/1.1 200 Connection Established\\r\\n\\r\\n${NC}"
-    sep
     read -p "  Cabecera: " CUSTOM_HEADER
     if [ -z "$CUSTOM_HEADER" ]; then
         CUSTOM_HEADER="\r\nContent-length: 0\r\n\r\nHTTP/1.1 200 Connection Established\r\n\r\n"
     fi
 
-    echo ""
-    echo -e "  ${C}Creando script WebSocket...${NC}"
-
-    # Crear el script Python
     cat > $DIR_SCRIPTS/proxy_ws_${WS_PORT}.py << PYEOF
 #!/usr/bin/env python3
-# encoding: utf-8
-# SSHFREE LTM WebSocket Proxy — by DarkZFull
 import socket, threading, select, sys, time
-
 LISTENING_ADDR = '0.0.0.0'
 LISTENING_PORT = ${WS_PORT}
 BUFLEN = 4096 * 4
@@ -203,7 +173,6 @@ class ConnectionHandler(threading.Thread):
             split = self.findHeader(self.client_buffer, b'X-Split')
             if split != b'': self.client.recv(BUFLEN)
             if hostPort != b'':
-                passwd = self.findHeader(self.client_buffer, b'X-Pass')
                 if hostPort.startswith(b'127.0.0.1') or hostPort.startswith(b'localhost'):
                     self.method_CONNECT(hostPort)
                 else:
@@ -267,10 +236,9 @@ class ConnectionHandler(threading.Thread):
             if error: break
 
 if __name__ == '__main__':
-    print(f"\033[0;34m{'•'*8} \033[1;32mPROXY PYTHON3 WEBSOCKET \033[0;34m{'•'*8}\n")
+    print(f"\033[0;34m{'*'*8} \033[1;32mPROXY PYTHON3 WEBSOCKET \033[0;34m{'*'*8}\n")
     print(f"\033[1;33mIP:\033[1;32m {LISTENING_ADDR}")
-    print(f"\033[1;33mPUERTO:\033[1;32m {LISTENING_PORT}")
-    print(f"\033[1;33mBANNER:\033[1;32m ${BANNER_MSG}\n")
+    print(f"\033[1;33mPUERTO:\033[1;32m {LISTENING_PORT}\n")
     server = Server(LISTENING_ADDR, LISTENING_PORT)
     server.start()
     while True:
@@ -282,19 +250,16 @@ PYEOF
 
     chmod +x $DIR_SCRIPTS/proxy_ws_${WS_PORT}.py
 
-    # Crear servicio systemd
     cat > $DIR_SERVICES/ws-proxy-${WS_PORT}.service << EOF
 [Unit]
-Description=WebSocket Proxy Python Puerto ${WS_PORT} — SSHFREE LTM
+Description=WebSocket Proxy Python Puerto ${WS_PORT}
 After=network.target
-
 [Service]
 Type=simple
 User=root
 ExecStart=/usr/bin/python3 ${DIR_SCRIPTS}/proxy_ws_${WS_PORT}.py ${WS_PORT}
 Restart=always
 RestartSec=5
-
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -303,48 +268,43 @@ EOF
     systemctl enable ws-proxy-${WS_PORT}.service
     systemctl start ws-proxy-${WS_PORT}.service
     sleep 2
-
     if systemctl is-active --quiet ws-proxy-${WS_PORT}.service; then
-        echo -e "\n  ${G}✅ WebSocket activo en puerto ${WS_PORT}${NC}"
+        echo -e "\n  ${G}OK WebSocket activo en puerto ${WS_PORT}${NC}"
     else
-        echo -e "\n  ${R}❌ Error iniciando WebSocket${NC}"
+        echo -e "\n  ${R}Error iniciando WebSocket${NC}"
     fi
-    echo ""
-    read -p "  Presiona ENTER para continuar..."
+    read -p "  Presiona ENTER..."
 }
 
 eliminar_ws() {
     banner
     sep
-    echo -e "  ${R}Eliminar WebSocket Python${NC}"
+    echo -e "  ${R}Eliminar WebSocket${NC}"
     sep
     echo ""
-    echo -e "  ${W}Servicios WebSocket activos:${NC}"
     ls $DIR_SERVICES/ws-proxy-*.service 2>/dev/null | while read f; do
         name=$(basename $f .service)
-        port=$(echo $name | grep -o '[0-9]*')
-        echo -e "  - Puerto ${Y}${port}${NC} $(status_service $name)"
+        port=$(echo $name | grep -o '[0-9]*$')
+        echo -e "  Puerto ${Y}${port}${NC} $(status_service $name)"
     done
     echo ""
     read -p "  Puerto a eliminar (0 para todos): " DEL_PORT
     if [ "$DEL_PORT" = "0" ]; then
         for f in $DIR_SERVICES/ws-proxy-*.service; do
             name=$(basename $f .service)
-            systemctl stop $name
-            systemctl disable $name
+            systemctl stop $name 2>/dev/null
+            systemctl disable $name 2>/dev/null
             rm -f $f
         done
         rm -f $DIR_SCRIPTS/proxy_ws_*.py
-        echo -e "  ${G}✅ Todos eliminados${NC}"
     else
-        systemctl stop ws-proxy-${DEL_PORT}
-        systemctl disable ws-proxy-${DEL_PORT}
+        systemctl stop ws-proxy-${DEL_PORT} 2>/dev/null
+        systemctl disable ws-proxy-${DEL_PORT} 2>/dev/null
         rm -f $DIR_SERVICES/ws-proxy-${DEL_PORT}.service
         rm -f $DIR_SCRIPTS/proxy_ws_${DEL_PORT}.py
-        echo -e "  ${G}✅ WebSocket puerto ${DEL_PORT} eliminado${NC}"
     fi
     systemctl daemon-reload
-    read -p "  Presiona ENTER para continuar..."
+    echo -e "  ${G}Eliminado${NC}"; sleep 1
 }
 
 menu_ws() {
@@ -354,23 +314,19 @@ menu_ws() {
         echo -e "  ${Y}  WEBSOCKET PYTHON${NC}"
         sep
         echo ""
-        WS_SERVICES=$(ls $DIR_SERVICES/ws-proxy-*.service 2>/dev/null)
-        if [ -z "$WS_SERVICES" ]; then
-            echo -e "  ${R}  No hay WebSocket instalado${NC}"
-        else
-            for f in $WS_SERVICES; do
-                name=$(basename $f .service)
-                port=$(echo $name | grep -o '[0-9]*$')
-                echo -e "  Puerto ${Y}${port}${NC} $(status_service $name)"
-            done
-        fi
+        for f in $DIR_SERVICES/ws-proxy-*.service 2>/dev/null; do
+            [ -f "$f" ] || continue
+            name=$(basename $f .service)
+            port=$(echo $name | grep -o '[0-9]*$')
+            echo -e "  Puerto ${Y}${port}${NC} $(status_service $name)"
+        done
         echo ""
         sep
-        echo -e "  ${W}[1]${NC} Instalar / Configurar WebSocket"
-        echo -e "  ${W}[2]${NC} Iniciar WebSocket"
-        echo -e "  ${W}[3]${NC} Detener WebSocket"
-        echo -e "  ${W}[4]${NC} Reiniciar WebSocket"
-        echo -e "  ${W}[5]${NC} Eliminar WebSocket"
+        echo -e "  ${W}[1]${NC} Instalar / Configurar"
+        echo -e "  ${W}[2]${NC} Iniciar"
+        echo -e "  ${W}[3]${NC} Detener"
+        echo -e "  ${W}[4]${NC} Reiniciar"
+        echo -e "  ${W}[5]${NC} Eliminar"
         echo -e "  ${W}[0]${NC} Volver"
         sep
         read -p "  Opcion: " OPT
@@ -386,7 +342,7 @@ menu_ws() {
 }
 
 # ══════════════════════════════════════════
-#   BADVPN UDP GATEWAY
+#   BADVPN
 # ══════════════════════════════════════════
 
 menu_badvpn() {
@@ -401,32 +357,31 @@ menu_badvpn() {
         echo ""
         sep
         echo -e "  ${W}[1]${NC} Instalar BadVPN"
-        echo -e "  ${W}[2]${NC} Iniciar BadVPN 7200 y 7300"
-        echo -e "  ${W}[3]${NC} Detener BadVPN"
-        echo -e "  ${W}[4]${NC} Instalar puerto personalizado"
+        echo -e "  ${W}[2]${NC} Iniciar"
+        echo -e "  ${W}[3]${NC} Detener"
+        echo -e "  ${W}[4]${NC} Reiniciar"
+        echo -e "  ${W}[5]${NC} Puerto personalizado"
         echo -e "  ${W}[0]${NC} Volver"
         sep
         read -p "  Opcion: " OPT
         case $OPT in
             1)
-                echo -e "\n  ${C}Instalando BadVPN...${NC}"
-                apt install -y badvpn > /dev/null 2>&1 || {
-                    apt install -y cmake make gcc g++ > /dev/null 2>&1
-                    cd /tmp
-                    git clone https://github.com/ambrop72/badvpn.git > /dev/null 2>&1
-                    cd badvpn && mkdir build && cd build
+                if [ ! -f /usr/local/bin/badvpn-udpgw ]; then
+                    echo -e "\n  ${C}Compilando BadVPN...${NC}"
+                    apt install -y cmake make gcc g++ git > /dev/null 2>&1
+                    cd /tmp && git clone https://github.com/ambrop72/badvpn.git > /dev/null 2>&1
+                    cd badvpn && mkdir -p build && cd build
                     cmake .. -DBUILD_NOTHING_BY_DEFAULT=1 -DBUILD_UDPGW=1 > /dev/null 2>&1
                     make install > /dev/null 2>&1
-                }
-                # Crear servicios
+                fi
                 for PORT in 7200 7300; do
                     cat > $DIR_SERVICES/badvpn-${PORT}.service << EOF
 [Unit]
-Description=BadVPN UDP Gateway Puerto ${PORT}
+Description=BadVPN UDP Gateway ${PORT}
 After=network.target
 [Service]
 Type=simple
-ExecStart=/usr/bin/badvpn-udpgw --listen-addr 127.0.0.1:${PORT} --max-clients 500 --max-connections-for-client 10
+ExecStart=/usr/local/bin/badvpn-udpgw --listen-addr 127.0.0.1:${PORT} --max-clients 500 --max-connections-for-client 10
 Restart=always
 RestartSec=5
 [Install]
@@ -436,26 +391,20 @@ EOF
                     systemctl enable badvpn-${PORT}
                     systemctl start badvpn-${PORT}
                 done
-                echo -e "  ${G}✅ BadVPN instalado en 7200 y 7300${NC}"
-                sleep 2
+                echo -e "  ${G}OK BadVPN instalado en 7200 y 7300${NC}"; sleep 2
                 ;;
-            2)
-                systemctl start badvpn-7200 badvpn-7300
-                echo -e "  ${G}✅ BadVPN iniciado${NC}"; sleep 1
-                ;;
-            3)
-                systemctl stop badvpn-7200 badvpn-7300
-                echo -e "  ${Y}BadVPN detenido${NC}"; sleep 1
-                ;;
-            4)
+            2) systemctl start badvpn-7200 badvpn-7300 && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
+            3) systemctl stop badvpn-7200 badvpn-7300 && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
+            4) systemctl restart badvpn-7200 badvpn-7300 && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
+            5)
                 read -p "  Puerto: " BPORT
                 cat > $DIR_SERVICES/badvpn-${BPORT}.service << EOF
 [Unit]
-Description=BadVPN UDP Gateway Puerto ${BPORT}
+Description=BadVPN UDP Gateway ${BPORT}
 After=network.target
 [Service]
 Type=simple
-ExecStart=/usr/bin/badvpn-udpgw --listen-addr 127.0.0.1:${BPORT} --max-clients 500
+ExecStart=/usr/local/bin/badvpn-udpgw --listen-addr 127.0.0.1:${BPORT} --max-clients 500
 Restart=always
 RestartSec=5
 [Install]
@@ -464,7 +413,7 @@ EOF
                 systemctl daemon-reload
                 systemctl enable badvpn-${BPORT}
                 systemctl start badvpn-${BPORT}
-                echo -e "  ${G}✅ BadVPN instalado en puerto ${BPORT}${NC}"; sleep 2
+                echo -e "  ${G}OK BadVPN en puerto ${BPORT}${NC}"; sleep 2
                 ;;
             0) break ;;
         esac
@@ -482,16 +431,18 @@ menu_udp() {
         echo -e "  ${Y}  UDP CUSTOM${NC}"
         sep
         echo ""
-        UDP_PROC=$(ps aux | grep -i "udp-custom\|udpcustom" | grep -v grep | head -1)
-        if [ -n "$UDP_PROC" ]; then
-            echo -e "  UDP Custom $(status_port 36712 udp)"
+        if ps aux | grep -i "udp-custom" | grep -v grep | grep -q .; then
+            echo -e "  UDP Custom ${G}[ON]${NC}"
         else
             echo -e "  UDP Custom ${R}[OFF]${NC}"
         fi
         echo ""
         sep
         echo -e "  ${W}[1]${NC} Instalar UDP Custom"
-        echo -e "  ${W}[2]${NC} Ver estado"
+        echo -e "  ${W}[2]${NC} Iniciar"
+        echo -e "  ${W}[3]${NC} Detener"
+        echo -e "  ${W}[4]${NC} Reiniciar"
+        echo -e "  ${W}[5]${NC} Ver estado"
         echo -e "  ${W}[0]${NC} Volver"
         sep
         read -p "  Opcion: " OPT
@@ -500,16 +451,28 @@ menu_udp() {
                 echo -e "\n  ${C}Instalando UDP Custom (Epro Dev Team)...${NC}"
                 read -p "  Puerto a excluir (default 5300): " UDP_EXCL
                 UDP_EXCL=${UDP_EXCL:-5300}
-                echo -e "  ${C}Descargando instalador oficial...${NC}"
                 wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1S3IE25v_fyUfCLslnujFBSBMNunDHDk2' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1S3IE25v_fyUfCLslnujFBSBMNunDHDk2" -O /tmp/install-udp && rm -rf /tmp/cookies.txt
                 chmod +x /tmp/install-udp
                 /tmp/install-udp $UDP_EXCL
-                echo -e "  ${G}✅ UDP Custom instalado${NC}"; sleep 2
+                echo -e "  ${G}OK UDP Custom instalado${NC}"; sleep 2
                 ;;
             2)
-                ss -ulnp | grep -E "36712|udp"
-                echo ""
-                read -p "  Presiona ENTER..."
+                systemctl start udp-custom 2>/dev/null || (/root/udp/udp-custom server -exclude 5300 &)
+                echo -e "  ${G}Iniciado${NC}"; sleep 1
+                ;;
+            3)
+                systemctl stop udp-custom 2>/dev/null
+                pkill -f udp-custom 2>/dev/null
+                echo -e "  ${Y}Detenido${NC}"; sleep 1
+                ;;
+            4)
+                pkill -f udp-custom 2>/dev/null; sleep 1
+                systemctl start udp-custom 2>/dev/null || (/root/udp/udp-custom server -exclude 5300 &)
+                echo -e "  ${G}Reiniciado${NC}"; sleep 1
+                ;;
+            5)
+                ss -ulnp | grep udp
+                echo ""; read -p "  ENTER..."
                 ;;
             0) break ;;
         esac
@@ -532,21 +495,19 @@ menu_ssl() {
         echo ""
         sep
         echo -e "  ${W}[1]${NC} Instalar SSL/TLS Stunnel"
-        echo -e "  ${W}[2]${NC} Iniciar Stunnel"
-        echo -e "  ${W}[3]${NC} Detener Stunnel"
-        echo -e "  ${W}[4]${NC} Reiniciar Stunnel"
+        echo -e "  ${W}[2]${NC} Iniciar"
+        echo -e "  ${W}[3]${NC} Detener"
+        echo -e "  ${W}[4]${NC} Reiniciar"
         echo -e "  ${W}[0]${NC} Volver"
         sep
         read -p "  Opcion: " OPT
         case $OPT in
             1)
-                echo -e "\n  ${C}Instalando Stunnel...${NC}"
                 apt install -y stunnel4 > /dev/null 2>&1
                 read -p "  Puerto SSL (ej: 443): " SSL_PORT
                 SSL_PORT=${SSL_PORT:-443}
                 read -p "  Puerto local SSH (ej: 22): " LOCAL_PORT
                 LOCAL_PORT=${LOCAL_PORT:-22}
-                # Generar certificado autofirmado
                 openssl req -new -x509 -days 3650 -nodes \
                     -out /etc/stunnel/stunnel.pem \
                     -keyout /etc/stunnel/stunnel.pem \
@@ -557,7 +518,6 @@ cert = /etc/stunnel/stunnel.pem
 socket = a:SO_REUSEADDR=1
 socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
-
 [ssh]
 accept = ${SSL_PORT}
 connect = 127.0.0.1:${LOCAL_PORT}
@@ -565,7 +525,7 @@ EOF
                 sed -i 's/ENABLED=0/ENABLED=1/' /etc/default/stunnel4 2>/dev/null
                 systemctl enable stunnel4
                 systemctl start stunnel4
-                echo -e "  ${G}✅ SSL/TLS Stunnel instalado en puerto ${SSL_PORT}${NC}"; sleep 2
+                echo -e "  ${G}OK SSL/TLS Stunnel en puerto ${SSL_PORT}${NC}"; sleep 2
                 ;;
             2) systemctl start stunnel4 && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
             3) systemctl stop stunnel4 && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
@@ -576,7 +536,7 @@ EOF
 }
 
 # ══════════════════════════════════════════
-#   V2RAY VMESS
+#   V2RAY
 # ══════════════════════════════════════════
 
 menu_v2ray() {
@@ -591,10 +551,10 @@ menu_v2ray() {
         echo -e "  Puerto 443  $(status_port 443)"
         echo ""
         sep
-        echo -e "  ${W}[1]${NC} Instalar V2Ray + SSL (auto)"
-        echo -e "  ${W}[2]${NC} Iniciar V2Ray"
-        echo -e "  ${W}[3]${NC} Detener V2Ray"
-        echo -e "  ${W}[4]${NC} Reiniciar V2Ray"
+        echo -e "  ${W}[1]${NC} Instalar V2Ray + SSL"
+        echo -e "  ${W}[2]${NC} Iniciar"
+        echo -e "  ${W}[3]${NC} Detener"
+        echo -e "  ${W}[4]${NC} Reiniciar"
         echo -e "  ${W}[5]${NC} Crear usuario VMess"
         echo -e "  ${W}[6]${NC} Ver usuarios VMess"
         echo -e "  ${W}[0]${NC} Volver"
@@ -602,8 +562,8 @@ menu_v2ray() {
         read -p "  Opcion: " OPT
         case $OPT in
             1)
-                read -p "  Dominio (ej: mia.darkfullhn.xyz): " DOMAIN
-                read -p "  Email para certificado: " EMAIL
+                read -p "  Dominio: " DOMAIN
+                read -p "  Email: " EMAIL
                 bash <(curl -s https://raw.githubusercontent.com/v2fly/fhs-install-v2ray/master/install-release.sh) > /dev/null 2>&1
                 apt install -y nginx certbot python3-certbot-nginx > /dev/null 2>&1
                 pkill -f "python3.*:80" 2>/dev/null; sleep 2
@@ -641,27 +601,26 @@ EOF
                 ln -sf /etc/nginx/sites-available/v2ray /etc/nginx/sites-enabled/
                 systemctl enable v2ray nginx
                 systemctl start v2ray nginx
-                echo -e "  ${G}✅ V2Ray instalado con SSL en ${DOMAIN}${NC}"; sleep 2
+                echo -e "  ${G}OK V2Ray instalado${NC}"; sleep 2
                 ;;
             2) systemctl start v2ray && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
             3) systemctl stop v2ray && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
             4) systemctl restart v2ray && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
             5)
                 read -p "  Nombre del perfil: " VNAME
-                read -p "  Dominio/IP del servidor: " VHOST
+                read -p "  Dominio/IP: " VHOST
                 python3 - << PYEOF
 import json, uuid, base64
-cfg_file = '/usr/local/etc/v2ray/config.json'
-with open(cfg_file) as f: config = json.load(f)
+with open('/usr/local/etc/v2ray/config.json') as f: config = json.load(f)
 uid = str(uuid.uuid4())
 config['inbounds'][0]['settings']['clients'].append({"id": uid, "alterId": 0, "email": "${VNAME}"})
-with open(cfg_file, 'w') as f: json.dump(config, f, indent=2)
+with open('/usr/local/etc/v2ray/config.json', 'w') as f: json.dump(config, f, indent=2)
 vmess = {"v":"2","ps":"${VNAME}","add":"${VHOST}","port":"443","id":uid,"aid":"0","net":"ws","type":"none","host":"${VHOST}","path":"/v2ray","tls":"tls"}
 link = "vmess://" + base64.b64encode(json.dumps(vmess).encode()).decode()
-print(f"\n\033[1;32m✅ VMess creado:\033[0m\n{link}\n")
+print(f"\n\033[1;32mVMess:\033[0m\n{link}\n")
 PYEOF
                 systemctl restart v2ray
-                read -p "  Presiona ENTER..."
+                read -p "  ENTER..."
                 ;;
             6)
                 python3 -c "
@@ -669,12 +628,11 @@ import json
 try:
     with open('/usr/local/etc/v2ray/config.json') as f: c = json.load(f)
     clients = c['inbounds'][0]['settings']['clients']
-    print(f'\n  Total usuarios: {len(clients)}')
-    for u in clients: print(f'  - {u.get(\"email\",\"?\")} | {u[\"id\"]}')
+    print(f'Total: {len(clients)}')
+    for u in clients: print(f'  - {u.get(\"email\",\"?\")}')
 except Exception as e: print(f'Error: {e}')
 "
-                echo ""
-                read -p "  Presiona ENTER..."
+                read -p "  ENTER..."
                 ;;
             0) break ;;
         esac
@@ -682,33 +640,36 @@ except Exception as e: print(f'Error: {e}')
 }
 
 # ══════════════════════════════════════════
-#   ZIV VPN / HYSTERIA
+#   HYSTERIA / ZIV VPN
 # ══════════════════════════════════════════
 
 menu_ziv() {
     while true; do
         banner
         sep
-        echo -e "  ${Y}  ZIV VPN / HYSTERIA${NC}"
+        echo -e "  ${Y}  ZIV VPN / HYSTERIA2${NC}"
         sep
         echo ""
         echo -e "  Hysteria $(status_service hysteria-server)"
         echo ""
         sep
         echo -e "  ${W}[1]${NC} Instalar Hysteria2"
-        echo -e "  ${W}[2]${NC} Iniciar Hysteria"
-        echo -e "  ${W}[3]${NC} Detener Hysteria"
+        echo -e "  ${W}[2]${NC} Iniciar"
+        echo -e "  ${W}[3]${NC} Detener"
         echo -e "  ${W}[4]${NC} Ver configuración"
         echo -e "  ${W}[0]${NC} Volver"
         sep
         read -p "  Opcion: " OPT
         case $OPT in
             1)
-                echo -e "\n  ${C}Instalando Hysteria2...${NC}"
                 bash <(curl -fsSL https://get.hy2.sh/) > /dev/null 2>&1
                 read -p "  Puerto UDP (ej: 36712): " HY_PORT
                 HY_PORT=${HY_PORT:-36712}
                 read -p "  Contraseña: " HY_PASS
+                mkdir -p /etc/hysteria
+                openssl req -x509 -newkey rsa:4096 -keyout /etc/hysteria/server.key \
+                    -out /etc/hysteria/server.crt -days 3650 -nodes \
+                    -subj "/CN=hysteria" 2>/dev/null
                 cat > /etc/hysteria/config.yaml << EOF
 listen: :${HY_PORT}
 auth:
@@ -718,16 +679,202 @@ tls:
   cert: /etc/hysteria/server.crt
   key: /etc/hysteria/server.key
 EOF
-                openssl req -x509 -newkey rsa:4096 -keyout /etc/hysteria/server.key \
-                    -out /etc/hysteria/server.crt -days 3650 -nodes \
-                    -subj "/CN=hysteria" 2>/dev/null
                 systemctl enable hysteria-server
                 systemctl start hysteria-server
-                echo -e "  ${G}✅ Hysteria2 instalado en puerto UDP ${HY_PORT}${NC}"; sleep 2
+                echo -e "  ${G}OK Hysteria2 en puerto UDP ${HY_PORT}${NC}"; sleep 2
                 ;;
             2) systemctl start hysteria-server && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
             3) systemctl stop hysteria-server && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
             4) cat /etc/hysteria/config.yaml 2>/dev/null; echo ""; read -p "  ENTER..." ;;
+            0) break ;;
+        esac
+    done
+}
+
+# ══════════════════════════════════════════
+#   GESTIÓN DE USUARIOS
+# ══════════════════════════════════════════
+
+listar_usuarios() {
+    banner
+    sep
+    echo -e "  ${Y}  USUARIOS ACTIVOS${NC}"
+    sep
+    echo ""
+    printf "  %-20s %-15s %s\n" "Usuario" "Expira" "Estado"
+    sep
+    awk -F: '$3>=1000 && $1!="nobody" {print $1}' /etc/passwd | while read user; do
+        EXP=$(chage -l $user 2>/dev/null | grep "Account expires" | cut -d: -f2 | xargs)
+        if [ "$EXP" = "never" ] || [ -z "$EXP" ]; then
+            printf "  ${Y}%-20s${NC} %-15s\n" "$user" "Sin expirar"
+        else
+            EXP_TS=$(date -d "$EXP" +%s 2>/dev/null || echo 0)
+            NOW_TS=$(date +%s)
+            if [ $EXP_TS -lt $NOW_TS ]; then
+                printf "  ${R}%-20s${NC} %-15s ${R}[EXPIRADO]${NC}\n" "$user" "$EXP"
+            else
+                printf "  ${G}%-20s${NC} %-15s\n" "$user" "$EXP"
+            fi
+        fi
+    done
+    echo ""
+    sep
+    read -p "  Presiona ENTER..."
+}
+
+crear_usuario() {
+    banner
+    sep
+    echo -e "  ${Y}  CREAR USUARIO${NC}"
+    sep
+    echo ""
+    read -p "  Nombre de usuario: " USR_NAME
+    [ -z "$USR_NAME" ] && echo -e "  ${R}Nombre requerido${NC}" && sleep 1 && return
+
+    read -p "  Contraseña (ENTER para generar): " USR_PASS
+    if [ -z "$USR_PASS" ]; then
+        USR_PASS=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 10 | head -n 1)
+        echo -e "  ${G}Contraseña generada: ${W}${USR_PASS}${NC}"
+    fi
+
+    read -p "  Dias de validez (default 30): " USR_DAYS
+    USR_DAYS=${USR_DAYS:-30}
+
+    EXP_DATE=$(date -d "+${USR_DAYS} days" +%Y-%m-%d)
+    EXP_SHOW=$(date -d "+${USR_DAYS} days" +%d/%m/%Y)
+    SERVER_IP=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
+
+    echo ""
+    echo -e "  ${C}Creando usuario SSH...${NC}"
+    if id "$USR_NAME" &>/dev/null; then
+        usermod -e $EXP_DATE $USR_NAME
+        echo "$USR_NAME:$USR_PASS" | chpasswd
+    else
+        useradd -M -s /bin/false -e $EXP_DATE $USR_NAME
+        echo "$USR_NAME:$USR_PASS" | chpasswd
+        chage -E $EXP_DATE -M 99999 $USR_NAME
+        usermod -f 0 $USR_NAME
+    fi
+
+    echo ""
+    sep
+    echo -e "  ${Y}  CREDENCIALES${NC}"
+    sep
+    echo -e "  ${W}Usuario:${NC}  $USR_NAME"
+    echo -e "  ${W}Password:${NC} $USR_PASS"
+    echo -e "  ${W}IP:${NC}       $SERVER_IP"
+    echo -e "  ${W}Expira:${NC}   $EXP_SHOW ($USR_DAYS dias)"
+    echo ""
+    sep
+    echo -e "  ${Y}  CONEXIONES DISPONIBLES${NC}"
+    sep
+    echo ""
+
+    # SSH siempre
+    echo -e "  ${C}SSH Directo:${NC}"
+    echo -e "  ${W}$SERVER_IP:22@$USR_NAME:$USR_PASS${NC}"
+    echo ""
+
+    # WebSocket Puerto 80
+    if ss -tlnp | grep -q ":80 "; then
+        echo -e "  ${C}WebSocket Puerto 80:${NC}"
+        echo -e "  ${W}$SERVER_IP:80@$USR_NAME:$USR_PASS${NC}"
+        echo ""
+    fi
+
+    # SSL/TLS 443 solo si stunnel está activo
+    if systemctl is-active --quiet stunnel4 2>/dev/null; then
+        echo -e "  ${C}SSL/TLS Puerto 443:${NC}"
+        echo -e "  ${W}$SERVER_IP:443@$USR_NAME:$USR_PASS${NC}"
+        echo ""
+    fi
+
+    # UDP Custom
+    if ps aux | grep -i "udp-custom" | grep -v grep | grep -q .; then
+        echo -e "  ${C}UDP Custom:${NC}"
+        echo -e "  ${W}$SERVER_IP:1-65535@$USR_NAME:$USR_PASS${NC}"
+        echo ""
+    fi
+
+    # BadVPN info
+    if systemctl is-active --quiet badvpn-7200 2>/dev/null || systemctl is-active --quiet badvpn-7300 2>/dev/null; then
+        echo -e "  ${C}BadVPN UDP Gateway:${NC}"
+        systemctl is-active --quiet badvpn-7200 && echo -e "  ${W}Puerto 7200 activo${NC}"
+        systemctl is-active --quiet badvpn-7300 && echo -e "  ${W}Puerto 7300 activo${NC}"
+        echo ""
+    fi
+
+    sep
+    read -p "  Presiona ENTER..."
+}
+
+eliminar_usuario() {
+    banner
+    sep
+    echo -e "  ${R}  ELIMINAR USUARIO${NC}"
+    sep
+    echo ""
+    awk -F: '$3>=1000 && $1!="nobody" {print $1}' /etc/passwd | while read user; do
+        printf "  ${Y}%-20s${NC}\n" "$user"
+    done
+    echo ""
+    read -p "  Usuario a eliminar: " DEL_USR
+    if id "$DEL_USR" &>/dev/null; then
+        pkill -u "$DEL_USR" 2>/dev/null
+        userdel -f "$DEL_USR" 2>/dev/null
+        echo -e "  ${G}OK Usuario $DEL_USR eliminado${NC}"
+    else
+        echo -e "  ${R}Usuario no encontrado${NC}"
+    fi
+    sleep 2
+}
+
+renovar_usuario() {
+    banner
+    sep
+    echo -e "  ${Y}  RENOVAR USUARIO${NC}"
+    sep
+    echo ""
+    awk -F: '$3>=1000 && $1!="nobody" {print $1}' /etc/passwd | while read user; do
+        EXP=$(chage -l $user 2>/dev/null | grep "Account expires" | cut -d: -f2 | xargs)
+        printf "  ${Y}%-20s${NC} %s\n" "$user" "$EXP"
+    done
+    echo ""
+    read -p "  Usuario a renovar: " REN_USR
+    id "$REN_USR" &>/dev/null || { echo -e "  ${R}No encontrado${NC}"; sleep 1; return; }
+    read -p "  Dias a agregar (default 30): " REN_DAYS
+    REN_DAYS=${REN_DAYS:-30}
+    EXP_DATE=$(date -d "+${REN_DAYS} days" +%Y-%m-%d)
+    EXP_SHOW=$(date -d "+${REN_DAYS} days" +%d/%m/%Y)
+    usermod -e $EXP_DATE $REN_USR
+    chage -E $EXP_DATE $REN_USR
+    echo -e "  ${G}OK Usuario $REN_USR renovado hasta $EXP_SHOW${NC}"
+    sleep 2
+}
+
+menu_usuarios() {
+    while true; do
+        banner
+        sep
+        echo -e "  ${Y}  GESTIÓN DE USUARIOS${NC}"
+        sep
+        echo ""
+        TOTAL=$(awk -F: '$3>=1000 && $1!="nobody" {print $1}' /etc/passwd | wc -l)
+        echo -e "  Total usuarios: ${G}${TOTAL}${NC}"
+        echo ""
+        sep
+        echo -e "  ${W}[1]${NC} Crear usuario"
+        echo -e "  ${W}[2]${NC} Listar usuarios"
+        echo -e "  ${W}[3]${NC} Eliminar usuario"
+        echo -e "  ${W}[4]${NC} Renovar usuario"
+        echo -e "  ${W}[0]${NC} Volver"
+        sep
+        read -p "  Opcion: " OPT
+        case $OPT in
+            1) crear_usuario ;;
+            2) listar_usuarios ;;
+            3) eliminar_usuario ;;
+            4) renovar_usuario ;;
             0) break ;;
         esac
     done
@@ -746,13 +893,17 @@ menu_principal() {
         echo -e "  WebSocket Python  $(status_port 80)"
         echo -e "  BadVPN 7200       $(status_service badvpn-7200)"
         echo -e "  BadVPN 7300       $(status_service badvpn-7300)"
-        echo -e "  UDP Custom        $(status_port 36712 udp)"
+        if ps aux | grep -i "udp-custom" | grep -v grep | grep -q .; then
+            echo -e "  UDP Custom        ${G}[ON]${NC}"
+        else
+            echo -e "  UDP Custom        ${R}[OFF]${NC}"
+        fi
         echo -e "  SSL/TLS Stunnel   $(status_service stunnel4)"
         echo -e "  V2Ray VMess       $(status_service v2ray)"
         echo -e "  Hysteria/ZivVPN   $(status_service hysteria-server)"
         sep
         echo ""
-        echo -e "  ${W}[1]${NC} WebSocket Python (Proxy3 WS)"
+        echo -e "  ${W}[1]${NC} WebSocket Python"
         echo -e "  ${W}[2]${NC} BadVPN UDP Gateway"
         echo -e "  ${W}[3]${NC} UDP Custom"
         echo -e "  ${W}[4]${NC} SSL/TLS Stunnel"
@@ -786,220 +937,3 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 menu_principal
-
-# ══════════════════════════════════════════
-#   GESTIÓN DE USUARIOS
-# ══════════════════════════════════════════
-
-crear_usuario() {
-    banner
-    sep
-    echo -e "  ${Y}  CREAR USUARIO${NC}"
-    sep
-    echo ""
-
-    # Datos del usuario
-    read -p "  Nombre de usuario: " USR_NAME
-    if [ -z "$USR_NAME" ]; then
-        echo -e "  ${R}Nombre requerido${NC}"; sleep 1; return
-    fi
-
-    read -p "  Contraseña (ENTER para generar): " USR_PASS
-    if [ -z "$USR_PASS" ]; then
-        USR_PASS=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 10 | head -n 1)
-        echo -e "  ${G}Contraseña generada: ${USR_PASS}${NC}"
-    fi
-
-    read -p "  Dias de validez (default 30): " USR_DAYS
-    USR_DAYS=${USR_DAYS:-30}
-
-    # Calcular fecha de expiración
-    EXP_DATE=$(date -d "+${USR_DAYS} days" +%Y-%m-%d)
-    EXP_SHOW=$(date -d "+${USR_DAYS} days" +%d/%m/%Y)
-
-    # Obtener IP del servidor
-    SERVER_IP=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
-
-    echo ""
-    echo -e "  ${C}Creando usuario SSH...${NC}"
-
-    # Crear usuario SSH
-    if id "$USR_NAME" &>/dev/null; then
-        echo -e "  ${Y}Usuario ya existe, actualizando...${NC}"
-        usermod -e $EXP_DATE $USR_NAME
-        echo "$USR_NAME:$USR_PASS" | chpasswd
-    else
-        useradd -M -s /bin/false -e $EXP_DATE $USR_NAME
-        echo "$USR_NAME:$USR_PASS" | chpasswd
-        chage -E $EXP_DATE -M 99999 $USR_NAME
-        usermod -f 0 $USR_NAME
-    fi
-
-    echo -e "  ${G}✅ Usuario SSH creado${NC}"
-    echo ""
-
-    # Generar conexiones según puertos activos
-    sep
-    echo -e "  ${Y}  CREDENCIALES DE ACCESO${NC}"
-    sep
-    echo ""
-    echo -e "  ${W}Usuario:${NC}   $USR_NAME"
-    echo -e "  ${W}Password:${NC}  $USR_PASS"
-    echo -e "  ${W}Expira:${NC}    $EXP_SHOW ($USR_DAYS dias)"
-    echo -e "  ${W}IP:${NC}        $SERVER_IP"
-    echo ""
-    sep
-    echo -e "  ${Y}  CONFIGURACIONES DE CONEXION${NC}"
-    sep
-    echo ""
-
-    # SSH Directo (siempre)
-    echo -e "  ${C}SSH Directo:${NC}"
-    echo -e "  ${W}$SERVER_IP:22@$USR_NAME:$USR_PASS${NC}"
-    echo ""
-
-    # WebSocket Puerto 80 (si está activo)
-    if ss -tlnp | grep -q ":80 "; then
-        echo -e "  ${C}WebSocket Puerto 80:${NC}"
-        echo -e "  ${W}$SERVER_IP:80@$USR_NAME:$USR_PASS${NC}"
-        echo ""
-    fi
-
-    # SSL/TLS Puerto 443 (si está activo y es stunnel)
-    if ss -tlnp | grep -q ":443 " && systemctl is-active --quiet stunnel4 2>/dev/null; then
-        echo -e "  ${C}SSL/TLS Puerto 443:${NC}"
-        echo -e "  ${W}$SERVER_IP:443@$USR_NAME:$USR_PASS${NC}"
-        echo ""
-    fi
-
-    # UDP Custom (si está activo)
-    if ps aux | grep -i "udp-custom" | grep -v grep | grep -q .; then
-        UDP_PORT=$(ss -ulnp | grep udp-custom | grep -o ':[0-9]*' | head -1 | tr -d ':')
-        UDP_PORT=${UDP_PORT:-36712}
-        echo -e "  ${C}UDP Custom:${NC}"
-        echo -e "  ${W}$SERVER_IP:1-65535@$USR_NAME:$USR_PASS${NC}"
-        echo ""
-        # Crear usuario UDP Custom
-        echo -e "  ${C}Creando usuario UDP Custom...${NC}"
-        if [ -f /root/udp/udp-custom ]; then
-            /root/udp/udp-custom user add --name "$USR_NAME" --password "$USR_PASS" 2>/dev/null && \
-            echo -e "  ${G}✅ Usuario UDP Custom creado${NC}" || \
-            echo -e "  ${Y}UDP Custom no requiere usuarios separados${NC}"
-        fi
-        echo ""
-    fi
-
-    # BadVPN (si está activo)
-    if ss -tlnp | grep -q ":7200 "; then
-        echo -e "  ${C}BadVPN UDP Gateway:${NC}"
-        echo -e "  ${W}Puerto 7200 y 7300 activos${NC}"
-        echo ""
-    fi
-
-    sep
-    echo ""
-    read -p "  Presiona ENTER para continuar..."
-}
-
-listar_usuarios() {
-    banner
-    sep
-    echo -e "  ${Y}  USUARIOS ACTIVOS${NC}"
-    sep
-    echo ""
-    echo -e "  ${W}Usuario          Expira          Estado${NC}"
-    sep
-    # Listar usuarios del sistema que no son del sistema
-    awk -F: '$3>=1000 && $1!="nobody" {print $1}' /etc/passwd | while read user; do
-        EXP=$(chage -l $user 2>/dev/null | grep "Account expires" | cut -d: -f2 | xargs)
-        if [ "$EXP" = "never" ] || [ -z "$EXP" ]; then
-            EXP="Sin expirar"
-            COLOR=$Y
-        else
-            # Verificar si ya expiró
-            EXP_TS=$(date -d "$EXP" +%s 2>/dev/null || echo 0)
-            NOW_TS=$(date +%s)
-            if [ $EXP_TS -lt $NOW_TS ]; then
-                COLOR=$R
-                EXP="$EXP ${R}[EXPIRADO]${NC}"
-            else
-                COLOR=$G
-            fi
-        fi
-        printf "  ${COLOR}%-16s${NC} %-16s\n" "$user" "$EXP"
-    done
-    echo ""
-    sep
-    read -p "  Presiona ENTER para continuar..."
-}
-
-eliminar_usuario() {
-    banner
-    sep
-    echo -e "  ${R}  ELIMINAR USUARIO${NC}"
-    sep
-    echo ""
-    listar_usuarios
-    echo ""
-    read -p "  Usuario a eliminar: " DEL_USR
-    if id "$DEL_USR" &>/dev/null; then
-        pkill -u "$DEL_USR" 2>/dev/null
-        userdel -f "$DEL_USR" 2>/dev/null
-        # Eliminar de UDP Custom si aplica
-        /root/udp/udp-custom user del --name "$DEL_USR" 2>/dev/null
-        echo -e "  ${G}✅ Usuario $DEL_USR eliminado${NC}"
-    else
-        echo -e "  ${R}Usuario no encontrado${NC}"
-    fi
-    sleep 2
-}
-
-renovar_usuario() {
-    banner
-    sep
-    echo -e "  ${Y}  RENOVAR USUARIO${NC}"
-    sep
-    echo ""
-    listar_usuarios
-    echo ""
-    read -p "  Usuario a renovar: " REN_USR
-    if ! id "$REN_USR" &>/dev/null; then
-        echo -e "  ${R}Usuario no encontrado${NC}"; sleep 1; return
-    fi
-    read -p "  Dias a agregar (default 30): " REN_DAYS
-    REN_DAYS=${REN_DAYS:-30}
-    EXP_DATE=$(date -d "+${REN_DAYS} days" +%Y-%m-%d)
-    EXP_SHOW=$(date -d "+${REN_DAYS} days" +%d/%m/%Y)
-    usermod -e $EXP_DATE $REN_USR
-    chage -E $EXP_DATE $REN_USR
-    echo -e "  ${G}✅ Usuario $REN_USR renovado hasta $EXP_SHOW${NC}"
-    sleep 2
-}
-
-menu_usuarios() {
-    while true; do
-        banner
-        sep
-        echo -e "  ${Y}  GESTIÓN DE USUARIOS${NC}"
-        sep
-        echo ""
-        TOTAL=$(awk -F: '$3>=1000 && $1!="nobody" {print $1}' /etc/passwd | wc -l)
-        echo -e "  Total usuarios: ${G}${TOTAL}${NC}"
-        echo ""
-        sep
-        echo -e "  ${W}[1]${NC} Crear usuario"
-        echo -e "  ${W}[2]${NC} Listar usuarios"
-        echo -e "  ${W}[3]${NC} Eliminar usuario"
-        echo -e "  ${W}[4]${NC} Renovar usuario"
-        echo -e "  ${W}[0]${NC} Volver"
-        sep
-        read -p "  Opcion: " OPT
-        case $OPT in
-            1) crear_usuario ;;
-            2) listar_usuarios ;;
-            3) eliminar_usuario ;;
-            4) renovar_usuario ;;
-            0) break ;;
-        esac
-    done
-}
