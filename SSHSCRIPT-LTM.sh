@@ -497,36 +497,14 @@ menu_udp() {
         read -p "  Opcion: " OPT
         case $OPT in
             1)
-                echo -e "\n  ${C}Descargando UDP Custom...${NC}"
-                read -p "  Puerto UDP (ej: 36712): " UDP_PORT
-                UDP_PORT=${UDP_PORT:-36712}
-                wget -q -O /usr/local/bin/udp-custom "https://github.com/rcvecs/udp-custom/releases/latest/download/udp-custom-linux-amd64" && chmod +x /usr/local/bin/udp-custom
-                cat > /etc/udp/config.json << EOF
-{
-    "listen": ":${UDP_PORT}",
-    "password": "",
-    "timeout": 60,
-    "udp_conn_timeout": 60,
-    "workers": 0
-}
-EOF
-                mkdir -p /etc/udp
-                cat > $DIR_SERVICES/udp-custom.service << EOF
-[Unit]
-Description=UDP Custom Service
-After=network.target
-[Service]
-Type=simple
-ExecStart=/usr/local/bin/udp-custom server -c /etc/udp/config.json
-Restart=always
-RestartSec=5
-[Install]
-WantedBy=multi-user.target
-EOF
-                systemctl daemon-reload
-                systemctl enable udp-custom
-                systemctl start udp-custom
-                echo -e "  ${G}✅ UDP Custom instalado en puerto ${UDP_PORT}${NC}"; sleep 2
+                echo -e "\n  ${C}Instalando UDP Custom (Epro Dev Team)...${NC}"
+                read -p "  Puerto a excluir (default 5300): " UDP_EXCL
+                UDP_EXCL=${UDP_EXCL:-5300}
+                echo -e "  ${C}Descargando instalador oficial...${NC}"
+                wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1S3IE25v_fyUfCLslnujFBSBMNunDHDk2' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1S3IE25v_fyUfCLslnujFBSBMNunDHDk2" -O /tmp/install-udp && rm -rf /tmp/cookies.txt
+                chmod +x /tmp/install-udp
+                /tmp/install-udp $UDP_EXCL
+                echo -e "  ${G}✅ UDP Custom instalado${NC}"; sleep 2
                 ;;
             2)
                 ss -ulnp | grep -E "36712|udp"
