@@ -2781,54 +2781,6 @@ EOF
     done
 }
 
-menu_herramientas() {
-    while true; do
-        banner; sep
-        echo -e "  ${Y}  HERRAMIENTAS Y PROTOCOLOS${NC}"; sep; echo ""
-        printf " ${NEON}◈${NC} ${W}WebSocket${NC}  %-12b ${NEON}◈${NC} ${W}BadVPN 7200${NC} %b\n" "$(status_port 80)" "$(status_service badvpn-7200)"
-        printf " ${NEON}◈${NC} ${W}UDP Custom${NC} %-11b ${NEON}◈${NC} ${W}BadVPN 7300${NC} %b\n" "$(ps aux | grep -i UDP-Custom | grep -v grep | grep -q . && echo -e "${NEON}◆ ON${NC}" || echo -e "${R}◇ OFF${NC}")" "$(status_service badvpn-7300)"
-        printf " ${NEON}◈${NC} ${W}SSL/TLS${NC}    %-12b ${NEON}◈${NC} ${W}V2Ray${NC}       %b\n" "$(status_service stunnel4)" "$(status_service v2ray)"
-        printf " ${NEON}◈${NC} ${W}ZIV VPN${NC}   %-12b ${NEON}◈${NC} ${W}SlowDNS${NC}     %b\n" "$(status_service zivpn)" "$(status_service server-sldns)"
-        printf " ${NEON}◈${NC} ${W}Dropbear${NC}  %-12b ${NEON}◈${NC} ${W}LTMUDPv1${NC}    %b\n" "$(status_service dropbear)" "$(status_service hysteria-server)"
-        echo ""; sep
-        printf " \033[1;97m[1] %-22s [2] %s\033[0m\n" "WebSocket Python" "BadVPN UDP"
-        printf " \033[1;97m[3] %-22s [4] %s\033[0m\n" "UDP Custom" "SSL/TLS Stunnel"
-        printf " \033[1;97m[5] %-22s [6] %s\033[0m\n" "V2Ray VMess" "ZIV VPN"
-        printf " \033[1;97m[7] %-22s [8] %s\033[0m\n" "Banner SSH" "Mejorar Velocidad UDP"
-        printf " \033[1;97m[9] %-22s [10] %s\033[0m\n" "Anti-DDoS" "SlowDNS"
-        printf " \033[1;97m[11] %-21s [12] %s\033[0m\n" "Dropbear SSH" "UDP Hysteria Mod"
-        printf " \033[1;97m[13] %-21s [14] %s\033[0m\n" "Shadowsocks" "Limpieza/Auto-reinicio"
-        sep
-        printf " ${W}[0]${NC} Volver\n"; sep; echo ""
-        read -p " Opcion: " OPT
-        case $OPT in
-            1) menu_ws ;;
-            2) menu_badvpn ;;
-            3) menu_udp ;;
-            4) menu_ssl ;;
-            5) menu_v2ray ;;
-            6) menu_ziv ;;
-            7) menu_banner_ssh ;;
-            8) menu_speed_udp ;;
-            9) menu_antiddos ;;
-            10) menu_slowdns ;;
-            11) menu_dropbear ;;
-
-            12) menu_udp_hysteria_mod ;;
-            13) menu_shadowsocks ;;
-            14) menu_limpieza ;;
-            9) menu_antiddos ;;
-            10) menu_slowdns ;;
-            11) menu_dropbear ;;
-
-            12) menu_udp_hysteria_mod ;;
-            13) menu_shadowsocks ;;
-            14) menu_limpieza ;;
-            0) break ;;
-            *) echo -e "  ${R}Opcion invalida${NC}"; sleep 1 ;;
-        esac
-    done
-}
 
 menu_principal() {
     while true; do
