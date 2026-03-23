@@ -23,6 +23,22 @@ DIR_SCRIPTS="/etc/sshfreeltm"
 DIR_SERVICES="/etc/systemd/system"
 mkdir -p $DIR_SCRIPTS
 
+# Configurar UFW si esta activo
+if command -v ufw > /dev/null 2>&1 && ufw status | grep -q "Status: active"; then
+    ufw allow 22/tcp > /dev/null 2>&1
+    ufw allow 80/tcp > /dev/null 2>&1
+    ufw allow 443/tcp > /dev/null 2>&1
+    ufw allow 8080/tcp > /dev/null 2>&1
+    ufw allow 8388/tcp > /dev/null 2>&1
+    ufw allow 8388/udp > /dev/null 2>&1
+    ufw allow 7200/tcp > /dev/null 2>&1
+    ufw allow 7300/tcp > /dev/null 2>&1
+    ufw allow 5667/udp > /dev/null 2>&1
+    ufw allow 36712/udp > /dev/null 2>&1
+    ufw allow 90/tcp > /dev/null 2>&1
+    ufw reload > /dev/null 2>&1
+fi
+
 # ══════════════════════════════════════════
 # VERIFICACION DE LICENCIA
 # ══════════════════════════════════════════
