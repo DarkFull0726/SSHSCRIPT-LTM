@@ -23,7 +23,7 @@ Características
 🔐 Usuarios ZIV VPN con expiración
 🖥️ MOTD personalizado
 🛡️ Anti-DDoS agresivo
-🔄 Actualizacion automatica
+🔄 Actualización automática
 Uso
 menu
 Compatibilidad
