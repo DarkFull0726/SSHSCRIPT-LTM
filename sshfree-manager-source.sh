@@ -1588,6 +1588,79 @@ menu_banner_ssh() {
     done
 }
 
+menu_limpieza() {
+    while true; do
+        banner; sep
+        echo -e "  ${NEON}◆ LIMPIEZA Y AUTO-REINICIO${NC}"; sep; echo ""
+        # Ver estado del cron de reinicio
+        CRON_ST=$(crontab -l 2>/dev/null | grep -c "reboot\|ltm_reboot" || echo 0)
+        [ "$CRON_ST" -gt 0 ] && echo -e "  ${NEON}◈${NC} ${W}Auto-reinicio:${NC} ${NEON}◆ ACTIVO${NC}" || echo -e "  ${NEON}◈${NC} ${W}Auto-reinicio:${NC} ${R}◇ INACTIVO${NC}"
+        RAM_FREE=$(free -h | awk '/^Mem:/{print $4}')
+        RAM_USED=$(free -h | awk '/^Mem:/{print $3}')
+        echo -e "  ${NEON}◈${NC} ${W}RAM Libre:${NC} ${Y}${RAM_FREE}${NC} | ${W}Usada:${NC} ${Y}${RAM_USED}${NC}"
+        echo ""; sep
+        printf " ${Y}❬1❭ Limpiar cache RAM ahora${NC}\n"
+        printf " ${Y}❬2❭ Limpiar archivos temporales${NC}\n"
+        printf " ${Y}❬3❭ Configurar auto-reinicio${NC}\n"
+        printf " ${Y}❬4❭ Ver cron de reinicio${NC}\n"
+        printf " ${R}❬5❭ Desactivar auto-reinicio${NC}\n"
+        printf " ${Y}❬6❭ Reiniciar ahora${NC}\n"
+        sep; printf " ${R}❬0❭ Volver${NC}\n"; sep; echo ""
+        read -p " Opcion: " OPT
+        case $OPT in
+            1)
+                echo -e "\n  ${C}Limpiando cache RAM...${NC}"
+                sync
+                echo 3 > /proc/sys/vm/drop_caches
+                RAM_FREE_NEW=$(free -h | awk '/^Mem:/{print $4}')
+                echo -e "  ${G}✓ Cache limpiada${NC}"
+                echo -e "  ${NEON}◈${NC} ${W}RAM Libre ahora:${NC} ${Y}${RAM_FREE_NEW}${NC}"
+                sleep 2 ;;
+            2)
+                echo -e "\n  ${C}Limpiando archivos temporales...${NC}"
+                apt autoremove -y > /dev/null 2>&1
+                apt clean > /dev/null 2>&1
+                rm -rf /tmp/*.sh /tmp/*.py /tmp/*.txt 2>/dev/null
+                journalctl --vacuum-time=3d > /dev/null 2>&1
+                echo -e "  ${G}✓ Temporales eliminados${NC}"
+                echo -e "  ${G}✓ Cache apt limpiada${NC}"
+                echo -e "  ${G}✓ Logs antiguos eliminados${NC}"
+                sleep 2 ;;
+            3)
+                banner; sep
+                echo -e "  ${Y}  CONFIGURAR AUTO-REINICIO${NC}"; sep; echo ""
+                read -p "  Intervalo en horas (ej: 1, 6, 12, 24): " REBOOT_HOURS
+                [ -z "$REBOOT_HOURS" ] && echo -e "  ${R}Cancelado${NC}" && sleep 1 && continue
+                # Crear script de limpieza y reinicio
+                cat > /usr/local/bin/ltm-reboot.sh << REBOOTEOF
+#!/bin/bash
+sync
+echo 3 > /proc/sys/vm/drop_caches
+/sbin/reboot
+REBOOTEOF
+                chmod +x /usr/local/bin/ltm-reboot.sh
+                # Agregar cron
+                (crontab -l 2>/dev/null | grep -v "ltm_reboot\|ltm-reboot"; echo "0 */$REBOOT_HOURS * * * /usr/local/bin/ltm-reboot.sh # ltm_reboot") | crontab -
+                echo -e "  ${G}OK Auto-reinicio cada ${Y}${REBOOT_HOURS}h${G} configurado${NC}"
+                sleep 2 ;;
+            4)
+                echo ""; echo -e "  ${W}Cron actual:${NC}"; echo ""
+                crontab -l 2>/dev/null | grep "ltm_reboot\|ltm-reboot" || echo "  Sin auto-reinicio configurado"
+                echo ""; read -p "  ENTER..." ;;
+            5)
+                (crontab -l 2>/dev/null | grep -v "ltm_reboot\|ltm-reboot") | crontab -
+                echo -e "  ${G}Auto-reinicio desactivado${NC}"; sleep 2 ;;
+            6)
+                read -p "  Confirmar reinicio (si/no): " CONFIRM
+                [ "$CONFIRM" = "si" ] && {
+                    echo -e "  ${Y}Reiniciando en 3 segundos...${NC}"
+                    sleep 3
+                    /sbin/reboot; } ;;
+            0) break ;;
+        esac
+    done
+}
+
 menu_shadowsocks() {
     while true; do
         banner; sep
@@ -1980,7 +2053,7 @@ menu_herramientas() {
         printf " \033[1;97m[7] %-22s [8] %s\033[0m\n" "Banner SSH" "Mejorar Velocidad UDP"
         printf " \033[1;97m[9] %-22s [10] %s\033[0m\n" "Anti-DDoS" "SlowDNS"
         printf " \033[1;97m[11] %-21s [12] %s\033[0m\n" "Dropbear SSH" "UDP Hysteria Mod"
-        printf " \033[1;97m[13] Shadowsocks\033[0m\n"
+        printf " \033[1;97m[13] %-21s [14] %s\033[0m\n" "Shadowsocks" "Limpieza/Auto-reinicio"
         sep
         printf " ${W}[0]${NC} Volver\n"; sep; echo ""
         read -p " Opcion: " OPT
@@ -1999,12 +2072,14 @@ menu_herramientas() {
 
             12) menu_udp_hysteria_mod ;;
             13) menu_shadowsocks ;;
+            14) menu_limpieza ;;
             9) menu_antiddos ;;
             10) menu_slowdns ;;
             11) menu_dropbear ;;
 
             12) menu_udp_hysteria_mod ;;
             13) menu_shadowsocks ;;
+            14) menu_limpieza ;;
             0) break ;;
             *) echo -e "  ${R}Opcion invalida${NC}"; sleep 1 ;;
         esac
@@ -2722,7 +2797,7 @@ menu_herramientas() {
         printf " \033[1;97m[7] %-22s [8] %s\033[0m\n" "Banner SSH" "Mejorar Velocidad UDP"
         printf " \033[1;97m[9] %-22s [10] %s\033[0m\n" "Anti-DDoS" "SlowDNS"
         printf " \033[1;97m[11] %-21s [12] %s\033[0m\n" "Dropbear SSH" "UDP Hysteria Mod"
-        printf " \033[1;97m[13] Shadowsocks\033[0m\n"
+        printf " \033[1;97m[13] %-21s [14] %s\033[0m\n" "Shadowsocks" "Limpieza/Auto-reinicio"
         sep
         printf " ${W}[0]${NC} Volver\n"; sep; echo ""
         read -p " Opcion: " OPT
@@ -2741,12 +2816,14 @@ menu_herramientas() {
 
             12) menu_udp_hysteria_mod ;;
             13) menu_shadowsocks ;;
+            14) menu_limpieza ;;
             9) menu_antiddos ;;
             10) menu_slowdns ;;
             11) menu_dropbear ;;
 
             12) menu_udp_hysteria_mod ;;
             13) menu_shadowsocks ;;
+            14) menu_limpieza ;;
             0) break ;;
             *) echo -e "  ${R}Opcion invalida${NC}"; sleep 1 ;;
         esac
