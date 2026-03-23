@@ -23,6 +23,12 @@ DIR_SCRIPTS="/etc/sshfreeltm"
 DIR_SERVICES="/etc/systemd/system"
 mkdir -p $DIR_SCRIPTS
 
+# Desactivar restricciones PAM de contraseña
+sed -i 's/pam_unix.so obscure/pam_unix.so/' /etc/pam.d/common-password 2>/dev/null
+sed -i 's/use_authtok //' /etc/pam.d/common-password 2>/dev/null
+sed -i '/pam_pwquality/d' /etc/pam.d/common-password 2>/dev/null
+sed -i '/pam_cracklib/d' /etc/pam.d/common-password 2>/dev/null
+
 # Configurar UFW si esta activo
 if command -v ufw > /dev/null 2>&1 && ufw status | grep -q "Status: active"; then
     ufw allow 22/tcp > /dev/null 2>&1
