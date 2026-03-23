@@ -1649,6 +1649,8 @@ WantedBy=multi-user.target
 EOF2
                 systemctl daemon-reload
                 systemctl enable shadowsocks-server
+                # Matar proceso anterior si el puerto esta ocupado
+                pkill -f ss-server 2>/dev/null; sleep 1
                 systemctl start shadowsocks-server
                 iptables -I INPUT -p tcp --dport $SS_PORT -j ACCEPT 2>/dev/null
                 iptables -I INPUT -p udp --dport $SS_PORT -j ACCEPT 2>/dev/null
