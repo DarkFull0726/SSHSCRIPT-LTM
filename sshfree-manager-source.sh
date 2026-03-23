@@ -26,7 +26,14 @@ mkdir -p $DIR_SCRIPTS
 # ══════════════════════════════════════════
 # VERIFICACION DE LICENCIA
 # ══════════════════════════════════════════
-if [ ! -f /etc/sshfreeltm/.licensed ]; then
+# Verificar licencia real
+LICENSED_KEY=""
+[ -f /etc/sshfreeltm/.licensed ] && LICENSED_KEY=$(cat /etc/sshfreeltm/.licensed 2>/dev/null)
+VALID_LICENSE=false
+if [ -n "$LICENSED_KEY" ] && [[ "$LICENSED_KEY" == LTM-SCRIPT-KEY-* ]]; then
+    VALID_LICENSE=true
+fi
+if [ "$VALID_LICENSE" = "false" ]; then
     clear
     echo -e "\033[1;96m"
     figlet -f small "LTM VPN TOOLS" 2>/dev/null || echo "LTM VPN TOOLS"
@@ -44,8 +51,9 @@ if [ ! -f /etc/sshfreeltm/.licensed ]; then
     command -v curl > /dev/null 2>&1 || apt install -y curl > /dev/null 2>&1
     echo -e "  \033[0;36m⏳  Verificando key...\033[0m"
 
-    # Verificar key contra API
-    VERIFY_RESULT=$(curl -s -X POST http://165.245.164.107:6000/api/key/verify         -H "Content-Type: application/json"         -d "{\"key\": \"$INPUT_KEY\"}" 2>/dev/null)
+    VPS_IP=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
+    VPS_OS=$(lsb_release -d 2>/dev/null | cut -f2 || echo "Ubuntu")
+    VERIFY_RESULT=$(curl -s -X POST http://165.245.164.107:6000/api/key/verify -H "Content-Type: application/json" -d "{\"key\": \"$INPUT_KEY\", \"ip\": \"$VPS_IP\", \"os\": \"$VPS_OS\"}" 2>/dev/null)
 
     IS_OK=$(echo $VERIFY_RESULT | python3 -c "import sys,json; print(json.load(sys.stdin).get('ok','false'))" 2>/dev/null)
     ERROR_MSG=$(echo $VERIFY_RESULT | python3 -c "import sys,json; print(json.load(sys.stdin).get('error','Error desconocido'))" 2>/dev/null)
@@ -76,32 +84,6 @@ if [ -d /etc/letsencrypt ]; then
     find /etc/letsencrypt -name "*.pem" -exec chmod 644 {} \; 2>/dev/null
 fi
 
-# Migrar config V2Ray si solo tiene 8080
-if [ -f /usr/local/etc/v2ray/config.json ] && [ -f /etc/sshfreeltm/v2ray_domain ]; then
-    python3 - << MIGEOF
-import json, os
-domain = open('/etc/sshfreeltm/v2ray_domain').read().strip()
-with open('/usr/local/etc/v2ray/config.json') as f: config = json.load(f)
-ports = [ib['port'] for ib in config['inbounds']]
-if 443 not in ports and domain:
-    config['inbounds'].append({
-        "port": 443,
-        "protocol": "vmess",
-        "settings": {"clients": []},
-        "streamSettings": {
-            "network": "ws",
-            "security": "tls",
-            "tlsSettings": {"certificates": [{"certificateFile": f"/etc/letsencrypt/live/{domain}/fullchain.pem","keyFile": f"/etc/letsencrypt/live/{domain}/privkey.pem"}]},
-            "wsSettings": {"path": "/v2ray"}
-        }
-    })
-    with open('/usr/local/etc/v2ray/config.json', 'w') as f: json.dump(config, f, indent=2)
-    import subprocess
-    subprocess.run(['systemctl','stop','nginx'], capture_output=True)
-    subprocess.run(['systemctl','restart','v2ray'], capture_output=True)
-    print("V2Ray actualizado con inbound 443 TLS")
-MIGEOF
-fi
 # Preguntar nombre ASCII al instalar por primera vez
 if [ ! -f /etc/sshfreeltm/server_name ]; then
     mkdir -p /etc/sshfreeltm
@@ -523,129 +505,113 @@ EOF
 
 menu_v2ray() {
     while true; do
-        banner; sep; echo -e "  ${Y}  V2RAY VMESS${NC}"; sep; echo ""
+        banner; sep
+        echo -e "  ${NEON}◆ V2RAY VMESS${NC}"; sep; echo ""
         echo -e "  V2Ray $(status_service v2ray)"
         if [ -f /usr/local/etc/v2ray/config.json ]; then
             python3 -c "
 import json
 try:
     with open('/usr/local/etc/v2ray/config.json') as f: c=json.load(f)
-    for ib in c.get('inbounds',[]):
+    inbounds = c.get('inbounds',[])
+    if not inbounds:
+        print('  \033[2;37m  Sin inbounds configurados\033[0m')
+    for ib in inbounds:
         net=ib.get('streamSettings',{}).get('network','tcp')
         tls=ib.get('streamSettings',{}).get('security','none')
-        print(f'  Puerto \033[1;33m{ib[chr(34)+chr(112)+chr(111)+chr(114)+chr(116)+chr(34)]}\033[0m | {ib[chr(34)+chr(112)+chr(114)+chr(111)+chr(116)+chr(111)+chr(99)+chr(111)+chr(108)+chr(34)]} | {net} | tls:{tls}')
+        tls_icon='\033[1;96m TLS\033[0m' if tls=='tls' else ''
+        print(f'  \033[1;96m◈\033[0m \033[1;97mPuerto \033[1;33m{ib[\"port\"]}\033[0m \033[2;37m|\033[0m \033[1;96m{ib[\"protocol\"]}\033[0m \033[2;37m|\033[0m {net}{tls_icon}')
 except: pass
 " 2>/dev/null
         fi
         echo ""; sep
-        echo -e "  ${W}[1]${NC} Instalar V2Ray + SSL"
-        echo -e "  ${W}[2]${NC} Agregar inbound"
-        echo -e "  ${W}[3]${NC} Iniciar"
-        echo -e "  ${W}[4]${NC} Detener"
-        echo -e "  ${W}[5]${NC} Reiniciar"
-        echo -e "  ${W}[6]${NC} Crear usuario VMess"
-        echo -e "  ${W}[7]${NC} Ver usuarios"
-        echo -e "  ${W}[0]${NC} Volver"; sep
-        read -p "  Opcion: " OPT
+        printf " ${Y}❬1❭ ⚡ Instalar V2Ray      ❬2❭ ➕ Agregar inbound${NC}\n"
+        printf " ${Y}❬3❭ 🗑  Eliminar inbound    ❬4❭ ▶  Iniciar${NC}\n"
+        printf " ${Y}❬5❭ ⏹  Detener             ❬6❭ 🔄 Reiniciar${NC}\n"
+        printf " ${Y}❬7❭ 👤 Crear usuario        ❬8❭ 📋 Ver usuarios${NC}\n"
+        printf " ${R}❬9❭ 🗑  Desinstalar V2Ray${NC}\n"
+        sep
+        printf " ${R}❬0❭ Volver${NC}\n"; sep; echo ""
+        read -p " Opcion: " OPT
         case $OPT in
             1)
-                read -p "  Dominio: " DOMAIN
+                read -p "  Dominio (para SSL): " DOMAIN
                 EMAIL="admin@${DOMAIN#*.}"
                 echo -e "  ${C}Instalando V2Ray...${NC}"
                 bash <(curl -s https://raw.githubusercontent.com/v2fly/fhs-install-v2ray/master/install-release.sh) > /dev/null 2>&1
-                apt install -y nginx certbot python3-certbot-nginx > /dev/null 2>&1
-                pkill -f "python3.*:80" 2>/dev/null
-                systemctl stop nginx 2>/dev/null; sleep 2
                 echo -e "  ${C}Obteniendo certificado SSL...${NC}"
+                apt install -y certbot > /dev/null 2>&1
+                pkill -f "python3.*:80" 2>/dev/null; sleep 1
                 certbot certonly --standalone -d $DOMAIN --non-interactive --agree-tos -m $EMAIL
-                # Dar permisos al certificado
                 chmod 755 /etc/letsencrypt/live/ /etc/letsencrypt/archive/ 2>/dev/null
                 chmod 644 /etc/letsencrypt/live/$DOMAIN/*.pem 2>/dev/null
                 chmod 644 /etc/letsencrypt/archive/$DOMAIN/*.pem 2>/dev/null
-                python3 - << CFGEOF
-import json
-config = {
-    "log": {"loglevel": "warning"},
-    "inbounds": [
-        {
-            "port": 8080,
-            "protocol": "vmess",
-            "settings": {"clients": []},
-            "streamSettings": {"network": "ws", "wsSettings": {"path": "/v2ray"}}
-        },
-        {
-            "port": 443,
-            "protocol": "vmess",
-            "settings": {"clients": []},
-            "streamSettings": {
-                "network": "ws",
-                "security": "tls",
-                "tlsSettings": {
-                    "certificates": [{
-                        "certificateFile": "/etc/letsencrypt/live/$DOMAIN/fullchain.pem",
-                        "keyFile": "/etc/letsencrypt/live/$DOMAIN/privkey.pem"
-                    }]
-                },
-                "wsSettings": {"path": "/v2ray"}
-            }
-        }
-    ],
-    "outbounds": [{"protocol": "freedom"}]
-}
-with open('/usr/local/etc/v2ray/config.json', 'w') as f: json.dump(config, f, indent=2)
-print("Config creado")
-CFGEOF
-                systemctl stop nginx 2>/dev/null
-                systemctl enable v2ray; systemctl start v2ray
+                cat > /usr/local/etc/v2ray/config.json << EOF
+{"log":{"loglevel":"warning"},"inbounds":[],"outbounds":[{"protocol":"freedom"}]}
+EOF
                 mkdir -p /etc/sshfreeltm
                 echo "$DOMAIN" > /etc/sshfreeltm/v2ray_domain
-                echo -e "  ${G}OK V2Ray instalado${NC}"; sleep 2 ;;
+                systemctl enable v2ray; systemctl start v2ray
+                echo -e "  ${G}OK V2Ray instalado — Usa ❬2❭ para agregar puertos${NC}"; sleep 2 ;;
             2)
                 banner; sep
                 echo -e "  ${Y}  AGREGAR INBOUND${NC}"; sep; echo ""
                 read -p "  Puerto: " V2_PORT
-                echo -e "  Protocolo: ${W}[1]${NC} vmess ${W}[2]${NC} vless ${W}[3]${NC} trojan"
+                echo -e "  Protocolo: ${Y}❬1❭${NC} vmess ${Y}❬2❭${NC} vless ${Y}❬3❭${NC} trojan"
                 read -p "  Opcion: " V2_PROTO_OPT
                 case $V2_PROTO_OPT in
-                    1) V2_PROTO="vmess" ;;
-                    2) V2_PROTO="vless" ;;
-                    3) V2_PROTO="trojan" ;;
-                    *) V2_PROTO="vmess" ;;
+                    1) V2_PROTO="vmess" ;; 2) V2_PROTO="vless" ;; 3) V2_PROTO="trojan" ;; *) V2_PROTO="vmess" ;;
                 esac
-                echo -e "  Red: ${W}[1]${NC} ws ${W}[2]${NC} tcp ${W}[3]${NC} xhttp ${W}[4]${NC} grpc"
+                echo -e "  Red: ${Y}❬1❭${NC} ws ${Y}❬2❭${NC} tcp ${Y}❬3❭${NC} xhttp ${Y}❬4❭${NC} grpc"
                 read -p "  Opcion: " V2_NET_OPT
                 case $V2_NET_OPT in
-                    1) V2_NET="ws" ;;
-                    2) V2_NET="tcp" ;;
-                    3) V2_NET="xhttp" ;;
-                    4) V2_NET="grpc" ;;
-                    *) V2_NET="ws" ;;
+                    1) V2_NET="ws" ;; 2) V2_NET="tcp" ;; 3) V2_NET="xhttp" ;; 4) V2_NET="grpc" ;; *) V2_NET="ws" ;;
                 esac
-                read -p "  Path (ej: /v2ray): " V2_PATH
-                V2_PATH=${V2_PATH:-/v2ray}
-                echo -e "  TLS: ${W}[1]${NC} Si ${W}[2]${NC} No"
+                read -p "  Path (ej: /v2ray): " V2_PATH; V2_PATH=${V2_PATH:-/v2ray}
+                echo -e "  TLS: ${Y}❬1❭${NC} Si ${Y}❬2❭${NC} No"
                 read -p "  Opcion: " V2_TLS_OPT
                 [ "$V2_TLS_OPT" = "1" ] && V2_TLS="tls" || V2_TLS="none"
-                python3 - << ADDEOF
-import json, sys
+                python3 - << PYEOF
+import json, os
 port, proto, net, path, tls = int("$V2_PORT"), "$V2_PROTO", "$V2_NET", "$V2_PATH", "$V2_TLS"
 with open('/usr/local/etc/v2ray/config.json') as f: config = json.load(f)
 ib = {"port": port, "protocol": proto, "settings": {"clients": []}, "streamSettings": {"network": net, "security": tls}}
 if net == "ws": ib["streamSettings"]["wsSettings"] = {"path": path}
 elif net == "xhttp": ib["streamSettings"]["xhttpSettings"] = {"path": path}
 elif net == "grpc": ib["streamSettings"]["grpcSettings"] = {"serviceName": path.strip("/")}
+if tls == "tls":
+    domain = open('/etc/sshfreeltm/v2ray_domain').read().strip() if os.path.exists('/etc/sshfreeltm/v2ray_domain') else ''
+    ib["streamSettings"]["tlsSettings"] = {"certificates": [{"certificateFile": f"/etc/letsencrypt/live/{domain}/fullchain.pem","keyFile": f"/etc/letsencrypt/live/{domain}/privkey.pem"}]}
 config["inbounds"].append(ib)
 with open('/usr/local/etc/v2ray/config.json', 'w') as f: json.dump(config, f, indent=2)
 print(f"OK {proto} {net} puerto {port}")
-ADDEOF
-                systemctl restart v2ray
-                echo -e "  ${G}OK Inbound agregado${NC}"; read -p "  ENTER..." ;;
-            3) systemctl start v2ray && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
-            4) systemctl stop v2ray && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            5) systemctl restart v2ray && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
-            6)
-                banner; sep
-                echo -e "  ${Y}  CREAR USUARIO VMESS${NC}"; sep; echo ""
+PYEOF
+                systemctl restart v2ray; echo -e "  ${G}OK Inbound agregado${NC}"; read -p "  ENTER..." ;;
+            3)
+                banner; sep; echo -e "  ${R}  ELIMINAR INBOUND${NC}"; sep; echo ""
+                python3 -c "
+import json
+with open('/usr/local/etc/v2ray/config.json') as f: c=json.load(f)
+for i,ib in enumerate(c.get('inbounds',[])):
+    print(f'  [{i+1}] Puerto {ib[\"port\"]} | {ib[\"protocol\"]}')
+" 2>/dev/null
+                echo ""; read -p "  Numero a eliminar: " DEL_NUM
+                python3 - << PYEOF
+import json
+with open('/usr/local/etc/v2ray/config.json') as f: config = json.load(f)
+idx = int("$DEL_NUM") - 1
+if 0 <= idx < len(config['inbounds']):
+    removed = config['inbounds'].pop(idx)
+    with open('/usr/local/etc/v2ray/config.json', 'w') as f: json.dump(config, f, indent=2)
+    print(f"OK Puerto {removed['port']} eliminado")
+else: print("Numero invalido")
+PYEOF
+                systemctl restart v2ray; sleep 1 ;;
+            4) systemctl start v2ray && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
+            5) systemctl stop v2ray && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
+            6) systemctl restart v2ray && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
+            7)
+                banner; sep; echo -e "  ${Y}  CREAR USUARIO VMESS${NC}"; sep; echo ""
                 python3 -c "
 import json
 with open('/usr/local/etc/v2ray/config.json') as f: c=json.load(f)
@@ -654,15 +620,13 @@ for i,ib in enumerate(c.get('inbounds',[])):
     tls=ib.get('streamSettings',{}).get('security','none')
     print(f'  [{i+1}] Puerto {ib[\"port\"]} | {ib[\"protocol\"]} | {net} | tls:{tls}')
 " 2>/dev/null
-                echo ""
-                read -p "  Numero de inbound: " IB_NUM
+                echo ""; read -p "  Numero de inbound: " IB_NUM
                 IB_IDX=$((IB_NUM - 1))
                 read -p "  Nombre del perfil: " VNAME
-                read -p "  Dias de validez (default 30): " V2_DAYS
-                V2_DAYS=${V2_DAYS:-30}
+                read -p "  Dias de validez (default 30): " V2_DAYS; V2_DAYS=${V2_DAYS:-30}
                 EXP_SHOW=$(date -d "+${V2_DAYS} days" +%d/%m/%Y)
                 VDOMAIN=$(cat /etc/sshfreeltm/v2ray_domain 2>/dev/null || hostname -I | awk '{print $1}')
-                python3 - << VMEOF
+                python3 - << PYEOF
 import json, uuid, base64, datetime
 idx, name, days, domain = int("$IB_IDX"), "$VNAME", int("$V2_DAYS"), "$VDOMAIN"
 with open('/usr/local/etc/v2ray/config.json') as f: config = json.load(f)
@@ -671,24 +635,34 @@ if idx >= len(inbounds): print("Inbound no encontrado"); exit(1)
 ib = inbounds[idx]
 uid = str(uuid.uuid4())
 exp = (datetime.datetime.now() + datetime.timedelta(days=days)).strftime("%Y-%m-%d")
-exp_show = (datetime.datetime.now() + datetime.timedelta(days=days)).strftime("%d/%m/%Y")
 if 'clients' not in ib['settings']: ib['settings']['clients'] = []
 ib['settings']['clients'].append({"id": uid, "alterId": 0, "email": name, "expires": exp})
 with open('/usr/local/etc/v2ray/config.json', 'w') as f: json.dump(config, f, indent=2)
 net = ib.get('streamSettings', {}).get('network', 'tcp')
 tls = ib.get('streamSettings', {}).get('security', 'none')
 path = ib.get('streamSettings', {}).get('wsSettings', {}).get('path', '/v2ray') if net == 'ws' else ''
-# Si el puerto es 8080 (interno nginx), usar 443 con TLS en el link
 out_port = "443" if ib['port'] == 8080 else str(ib['port'])
 out_tls = "tls" if ib['port'] == 8080 else (tls if tls != "none" else "")
 vmess = {"v":"2","ps":name,"add":domain,"port":out_port,"id":uid,"aid":"0","net":net,"type":"none","host":domain,"path":path,"tls":out_tls}
 link = "vmess://" + base64.b64encode(json.dumps(vmess).encode()).decode()
-print("VMess: " + link)
-print("Expira: " + exp_show + " (" + str(days) + " dias)")
-print(f"[1;33mExpira:[0m {exp_show} ({days} dias)")
-VMEOF
+print("")
+print("\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m")
+print("  \033[1;32m✅ CUENTA VMESS CREADA\033[0m")
+print("\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m")
+print(f"  \033[1;96m◈\033[0m \033[2;37mPerfil :\033[0m  \033[1;97m{name}\033[0m")
+print(f"  \033[1;96m◈\033[0m \033[2;37mHost   :\033[0m  \033[1;97m{domain}\033[0m")
+print(f"  \033[1;96m◈\033[0m \033[2;37mPuerto :\033[0m  \033[1;33m{out_port}\033[0m")
+print(f"  \033[1;96m◈\033[0m \033[2;37mRed    :\033[0m  \033[1;96m{net}\033[0m")
+print(f"  \033[1;96m◈\033[0m \033[2;37mExpira :\033[0m  \033[1;33m$EXP_SHOW\033[0m")
+print("\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m")
+print("  \033[1;96m🔑 VMESS LINK:\033[0m")
+print("")
+print("\033[1;97m" + link + "\033[0m")
+print("")
+print("\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m")
+PYEOF
                 systemctl restart v2ray; read -p "  ENTER..." ;;
-            7)
+            8)
                 python3 -c "
 import json
 try:
@@ -696,13 +670,23 @@ try:
     for ib in c['inbounds']:
         print(f'  Puerto {ib[\"port\"]}:')
         for u in ib['settings'].get('clients',[]):
-            print(f'    - {u.get(\"email\",\"?\")} | expira: {u.get(\"expires\",\"sin expiracion\")}')
+            print(f'    - {u.get(\"email\",\"?\")} | expira: {u.get(\"expires\",\"sin exp\")}')
 except Exception as e: print(f'Error: {e}')
 "; read -p "  ENTER..." ;;
+            9)
+                read -p "  Confirmar desinstalar V2Ray (si/no): " CONFIRM
+                if [ "$CONFIRM" = "si" ]; then
+                    systemctl stop v2ray; systemctl disable v2ray
+                    bash <(curl -s https://raw.githubusercontent.com/v2fly/fhs-install-v2ray/master/install-release.sh) --remove > /dev/null 2>&1
+                    rm -f /etc/sshfreeltm/v2ray_domain
+                    echo -e "  ${G}OK V2Ray desinstalado${NC}"; sleep 2
+                fi ;;
             0) break ;;
+            *) echo -e "  ${R}Opcion invalida${NC}"; sleep 1 ;;
         esac
     done
 }
+
 
 
 # ══════════════════════════════════════════
@@ -1066,10 +1050,12 @@ actualizar_script() {
     banner; sep
     echo -e "  ${Y}  ACTUALIZAR SCRIPT${NC}"; sep; echo ""
     echo -e "  ${C}Descargando ultima version...${NC}"
-    wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/DarkFull0726/SSHSCRIPT-LTM/main/sshscript-ltm.sh"
+    echo -e "  ${C}Descargando ultima version...${NC}"
+    wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/DarkFull0726/SSHSCRIPT-LTM/main/sshscript-ltm.sh?$(date +%s)"
     chmod +x /usr/local/bin/menu
-    echo -e "  ${G}OK Script actualizado${NC}"
-    echo -e "  ${Y}Reinicia el menu para aplicar cambios${NC}"
+    mkdir -p /etc/sshfreeltm
+    touch /etc/sshfreeltm/.licensed
+    echo -e "  ${G}OK Script actualizado a v$(grep SCRIPT_VERSION /usr/local/bin/menu | head -1 | grep -o '[0-9.]*')${NC}"
     sleep 2
     exec /usr/local/bin/menu
 }
@@ -1078,10 +1064,12 @@ actualizar_script() {
     banner; sep
     echo -e "  ${Y}  ACTUALIZAR SCRIPT${NC}"; sep; echo ""
     echo -e "  ${C}Descargando ultima version...${NC}"
-    wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/DarkFull0726/SSHSCRIPT-LTM/main/sshscript-ltm.sh"
+    echo -e "  ${C}Descargando ultima version...${NC}"
+    wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/DarkFull0726/SSHSCRIPT-LTM/main/sshscript-ltm.sh?$(date +%s)"
     chmod +x /usr/local/bin/menu
-    echo -e "  ${G}OK Script actualizado${NC}"
-    echo -e "  ${Y}Reinicia el menu para aplicar cambios${NC}"
+    mkdir -p /etc/sshfreeltm
+    touch /etc/sshfreeltm/.licensed
+    echo -e "  ${G}OK Script actualizado a v$(grep SCRIPT_VERSION /usr/local/bin/menu | head -1 | grep -o '[0-9.]*')${NC}"
     sleep 2
     exec /usr/local/bin/menu
 }
@@ -1222,10 +1210,12 @@ actualizar_script() {
     banner; sep
     echo -e "  ${Y}  ACTUALIZAR SCRIPT${NC}"; sep; echo ""
     echo -e "  ${C}Descargando ultima version...${NC}"
-    wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/DarkFull0726/SSHSCRIPT-LTM/main/sshscript-ltm.sh"
+    echo -e "  ${C}Descargando ultima version...${NC}"
+    wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/DarkFull0726/SSHSCRIPT-LTM/main/sshscript-ltm.sh?$(date +%s)"
     chmod +x /usr/local/bin/menu
-    echo -e "  ${G}OK Script actualizado${NC}"
-    echo -e "  ${Y}Reinicia el menu para aplicar cambios${NC}"
+    mkdir -p /etc/sshfreeltm
+    touch /etc/sshfreeltm/.licensed
+    echo -e "  ${G}OK Script actualizado a v$(grep SCRIPT_VERSION /usr/local/bin/menu | head -1 | grep -o '[0-9.]*')${NC}"
     sleep 2
     exec /usr/local/bin/menu
 }
@@ -1598,22 +1588,277 @@ menu_banner_ssh() {
     done
 }
 
+menu_udp_hysteria_mod() {
+    while true; do
+        banner; sep
+        echo -e "  ${NEON}◆ UDP HYSTERIA MOD${NC}"; sep; echo ""
+        HM_ST=$(systemctl is-active hysteria-server 2>/dev/null)
+        [ "$HM_ST" = "active" ] && echo -e "  ${NEON}◈${NC} ${W}UDP Hysteria Mod${NC} ${NEON}◆ ON${NC}" || echo -e "  ${NEON}◈${NC} ${W}UDP Hysteria Mod${NC} ${R}◇ OFF${NC}"
+        HM_IP=$(hostname -I | awk '{print $1}')
+        echo -e "  ${NEON}◈${NC} ${W}IP:${NC}   ${Y}${HM_IP}${NC}"
+        HM_OBFS_NOW=$(python3 -c "import json; c=json.load(open('/etc/hysteria/config.json')); print(c.get('obfs','ltmudp'))" 2>/dev/null || echo "ltmudp")
+        echo -e "  ${NEON}◈${NC} ${W}Obfs:${NC} ${Y}${HM_OBFS_NOW}${NC}"
+        echo ""; sep
+        printf " ${Y}❬1❭ Instalar    ❬2❭ Iniciar    ❬3❭ Detener${NC}\n"
+        printf " ${Y}❬4❭ Reiniciar   ❬5❭ Agregar usuario${NC}\n"
+        printf " ${Y}❬6❭ Ver usuarios    ❬7❭ Cambiar obfs${NC}\n"
+        printf " ${R}❬8❭ Desinstalar${NC}\n"
+        sep; printf " ${R}❬0❭ Volver${NC}\n"; sep; echo ""
+        read -p " Opcion: " OPT
+        case $OPT in
+            1)
+                echo -e "\n  ${C}Instalando UDP Hysteria Mod...${NC}"
+                curl -sL https://raw.githubusercontent.com/JotchuaDevz/JT-UDP-DEV/refs/heads/main/install_udp.sh -o /tmp/ltmudp_install.sh
+                sed -i 's/DOMAIN="requestlab-x.space"/DOMAIN="ltm.darkfullhn.xyz"/' /tmp/ltmudp_install.sh
+                sed -i 's/OBFS="jt"/OBFS="ltmudp"/' /tmp/ltmudp_install.sh
+                sed -i 's/PASSWORD="jt"/PASSWORD="ltmudp"/' /tmp/ltmudp_install.sh
+                bash /tmp/ltmudp_install.sh > /tmp/ltmudp_out.txt 2>&1
+                grep -v "JT-UDP\|Felicitaciones\|gestor\|udp'\|Ahora puedes\|Script del gestor\|Creando enlace\|Descargando script" /tmp/ltmudp_out.txt | sed 's/JT-UDP/LTMUDPv1/g'
+                echo -e "  ${G}OK Instalado${NC}"
+                read -p "  ENTER..." ;;
+            2) systemctl start hysteria-server && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
+            3) systemctl stop hysteria-server && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
+            4) systemctl restart hysteria-server && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
+            5)
+                banner; sep; echo -e "  ${Y}AGREGAR USUARIO${NC}"; sep; echo ""
+                read -p "  Usuario: " HM_USER
+                read -p "  Password: " HM_PASS
+                read -p "  Dias (default 30): " HM_DAYS; HM_DAYS=${HM_DAYS:-30}
+                HM_EXP=$(date -d "+${HM_DAYS} days" +%d/%m/%Y)
+                python3 -c "
+import json
+with open('/etc/hysteria/config.json') as f: c=json.load(f)
+users = c.get('auth',{}).get('config',[])
+entry = '$HM_USER:$HM_PASS'
+if entry not in users: users.append(entry)
+c['auth']['config'] = users
+with open('/etc/hysteria/config.json','w') as f: json.dump(c,f,indent=2)
+print('OK')
+"
+                systemctl restart hysteria-server
+                HM_IP=$(hostname -I | awk '{print $1}')
+                echo ""
+                echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+                echo -e "  ${G}✅ USUARIO CREADO${NC}"
+                echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+                echo -e "  ${NEON}◈${NC} ${W}Usuario:${NC}  ${Y}$HM_USER${NC}"
+                echo -e "  ${NEON}◈${NC} ${W}Password:${NC} ${Y}$HM_PASS${NC}"
+                echo -e "  ${NEON}◈${NC} ${W}IP:${NC}       ${Y}$HM_IP${NC}"
+                echo -e "  ${NEON}◈${NC} ${W}Puerto:${NC}   ${Y}36712${NC}"
+                HM_OBFS_NOW=$(python3 -c "import json; c=json.load(open('/etc/hysteria/config.json')); print(c.get('obfs','ltmudp'))" 2>/dev/null || echo "ltmudp")
+                echo -e "  ${NEON}◈${NC} ${W}Obfs:${NC}     ${Y}${HM_OBFS_NOW}${NC}"
+                echo -e "  ${NEON}◈${NC} ${W}Expira:${NC}   ${Y}$HM_EXP${NC}"
+                echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+                read -p "  ENTER..." ;;
+            6)
+                echo ""; echo -e "  ${W}Usuarios:${NC}"; echo ""
+                echo -e "  ${NEON}◈${NC} ${DIM}Usuario : Password${NC}"; echo ""
+                python3 -c "
+import json
+with open('/etc/hysteria/config.json') as f: c=json.load(f)
+users = c.get('auth',{}).get('config',[])
+for u in users: print('  ' + u)
+" 2>/dev/null || echo "  No instalado"
+                echo ""; read -p "  ENTER..." ;;
+            7)
+                banner; sep; echo -e "  ${Y}CAMBIAR OBFS${NC}"; sep; echo ""
+                CURRENT_OBFS=$(grep -o '"obfs":"[^"]*"' /etc/hysteria/config.json 2>/dev/null | cut -d'"' -f4 || echo "ltmudp")
+                echo -e "  ${NEON}◈${NC} ${W}Obfs actual:${NC} ${Y}$CURRENT_OBFS${NC}"; echo ""
+                read -p "  Nuevo obfs: " NEW_OBFS
+                [ -z "$NEW_OBFS" ] && echo -e "  ${R}Cancelado${NC}" && sleep 1 && continue
+                python3 -c "
+import json
+with open('/etc/hysteria/config.json') as f: c=json.load(f)
+c['obfs'] = '$NEW_OBFS'
+with open('/etc/hysteria/config.json','w') as f: json.dump(c,f,indent=2)
+print('OK')
+" 2>/dev/null
+                systemctl restart hysteria-server
+                echo -e "  ${G}Obfs cambiado a: ${Y}$NEW_OBFS${NC}"; sleep 2 ;;
+            8)
+                read -p "  Confirmar (si/no): " CONFIRM
+                [ "$CONFIRM" = "si" ] && {
+                    systemctl stop hysteria-server 2>/dev/null
+                    systemctl disable hysteria-server 2>/dev/null
+                    rm -f /etc/systemd/system/hysteria-server.service
+                    rm -f /usr/local/bin/hysteria
+                    rm -rf /etc/hysteria
+                    systemctl daemon-reload
+                    echo -e "  ${G}Desinstalado${NC}"; sleep 2; } ;;
+            0) break ;;
+        esac
+    done
+}
+
+
+
+menu_hysteria() {
+    while true; do
+        banner; sep
+        echo -e "  ${NEON}◆ HYSTERIA UDP${NC}"; sep; echo ""
+        H1_ST=$(systemctl is-active hysteria-server 2>/dev/null)
+        H2_ST=$(systemctl is-active hysteria2-server 2>/dev/null)
+        [ "$H1_ST" = "active" ] && echo -e "  ${NEON}◈${NC} ${W}Hysteria V1${NC} ${NEON}◆ ON${NC}" || echo -e "  ${NEON}◈${NC} ${W}Hysteria V1${NC} ${R}◇ OFF${NC}"
+        [ "$H2_ST" = "active" ] && echo -e "  ${NEON}◈${NC} ${W}Hysteria V2${NC} ${NEON}◆ ON${NC}" || echo -e "  ${NEON}◈${NC} ${W}Hysteria V2${NC} ${R}◇ OFF${NC}"
+        echo ""; sep
+        printf " ${Y}❬1❭ Instalar Hysteria V1    ❬2❭ Instalar Hysteria V2${NC}\n"
+        printf " ${Y}❬3❭ Iniciar V1              ❬4❭ Iniciar V2${NC}\n"
+        printf " ${Y}❬5❭ Detener V1              ❬6❭ Detener V2${NC}\n"
+        printf " ${Y}❬7❭ Ver config V1           ❬8❭ Ver config V2${NC}\n"
+        printf " ${R}❬9❭ Desinstalar V1          ❬10❭ Desinstalar V2${NC}\n"
+        sep
+        printf " ${R}❬0❭ Volver${NC}\n"; sep; echo ""
+        read -p " Opcion: " OPT
+        case $OPT in
+            1)
+                echo -e "\n  ${C}Instalando Hysteria V1...${NC}"
+                apt install -y wget > /dev/null 2>&1
+                wget -q -O /usr/local/bin/hysteria-v1 https://github.com/HyNetwork/hysteria/releases/download/v1.3.5/hysteria-linux-amd64
+                chmod +x /usr/local/bin/hysteria-v1
+                read -p "  Puerto UDP (default 36712): " H1_PORT; H1_PORT=${H1_PORT:-36712}
+                read -p "  Password: " H1_PASS; H1_PASS=${H1_PASS:-"ltmssh2026"}
+                read -p "  Dominio (para TLS, deja vacio para self-signed): " H1_DOMAIN
+                mkdir -p /etc/hysteria
+                if [ -n "$H1_DOMAIN" ]; then
+                    apt install -y certbot > /dev/null 2>&1
+                    certbot certonly --standalone -d $H1_DOMAIN --non-interactive --agree-tos -m admin@${H1_DOMAIN#*.} 2>/dev/null
+                    CERT_FILE="/etc/letsencrypt/live/$H1_DOMAIN/fullchain.pem"
+                    KEY_FILE="/etc/letsencrypt/live/$H1_DOMAIN/privkey.pem"
+                else
+                    openssl req -x509 -nodes -newkey ec:<(openssl ecparam -name prime256v1) \
+                        -keyout /etc/hysteria/server.key -out /etc/hysteria/server.crt \
+                        -subj "/CN=hysteria" -days 36500 2>/dev/null
+                    CERT_FILE="/etc/hysteria/server.crt"
+                    KEY_FILE="/etc/hysteria/server.key"
+                fi
+                cat > /etc/hysteria/config.json << EOF
+{
+  "listen": ":$H1_PORT",
+  "cert": "$CERT_FILE",
+  "key": "$KEY_FILE",
+  "auth": {
+    "mode": "password",
+    "config": {"password": "$H1_PASS"}
+  },
+  "obfs": "ltmssh",
+  "up_mbps": 100,
+  "down_mbps": 100
+}
+EOF
+                cat > /etc/systemd/system/hysteria-server.service << EOF
+[Unit]
+Description=Hysteria V1 Server
+After=network.target
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/hysteria-v1 server --config /etc/hysteria/config.json
+Restart=always
+RestartSec=3
+[Install]
+WantedBy=multi-user.target
+EOF
+                systemctl daemon-reload
+                systemctl enable hysteria-server
+                systemctl start hysteria-server
+                iptables -I INPUT -p udp --dport $H1_PORT -j ACCEPT 2>/dev/null
+                echo -e "  ${G}OK Hysteria V1 instalado${NC}"
+                echo -e "  ${NEON}◈${NC} Puerto: ${Y}$H1_PORT${NC}"
+                echo -e "  ${NEON}◈${NC} Password: ${Y}$H1_PASS${NC}"
+                echo -e "  ${NEON}◈${NC} Obfs: ${Y}ltmssh${NC}"
+                read -p "  ENTER..." ;;
+            2)
+                echo -e "\n  ${C}Instalando Hysteria V2...${NC}"
+                apt install -y wget > /dev/null 2>&1
+                wget -q -O /usr/local/bin/hysteria2 https://github.com/apernet/hysteria/releases/latest/download/hysteria-linux-amd64
+                # hysteria2 es el mismo binario de apernet pero con nombre diferente
+                chmod +x /usr/local/bin/hysteria2
+                read -p "  Puerto UDP (default 8443): " H2_PORT; H2_PORT=${H2_PORT:-8443}
+                read -p "  Password: " H2_PASS; H2_PASS=${H2_PASS:-"ltmssh2026"}
+                read -p "  Dominio (deja vacio para self-signed): " H2_DOMAIN
+                mkdir -p /etc/hysteria2
+                if [ -n "$H2_DOMAIN" ]; then
+                    apt install -y certbot > /dev/null 2>&1
+                    certbot certonly --standalone -d $H2_DOMAIN --non-interactive --agree-tos -m admin@${H2_DOMAIN#*.} 2>/dev/null
+                    CERT2_FILE="/etc/letsencrypt/live/$H2_DOMAIN/fullchain.pem"
+                    KEY2_FILE="/etc/letsencrypt/live/$H2_DOMAIN/privkey.pem"
+                else
+                    openssl req -x509 -nodes -newkey ec:<(openssl ecparam -name prime256v1) \
+                        -keyout /etc/hysteria2/server.key -out /etc/hysteria2/server.crt \
+                        -subj "/CN=hysteria2" -days 36500 2>/dev/null
+                    CERT2_FILE="/etc/hysteria2/server.crt"
+                    KEY2_FILE="/etc/hysteria2/server.key"
+                fi
+                cat > /etc/hysteria2/config.yaml << EOF
+listen: :$H2_PORT
+tls:
+  cert: $CERT2_FILE
+  key: $KEY2_FILE
+auth:
+  type: password
+  password: $H2_PASS
+masquerade:
+  type: proxy
+  proxy:
+    url: https://news.ycombinator.com/
+    rewriteHost: true
+EOF
+                cat > /etc/systemd/system/hysteria2-server.service << EOF
+[Unit]
+Description=Hysteria V2 Server
+After=network.target
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/hysteria2 server --config /etc/hysteria2/config.yaml
+Restart=always
+RestartSec=3
+[Install]
+WantedBy=multi-user.target
+EOF
+                systemctl daemon-reload
+                systemctl enable hysteria2-server
+                systemctl start hysteria2-server
+                iptables -I INPUT -p udp --dport $H2_PORT -j ACCEPT 2>/dev/null
+                echo -e "  ${G}OK Hysteria V2 instalado${NC}"
+                echo -e "  ${NEON}◈${NC} Puerto: ${Y}$H2_PORT${NC}"
+                echo -e "  ${NEON}◈${NC} Password: ${Y}$H2_PASS${NC}"
+                read -p "  ENTER..." ;;
+            3) systemctl start hysteria-server && echo -e "  ${G}Hysteria V1 iniciado${NC}"; sleep 1 ;;
+            4) systemctl start hysteria2-server && echo -e "  ${G}Hysteria V2 iniciado${NC}"; sleep 1 ;;
+            5) systemctl stop hysteria-server && echo -e "  ${Y}Hysteria V1 detenido${NC}"; sleep 1 ;;
+            6) systemctl stop hysteria2-server && echo -e "  ${Y}Hysteria V2 detenido${NC}"; sleep 1 ;;
+            7) cat /etc/hysteria/config.json 2>/dev/null || echo "No instalado"; echo ""; read -p "  ENTER..." ;;
+            8) cat /etc/hysteria2/config.yaml 2>/dev/null || echo "No instalado"; echo ""; read -p "  ENTER..." ;;
+            9)
+                systemctl stop hysteria-server; systemctl disable hysteria-server
+                rm -f /usr/local/bin/hysteria /etc/systemd/system/hysteria-server.service
+                rm -rf /etc/hysteria; systemctl daemon-reload
+                echo -e "  ${G}Hysteria V1 desinstalado${NC}"; sleep 2 ;;
+            10)
+                systemctl stop hysteria2-server; systemctl disable hysteria2-server
+                rm -f /usr/local/bin/hysteria2 /etc/systemd/system/hysteria2-server.service
+                rm -rf /etc/hysteria2; systemctl daemon-reload
+                echo -e "  ${G}Hysteria V2 desinstalado${NC}"; sleep 2 ;;
+            0) break ;;
+        esac
+    done
+}
+
 menu_herramientas() {
     while true; do
         banner; sep
         echo -e "  ${Y}  HERRAMIENTAS Y PROTOCOLOS${NC}"; sep; echo ""
-        printf " ${C}∘${NC} WebSocket  %-13b ${C}∘${NC} BadVPN 7200 %b\n" "$(status_port 80)" "$(status_service badvpn-7200)"
-        printf " ${C}∘${NC} UDP Custom %-12b ${C}∘${NC} BadVPN 7300 %b\n" "$(ps aux | grep -i UDP-Custom | grep -v grep | grep -q . && echo -e "${G}[ON]${NC}" || echo -e "${R}[OFF]${NC}")" "$(status_service badvpn-7300)"
-        printf " ${C}∘${NC} SSL/TLS    %-12b ${C}∘${NC} V2Ray       %b\n" "$(status_service stunnel4)" "$(status_service v2ray)"
-        printf " ${C}∘${NC} ZIV VPN   %-12b ${C}∘${NC} SlowDNS %b\n" "$(status_service zivpn)" "$(status_service server-sldns)"
-        printf " ${C}∘${NC} Dropbear  %b\n" "$(status_service dropbear)"
+        printf " ${NEON}◈${NC} ${W}WebSocket${NC}  %-12b ${NEON}◈${NC} ${W}BadVPN 7200${NC} %b\n" "$(status_port 80)" "$(status_service badvpn-7200)"
+        printf " ${NEON}◈${NC} ${W}UDP Custom${NC} %-11b ${NEON}◈${NC} ${W}BadVPN 7300${NC} %b\n" "$(ps aux | grep -i UDP-Custom | grep -v grep | grep -q . && echo -e "${NEON}◆ ON${NC}" || echo -e "${R}◇ OFF${NC}")" "$(status_service badvpn-7300)"
+        printf " ${NEON}◈${NC} ${W}SSL/TLS${NC}    %-12b ${NEON}◈${NC} ${W}V2Ray${NC}       %b\n" "$(status_service stunnel4)" "$(status_service v2ray)"
+        printf " ${NEON}◈${NC} ${W}ZIV VPN${NC}   %-12b ${NEON}◈${NC} ${W}SlowDNS${NC}     %b\n" "$(status_service zivpn)" "$(status_service server-sldns)"
+        printf " ${NEON}◈${NC} ${W}Dropbear${NC}  %-12b ${NEON}◈${NC} ${W}LTMUDPv1${NC}    %b\n" "$(status_service dropbear)" "$(status_service hysteria-server)"
         echo ""; sep
         printf " ${W}[1]${NC} %-22s ${W}[2]${NC} %s\n" "WebSocket Python" "BadVPN UDP"
         printf " ${W}[3]${NC} %-22s ${W}[4]${NC} %s\n" "UDP Custom" "SSL/TLS Stunnel"
         printf " ${W}[5]${NC} %-22s ${W}[6]${NC} %s\n" "V2Ray VMess" "ZIV VPN"
         printf " ${W}[7]${NC} %-22s ${W}[8]${NC} %s\n" "Banner SSH" "Mejorar Velocidad UDP"
         printf " ${W}[9]${NC} %-22s ${W}[10]${NC} %s\n" "Anti-DDoS" "SlowDNS"
-        printf " ${W}[11]${NC} Dropbear SSH\n"
+        printf " ${W}[11]${NC} %-22s ${W}[12]${NC} %s\n" "Dropbear SSH" "UDP Hysteria Mod"
         sep
         printf " ${W}[0]${NC} Volver\n"; sep; echo ""
         read -p " Opcion: " OPT
@@ -1629,9 +1874,13 @@ menu_herramientas() {
             9) menu_antiddos ;;
             10) menu_slowdns ;;
             11) menu_dropbear ;;
+
+            12) menu_udp_hysteria_mod ;;
             9) menu_antiddos ;;
             10) menu_slowdns ;;
             11) menu_dropbear ;;
+
+            12) menu_udp_hysteria_mod ;;
             0) break ;;
             *) echo -e "  ${R}Opcion invalida${NC}"; sleep 1 ;;
         esac
@@ -1642,10 +1891,12 @@ actualizar_script() {
     banner; sep
     echo -e "  ${Y}  ACTUALIZAR SCRIPT${NC}"; sep; echo ""
     echo -e "  ${C}Descargando ultima version...${NC}"
-    wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/DarkFull0726/SSHSCRIPT-LTM/main/sshscript-ltm.sh"
+    echo -e "  ${C}Descargando ultima version...${NC}"
+    wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/DarkFull0726/SSHSCRIPT-LTM/main/sshscript-ltm.sh?$(date +%s)"
     chmod +x /usr/local/bin/menu
-    echo -e "  ${G}OK Script actualizado${NC}"
-    echo -e "  ${Y}Reinicia el menu para aplicar cambios${NC}"
+    mkdir -p /etc/sshfreeltm
+    touch /etc/sshfreeltm/.licensed
+    echo -e "  ${G}OK Script actualizado a v$(grep SCRIPT_VERSION /usr/local/bin/menu | head -1 | grep -o '[0-9.]*')${NC}"
     sleep 2
     exec /usr/local/bin/menu
 }
@@ -1654,10 +1905,12 @@ actualizar_script() {
     banner; sep
     echo -e "  ${Y}  ACTUALIZAR SCRIPT${NC}"; sep; echo ""
     echo -e "  ${C}Descargando ultima version...${NC}"
-    wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/DarkFull0726/SSHSCRIPT-LTM/main/sshscript-ltm.sh"
+    echo -e "  ${C}Descargando ultima version...${NC}"
+    wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/DarkFull0726/SSHSCRIPT-LTM/main/sshscript-ltm.sh?$(date +%s)"
     chmod +x /usr/local/bin/menu
-    echo -e "  ${G}OK Script actualizado${NC}"
-    echo -e "  ${Y}Reinicia el menu para aplicar cambios${NC}"
+    mkdir -p /etc/sshfreeltm
+    touch /etc/sshfreeltm/.licensed
+    echo -e "  ${G}OK Script actualizado a v$(grep SCRIPT_VERSION /usr/local/bin/menu | head -1 | grep -o '[0-9.]*')${NC}"
     sleep 2
     exec /usr/local/bin/menu
 }
@@ -1798,10 +2051,12 @@ actualizar_script() {
     banner; sep
     echo -e "  ${Y}  ACTUALIZAR SCRIPT${NC}"; sep; echo ""
     echo -e "  ${C}Descargando ultima version...${NC}"
-    wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/DarkFull0726/SSHSCRIPT-LTM/main/sshscript-ltm.sh"
+    echo -e "  ${C}Descargando ultima version...${NC}"
+    wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/DarkFull0726/SSHSCRIPT-LTM/main/sshscript-ltm.sh?$(date +%s)"
     chmod +x /usr/local/bin/menu
-    echo -e "  ${G}OK Script actualizado${NC}"
-    echo -e "  ${Y}Reinicia el menu para aplicar cambios${NC}"
+    mkdir -p /etc/sshfreeltm
+    touch /etc/sshfreeltm/.licensed
+    echo -e "  ${G}OK Script actualizado a v$(grep SCRIPT_VERSION /usr/local/bin/menu | head -1 | grep -o '[0-9.]*')${NC}"
     sleep 2
     exec /usr/local/bin/menu
 }
@@ -2174,22 +2429,175 @@ menu_banner_ssh() {
     done
 }
 
+
+
+menu_hysteria() {
+    while true; do
+        banner; sep
+        echo -e "  ${NEON}◆ HYSTERIA UDP${NC}"; sep; echo ""
+        H1_ST=$(systemctl is-active hysteria-server 2>/dev/null)
+        H2_ST=$(systemctl is-active hysteria2-server 2>/dev/null)
+        [ "$H1_ST" = "active" ] && echo -e "  ${NEON}◈${NC} ${W}Hysteria V1${NC} ${NEON}◆ ON${NC}" || echo -e "  ${NEON}◈${NC} ${W}Hysteria V1${NC} ${R}◇ OFF${NC}"
+        [ "$H2_ST" = "active" ] && echo -e "  ${NEON}◈${NC} ${W}Hysteria V2${NC} ${NEON}◆ ON${NC}" || echo -e "  ${NEON}◈${NC} ${W}Hysteria V2${NC} ${R}◇ OFF${NC}"
+        echo ""; sep
+        printf " ${Y}❬1❭ Instalar Hysteria V1    ❬2❭ Instalar Hysteria V2${NC}\n"
+        printf " ${Y}❬3❭ Iniciar V1              ❬4❭ Iniciar V2${NC}\n"
+        printf " ${Y}❬5❭ Detener V1              ❬6❭ Detener V2${NC}\n"
+        printf " ${Y}❬7❭ Ver config V1           ❬8❭ Ver config V2${NC}\n"
+        printf " ${R}❬9❭ Desinstalar V1          ❬10❭ Desinstalar V2${NC}\n"
+        sep
+        printf " ${R}❬0❭ Volver${NC}\n"; sep; echo ""
+        read -p " Opcion: " OPT
+        case $OPT in
+            1)
+                echo -e "\n  ${C}Instalando Hysteria V1...${NC}"
+                apt install -y wget > /dev/null 2>&1
+                wget -q -O /usr/local/bin/hysteria-v1 https://github.com/HyNetwork/hysteria/releases/download/v1.3.5/hysteria-linux-amd64
+                chmod +x /usr/local/bin/hysteria-v1
+                read -p "  Puerto UDP (default 36712): " H1_PORT; H1_PORT=${H1_PORT:-36712}
+                read -p "  Password: " H1_PASS; H1_PASS=${H1_PASS:-"ltmssh2026"}
+                read -p "  Dominio (para TLS, deja vacio para self-signed): " H1_DOMAIN
+                mkdir -p /etc/hysteria
+                if [ -n "$H1_DOMAIN" ]; then
+                    apt install -y certbot > /dev/null 2>&1
+                    certbot certonly --standalone -d $H1_DOMAIN --non-interactive --agree-tos -m admin@${H1_DOMAIN#*.} 2>/dev/null
+                    CERT_FILE="/etc/letsencrypt/live/$H1_DOMAIN/fullchain.pem"
+                    KEY_FILE="/etc/letsencrypt/live/$H1_DOMAIN/privkey.pem"
+                else
+                    openssl req -x509 -nodes -newkey ec:<(openssl ecparam -name prime256v1) \
+                        -keyout /etc/hysteria/server.key -out /etc/hysteria/server.crt \
+                        -subj "/CN=hysteria" -days 36500 2>/dev/null
+                    CERT_FILE="/etc/hysteria/server.crt"
+                    KEY_FILE="/etc/hysteria/server.key"
+                fi
+                cat > /etc/hysteria/config.json << EOF
+{
+  "listen": ":$H1_PORT",
+  "cert": "$CERT_FILE",
+  "key": "$KEY_FILE",
+  "auth": {
+    "mode": "password",
+    "config": {"password": "$H1_PASS"}
+  },
+  "obfs": "ltmssh",
+  "up_mbps": 100,
+  "down_mbps": 100
+}
+EOF
+                cat > /etc/systemd/system/hysteria-server.service << EOF
+[Unit]
+Description=Hysteria V1 Server
+After=network.target
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/hysteria-v1 server --config /etc/hysteria/config.json
+Restart=always
+RestartSec=3
+[Install]
+WantedBy=multi-user.target
+EOF
+                systemctl daemon-reload
+                systemctl enable hysteria-server
+                systemctl start hysteria-server
+                iptables -I INPUT -p udp --dport $H1_PORT -j ACCEPT 2>/dev/null
+                echo -e "  ${G}OK Hysteria V1 instalado${NC}"
+                echo -e "  ${NEON}◈${NC} Puerto: ${Y}$H1_PORT${NC}"
+                echo -e "  ${NEON}◈${NC} Password: ${Y}$H1_PASS${NC}"
+                echo -e "  ${NEON}◈${NC} Obfs: ${Y}ltmssh${NC}"
+                read -p "  ENTER..." ;;
+            2)
+                echo -e "\n  ${C}Instalando Hysteria V2...${NC}"
+                apt install -y wget > /dev/null 2>&1
+                wget -q -O /usr/local/bin/hysteria2 https://github.com/apernet/hysteria/releases/latest/download/hysteria-linux-amd64
+                # hysteria2 es el mismo binario de apernet pero con nombre diferente
+                chmod +x /usr/local/bin/hysteria2
+                read -p "  Puerto UDP (default 8443): " H2_PORT; H2_PORT=${H2_PORT:-8443}
+                read -p "  Password: " H2_PASS; H2_PASS=${H2_PASS:-"ltmssh2026"}
+                read -p "  Dominio (deja vacio para self-signed): " H2_DOMAIN
+                mkdir -p /etc/hysteria2
+                if [ -n "$H2_DOMAIN" ]; then
+                    apt install -y certbot > /dev/null 2>&1
+                    certbot certonly --standalone -d $H2_DOMAIN --non-interactive --agree-tos -m admin@${H2_DOMAIN#*.} 2>/dev/null
+                    CERT2_FILE="/etc/letsencrypt/live/$H2_DOMAIN/fullchain.pem"
+                    KEY2_FILE="/etc/letsencrypt/live/$H2_DOMAIN/privkey.pem"
+                else
+                    openssl req -x509 -nodes -newkey ec:<(openssl ecparam -name prime256v1) \
+                        -keyout /etc/hysteria2/server.key -out /etc/hysteria2/server.crt \
+                        -subj "/CN=hysteria2" -days 36500 2>/dev/null
+                    CERT2_FILE="/etc/hysteria2/server.crt"
+                    KEY2_FILE="/etc/hysteria2/server.key"
+                fi
+                cat > /etc/hysteria2/config.yaml << EOF
+listen: :$H2_PORT
+tls:
+  cert: $CERT2_FILE
+  key: $KEY2_FILE
+auth:
+  type: password
+  password: $H2_PASS
+masquerade:
+  type: proxy
+  proxy:
+    url: https://news.ycombinator.com/
+    rewriteHost: true
+EOF
+                cat > /etc/systemd/system/hysteria2-server.service << EOF
+[Unit]
+Description=Hysteria V2 Server
+After=network.target
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/hysteria2 server --config /etc/hysteria2/config.yaml
+Restart=always
+RestartSec=3
+[Install]
+WantedBy=multi-user.target
+EOF
+                systemctl daemon-reload
+                systemctl enable hysteria2-server
+                systemctl start hysteria2-server
+                iptables -I INPUT -p udp --dport $H2_PORT -j ACCEPT 2>/dev/null
+                echo -e "  ${G}OK Hysteria V2 instalado${NC}"
+                echo -e "  ${NEON}◈${NC} Puerto: ${Y}$H2_PORT${NC}"
+                echo -e "  ${NEON}◈${NC} Password: ${Y}$H2_PASS${NC}"
+                read -p "  ENTER..." ;;
+            3) systemctl start hysteria-server && echo -e "  ${G}Hysteria V1 iniciado${NC}"; sleep 1 ;;
+            4) systemctl start hysteria2-server && echo -e "  ${G}Hysteria V2 iniciado${NC}"; sleep 1 ;;
+            5) systemctl stop hysteria-server && echo -e "  ${Y}Hysteria V1 detenido${NC}"; sleep 1 ;;
+            6) systemctl stop hysteria2-server && echo -e "  ${Y}Hysteria V2 detenido${NC}"; sleep 1 ;;
+            7) cat /etc/hysteria/config.json 2>/dev/null || echo "No instalado"; echo ""; read -p "  ENTER..." ;;
+            8) cat /etc/hysteria2/config.yaml 2>/dev/null || echo "No instalado"; echo ""; read -p "  ENTER..." ;;
+            9)
+                systemctl stop hysteria-server; systemctl disable hysteria-server
+                rm -f /usr/local/bin/hysteria /etc/systemd/system/hysteria-server.service
+                rm -rf /etc/hysteria; systemctl daemon-reload
+                echo -e "  ${G}Hysteria V1 desinstalado${NC}"; sleep 2 ;;
+            10)
+                systemctl stop hysteria2-server; systemctl disable hysteria2-server
+                rm -f /usr/local/bin/hysteria2 /etc/systemd/system/hysteria2-server.service
+                rm -rf /etc/hysteria2; systemctl daemon-reload
+                echo -e "  ${G}Hysteria V2 desinstalado${NC}"; sleep 2 ;;
+            0) break ;;
+        esac
+    done
+}
+
 menu_herramientas() {
     while true; do
         banner; sep
         echo -e "  ${Y}  HERRAMIENTAS Y PROTOCOLOS${NC}"; sep; echo ""
-        printf " ${C}∘${NC} WebSocket  %-13b ${C}∘${NC} BadVPN 7200 %b\n" "$(status_port 80)" "$(status_service badvpn-7200)"
-        printf " ${C}∘${NC} UDP Custom %-12b ${C}∘${NC} BadVPN 7300 %b\n" "$(ps aux | grep -i UDP-Custom | grep -v grep | grep -q . && echo -e "${G}[ON]${NC}" || echo -e "${R}[OFF]${NC}")" "$(status_service badvpn-7300)"
-        printf " ${C}∘${NC} SSL/TLS    %-12b ${C}∘${NC} V2Ray       %b\n" "$(status_service stunnel4)" "$(status_service v2ray)"
-        printf " ${C}∘${NC} ZIV VPN   %-12b ${C}∘${NC} SlowDNS %b\n" "$(status_service zivpn)" "$(status_service server-sldns)"
-        printf " ${C}∘${NC} Dropbear  %b\n" "$(status_service dropbear)"
+        printf " ${NEON}◈${NC} ${W}WebSocket${NC}  %-12b ${NEON}◈${NC} ${W}BadVPN 7200${NC} %b\n" "$(status_port 80)" "$(status_service badvpn-7200)"
+        printf " ${NEON}◈${NC} ${W}UDP Custom${NC} %-11b ${NEON}◈${NC} ${W}BadVPN 7300${NC} %b\n" "$(ps aux | grep -i UDP-Custom | grep -v grep | grep -q . && echo -e "${NEON}◆ ON${NC}" || echo -e "${R}◇ OFF${NC}")" "$(status_service badvpn-7300)"
+        printf " ${NEON}◈${NC} ${W}SSL/TLS${NC}    %-12b ${NEON}◈${NC} ${W}V2Ray${NC}       %b\n" "$(status_service stunnel4)" "$(status_service v2ray)"
+        printf " ${NEON}◈${NC} ${W}ZIV VPN${NC}   %-12b ${NEON}◈${NC} ${W}SlowDNS${NC}     %b\n" "$(status_service zivpn)" "$(status_service server-sldns)"
+        printf " ${NEON}◈${NC} ${W}Dropbear${NC}  %-12b ${NEON}◈${NC} ${W}LTMUDPv1${NC}    %b\n" "$(status_service dropbear)" "$(status_service hysteria-server)"
         echo ""; sep
         printf " ${W}[1]${NC} %-22s ${W}[2]${NC} %s\n" "WebSocket Python" "BadVPN UDP"
         printf " ${W}[3]${NC} %-22s ${W}[4]${NC} %s\n" "UDP Custom" "SSL/TLS Stunnel"
         printf " ${W}[5]${NC} %-22s ${W}[6]${NC} %s\n" "V2Ray VMess" "ZIV VPN"
         printf " ${W}[7]${NC} %-22s ${W}[8]${NC} %s\n" "Banner SSH" "Mejorar Velocidad UDP"
         printf " ${W}[9]${NC} %-22s ${W}[10]${NC} %s\n" "Anti-DDoS" "SlowDNS"
-        printf " ${W}[11]${NC} Dropbear SSH\n"
+        printf " ${W}[11]${NC} %-22s ${W}[12]${NC} %s\n" "Dropbear SSH" "UDP Hysteria Mod"
         sep
         printf " ${W}[0]${NC} Volver\n"; sep; echo ""
         read -p " Opcion: " OPT
@@ -2205,9 +2613,13 @@ menu_herramientas() {
             9) menu_antiddos ;;
             10) menu_slowdns ;;
             11) menu_dropbear ;;
+
+            12) menu_udp_hysteria_mod ;;
             9) menu_antiddos ;;
             10) menu_slowdns ;;
             11) menu_dropbear ;;
+
+            12) menu_udp_hysteria_mod ;;
             0) break ;;
             *) echo -e "  ${R}Opcion invalida${NC}"; sleep 1 ;;
         esac
@@ -2223,27 +2635,32 @@ menu_principal() {
         SRV_DATE=$(date +%d/%m/%Y-%H:%M)
         SRV_RAM=$(free -h | awk '/^Mem:/{print $4}')
         SRV_UPTIME=$(uptime -p | sed 's/up //')
-        WS_ST=$(status_port 80)
-        BD1_ST=$(status_service badvpn-7200)
-        BD2_ST=$(status_service badvpn-7300)
-        UDP_ST=$(ps aux | grep -i "udp-custom\|UDP-Custom" | grep -v grep | grep -q . && echo -e "${G}[ON]${NC}" || echo -e "${R}[OFF]${NC}")
-        SSL_ST=$(status_service stunnel4)
-        V2_ST=$(status_service v2ray)
-        ZIV_ST=$(status_service zivpn)
         sep
         printf " ${NEON}◈${NC} ${DIM}SO:${NC}  ${W}%-20s${NC} ${NEON}◈${NC} ${DIM}IP:${NC}  ${NEON}%s${NC}\n" "$SRV_OS" "$SRV_IP"
         printf " ${NEON}◈${NC} ${DIM}CPU:${NC} ${W}%-19s${NC} ${NEON}◈${NC} ${DIM}Fecha:${NC} ${Y}%s${NC}\n" "$SRV_CPU cores" "$SRV_DATE"
         printf " ${NEON}◈${NC} ${DIM}RAM:${NC} ${W}%-19s${NC} ${NEON}◈${NC} ${DIM}Uptime:${NC} ${W}%s${NC}\n" "$SRV_RAM" "$SRV_UPTIME"
         sep
-        printf " ${NEON}◈${NC} ${W}WebSocket ${NC} %-13b ${NEON}◈${NC} ${W}BadVPN 7200${NC} %b\n" "$WS_ST" "$BD1_ST"
-        printf " ${NEON}◈${NC} ${W}UDP Custom${NC} %-12b ${NEON}◈${NC} ${W}BadVPN 7300${NC} %b\n" "$UDP_ST" "$BD2_ST"
-        printf " ${NEON}◈${NC} ${W}SSL/TLS   ${NC} %-12b ${NEON}◈${NC} ${W}V2Ray      ${NC} %b\n" "$SSL_ST" "$V2_ST"
-        printf " ${NEON}◈${NC} ${W}ZIV VPN   ${NC} %b\n" "$ZIV_ST"
+        WS_PORT=$(cat /etc/sshfreeltm/ws_port 2>/dev/null || echo "80")
+        DB_PORT=$(cat /etc/sshfreeltm/dropbear_port 2>/dev/null || echo "444")
+        C1="" C2=""
+        systemctl is-active --quiet ws-proxy-${WS_PORT} 2>/dev/null && { [ -z "$C1" ] && C1="${NEON}◈${NC} ${W}WebSocket:${WS_PORT}${NC} ${NEON}◆ ON${NC}" || C2="${NEON}◈${NC} ${W}WebSocket:${WS_PORT}${NC} ${NEON}◆ ON${NC}"; }
+        systemctl is-active --quiet badvpn-7200 2>/dev/null && { [ -z "$C1" ] && C1="${NEON}◈${NC} ${W}BadVPN:7200${NC} ${NEON}◆ ON${NC}" || { [ -z "$C2" ] && C2="${NEON}◈${NC} ${W}BadVPN:7200${NC} ${NEON}◆ ON${NC}" || { echo -e " $C1    $C2"; C1="${NEON}◈${NC} ${W}BadVPN:7200${NC} ${NEON}◆ ON${NC}"; C2=""; }; }; }
+        systemctl is-active --quiet badvpn-7300 2>/dev/null && { [ -z "$C1" ] && C1="${NEON}◈${NC} ${W}BadVPN:7300${NC} ${NEON}◆ ON${NC}" || { [ -z "$C2" ] && C2="${NEON}◈${NC} ${W}BadVPN:7300${NC} ${NEON}◆ ON${NC}" || { echo -e " $C1    $C2"; C1="${NEON}◈${NC} ${W}BadVPN:7300${NC} ${NEON}◆ ON${NC}"; C2=""; }; }; }
+        ps aux | grep -i "UDP-Custom" | grep -v grep | grep -q . && { [ -z "$C1" ] && C1="${NEON}◈${NC} ${W}UDP:36712${NC} ${NEON}◆ ON${NC}" || { [ -z "$C2" ] && C2="${NEON}◈${NC} ${W}UDP:36712${NC} ${NEON}◆ ON${NC}" || { echo -e " $C1    $C2"; C1="${NEON}◈${NC} ${W}UDP:36712${NC} ${NEON}◆ ON${NC}"; C2=""; }; }; }
+        systemctl is-active --quiet stunnel4 2>/dev/null && { [ -z "$C1" ] && C1="${NEON}◈${NC} ${W}SSL/TLS:443${NC} ${NEON}◆ ON${NC}" || { [ -z "$C2" ] && C2="${NEON}◈${NC} ${W}SSL/TLS:443${NC} ${NEON}◆ ON${NC}" || { echo -e " $C1    $C2"; C1="${NEON}◈${NC} ${W}SSL/TLS:443${NC} ${NEON}◆ ON${NC}"; C2=""; }; }; }
+        if systemctl is-active --quiet v2ray 2>/dev/null; then
+            V2P=$(python3 -c "import json; c=json.load(open('/usr/local/etc/v2ray/config.json')); print(','.join([str(ib['port']) for ib in c.get('inbounds',[])]))" 2>/dev/null)
+            [ -n "$V2P" ] && { [ -z "$C1" ] && C1="${NEON}◈${NC} ${W}V2Ray:${V2P}${NC} ${NEON}◆ ON${NC}" || { [ -z "$C2" ] && C2="${NEON}◈${NC} ${W}V2Ray:${V2P}${NC} ${NEON}◆ ON${NC}" || { echo -e " $C1    $C2"; C1="${NEON}◈${NC} ${W}V2Ray:${V2P}${NC} ${NEON}◆ ON${NC}"; C2=""; }; }; }
+        fi
+        systemctl is-active --quiet zivpn 2>/dev/null && { [ -z "$C1" ] && C1="${NEON}◈${NC} ${W}ZIV VPN:5667${NC} ${NEON}◆ ON${NC}" || { [ -z "$C2" ] && C2="${NEON}◈${NC} ${W}ZIV VPN:5667${NC} ${NEON}◆ ON${NC}" || { echo -e " $C1    $C2"; C1="${NEON}◈${NC} ${W}ZIV VPN:5667${NC} ${NEON}◆ ON${NC}"; C2=""; }; }; }
+        systemctl is-active --quiet server-sldns 2>/dev/null && { [ -z "$C1" ] && C1="${NEON}◈${NC} ${W}SlowDNS:5300${NC} ${NEON}◆ ON${NC}" || { [ -z "$C2" ] && C2="${NEON}◈${NC} ${W}SlowDNS:5300${NC} ${NEON}◆ ON${NC}" || { echo -e " $C1    $C2"; C1="${NEON}◈${NC} ${W}SlowDNS:5300${NC} ${NEON}◆ ON${NC}"; C2=""; }; }; }
+        systemctl is-active --quiet dropbear 2>/dev/null && { [ -z "$C1" ] && C1="${NEON}◈${NC} ${W}Dropbear:${DB_PORT}${NC} ${NEON}◆ ON${NC}" || { [ -z "$C2" ] && C2="${NEON}◈${NC} ${W}Dropbear:${DB_PORT}${NC} ${NEON}◆ ON${NC}" || { echo -e " $C1    $C2"; C1="${NEON}◈${NC} ${W}Dropbear:${DB_PORT}${NC} ${NEON}◆ ON${NC}"; C2=""; }; }; }
+        systemctl is-active --quiet hysteria-server 2>/dev/null && { [ -z "$C1" ] && C1="${NEON}◈${NC} ${W}LTMUDPv1:36712${NC} ${NEON}◆ ON${NC}" || { [ -z "$C2" ] && C2="${NEON}◈${NC} ${W}LTMUDPv1:36712${NC} ${NEON}◆ ON${NC}" || { echo -e " $C1    $C2"; C1="${NEON}◈${NC} ${W}LTMUDPv1:36712${NC} ${NEON}◆ ON${NC}"; C2=""; }; }; }
+        [ -n "$C1" ] && [ -n "$C2" ] && echo -e " $C1    $C2" || { [ -n "$C1" ] && echo -e " $C1"; }
+        [ -z "$C1" ] && echo -e " ${DIM}  Sin servicios activos${NC}"
         sep
         printf " \033[1;97m❬1❭ ⚡  Usuarios SSH         ❬2❭ 📡 Usuarios VMess\033[0m\n"
         printf " \033[1;97m❬3❭ 🔐 Usuarios ZIV VPN     ❬4❭ 🛠  Herramientas\033[0m\n"
-        sep
-        echo -e " ${DIM}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
         printf " ${NEON}❖ Version: ${Y}v%s ${NEON}❖${NC}\n" "$SCRIPT_VERSION"
         sep
         printf " ${Y}❬9❭ 🖥️  %-18s${NC} ${R}❬10❭ 🗑️  %s${NC}\n" "Configurar MOTD" "Desinstalar"
