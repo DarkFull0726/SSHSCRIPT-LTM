@@ -1974,13 +1974,13 @@ menu_herramientas() {
         printf " ${NEON}◈${NC} ${W}ZIV VPN${NC}   %-12b ${NEON}◈${NC} ${W}SlowDNS${NC}     %b\n" "$(status_service zivpn)" "$(status_service server-sldns)"
         printf " ${NEON}◈${NC} ${W}Dropbear${NC}  %-12b ${NEON}◈${NC} ${W}LTMUDPv1${NC}    %b\n" "$(status_service dropbear)" "$(status_service hysteria-server)"
         echo ""; sep
-        printf " ${W}[1]${NC} %-22s ${W}[2]${NC} %s\n" "WebSocket Python" "BadVPN UDP"
-        printf " ${W}[3]${NC} %-22s ${W}[4]${NC} %s\n" "UDP Custom" "SSL/TLS Stunnel"
-        printf " ${W}[5]${NC} %-22s ${W}[6]${NC} %s\n" "V2Ray VMess" "ZIV VPN"
-        printf " ${W}[7]${NC} %-22s ${W}[8]${NC} %s\n" "Banner SSH" "Mejorar Velocidad UDP"
-        printf " ${W}[9]${NC} %-22s ${W}[10]${NC} %s\n" "Anti-DDoS" "SlowDNS"
-        printf " ${W}[11]${NC} %-22s ${W}[12]${NC} %s\n" "Dropbear SSH" "UDP Hysteria Mod"
-        printf " ${W}[13]${NC} Shadowsocks\n"
+        printf " \033[1;97m[1] %-22s [2] %s\033[0m\n" "WebSocket Python" "BadVPN UDP"
+        printf " \033[1;97m[3] %-22s [4] %s\033[0m\n" "UDP Custom" "SSL/TLS Stunnel"
+        printf " \033[1;97m[5] %-22s [6] %s\033[0m\n" "V2Ray VMess" "ZIV VPN"
+        printf " \033[1;97m[7] %-22s [8] %s\033[0m\n" "Banner SSH" "Mejorar Velocidad UDP"
+        printf " \033[1;97m[9] %-22s [10] %s\033[0m\n" "Anti-DDoS" "SlowDNS"
+        printf " \033[1;97m[11] %-21s [12] %s\033[0m\n" "Dropbear SSH" "UDP Hysteria Mod"
+        printf " \033[1;97m[13] Shadowsocks\033[0m\n"
         sep
         printf " ${W}[0]${NC} Volver\n"; sep; echo ""
         read -p " Opcion: " OPT
@@ -2716,13 +2716,13 @@ menu_herramientas() {
         printf " ${NEON}◈${NC} ${W}ZIV VPN${NC}   %-12b ${NEON}◈${NC} ${W}SlowDNS${NC}     %b\n" "$(status_service zivpn)" "$(status_service server-sldns)"
         printf " ${NEON}◈${NC} ${W}Dropbear${NC}  %-12b ${NEON}◈${NC} ${W}LTMUDPv1${NC}    %b\n" "$(status_service dropbear)" "$(status_service hysteria-server)"
         echo ""; sep
-        printf " ${W}[1]${NC} %-22s ${W}[2]${NC} %s\n" "WebSocket Python" "BadVPN UDP"
-        printf " ${W}[3]${NC} %-22s ${W}[4]${NC} %s\n" "UDP Custom" "SSL/TLS Stunnel"
-        printf " ${W}[5]${NC} %-22s ${W}[6]${NC} %s\n" "V2Ray VMess" "ZIV VPN"
-        printf " ${W}[7]${NC} %-22s ${W}[8]${NC} %s\n" "Banner SSH" "Mejorar Velocidad UDP"
-        printf " ${W}[9]${NC} %-22s ${W}[10]${NC} %s\n" "Anti-DDoS" "SlowDNS"
-        printf " ${W}[11]${NC} %-22s ${W}[12]${NC} %s\n" "Dropbear SSH" "UDP Hysteria Mod"
-        printf " ${W}[13]${NC} Shadowsocks\n"
+        printf " \033[1;97m[1] %-22s [2] %s\033[0m\n" "WebSocket Python" "BadVPN UDP"
+        printf " \033[1;97m[3] %-22s [4] %s\033[0m\n" "UDP Custom" "SSL/TLS Stunnel"
+        printf " \033[1;97m[5] %-22s [6] %s\033[0m\n" "V2Ray VMess" "ZIV VPN"
+        printf " \033[1;97m[7] %-22s [8] %s\033[0m\n" "Banner SSH" "Mejorar Velocidad UDP"
+        printf " \033[1;97m[9] %-22s [10] %s\033[0m\n" "Anti-DDoS" "SlowDNS"
+        printf " \033[1;97m[11] %-21s [12] %s\033[0m\n" "Dropbear SSH" "UDP Hysteria Mod"
+        printf " \033[1;97m[13] Shadowsocks\033[0m\n"
         sep
         printf " ${W}[0]${NC} Volver\n"; sep; echo ""
         read -p " Opcion: " OPT
