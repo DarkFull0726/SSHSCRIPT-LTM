@@ -5,7 +5,7 @@
 #   Ubuntu 22/24/25
 # ═══════════════════════════════════════════════════════
 
-SCRIPT_VERSION="3.0"
+SCRIPT_VERSION="3.1"
 R='\033[0;31m'
 G='\033[0;32m'
 Y='\033[1;33m'
@@ -61,7 +61,7 @@ if [ "$VALID_LICENSE" = "false" ]; then
     figlet -f small "LTM VPN TOOLS" 2>/dev/null || echo "LTM VPN TOOLS"
     echo -e "\033[0m"
     echo -e "\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
-    echo -e "  \033[1;97m⚡ LTM VPN TOOLS v3.0 by @DarkZFull\033[0m"
+    echo -e "  \033[1;97m⚡ LTM VPN TOOLS v3.1 by @DarkZFull\033[0m"
     echo -e "\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
     echo ""
     echo -e "  \033[1;33m🔐 Se requiere una KEY de licencia para instalar\033[0m"
@@ -2872,3 +2872,44 @@ chmod +x /usr/local/bin/menu
 echo -e "\033[0;32mComando menu instalado\033[0m"
 
 
+
+
+# ═════════════════════════════════════════════════════
+#   USUARIOS ONLINE (CONTADOR)
+# ═════════════════════════════════════════════════════
+
+usuarios_ssh_online_count() {
+    banner; sep
+    echo -e "  ${Y}  USUARIOS SSH ONLINE (CONTADOR)${NC}"; sep; echo ""
+
+    who | awk '{print $1}' | sort | uniq -c | while read count user; do
+        printf "  ${NEON}◈${NC} ${W}%-12s${NC} ${Y}%s${NC}\n" "$user" "$count"
+    done
+
+    echo ""; sep
+    read -p "  ENTER..."
+}
+
+usuarios_v2ray_online_count() {
+    banner; sep
+    echo -e "  ${Y}  USUARIOS V2RAY ONLINE${NC}"; sep; echo ""
+
+    ss -tnp | grep v2ray | awk '{print $5}' | cut -d: -f1 | sort | uniq -c | while read count ip; do
+        printf "  ${NEON}◈${NC} ${W}%-15s${NC} ${Y}%s${NC}\n" "$ip" "$count"
+    done
+
+    echo ""; sep
+    read -p "  ENTER..."
+}
+
+usuarios_ziv_online_count() {
+    banner; sep
+    echo -e "  ${Y}  USUARIOS ZIV VPN ONLINE${NC}"; sep; echo ""
+
+    ss -unp | grep 5667 | awk '{print $5}' | cut -d: -f1 | sort | uniq -c | while read count ip; do
+        printf "  ${NEON}◈${NC} ${W}%-15s${NC} ${Y}%s${NC}\n" "$ip" "$count"
+    done
+
+    echo ""; sep
+    read -p "  ENTER..."
+}
