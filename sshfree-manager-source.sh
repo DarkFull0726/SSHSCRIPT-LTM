@@ -356,7 +356,11 @@ menu_ws() {
         echo -e "  ${W}[1]${NC} Instalar/Configurar"
         echo -e "  ${W}[2]${NC} Iniciar"
         echo -e "  ${W}[3]${NC} Detener"
-        echo -e "  ${W}[4]${NC} Reiniciar"
+        echo -e "  ${W}[4]${NC}
+echo -e "  ${W}[5]${NC} Ver SSH online"
+echo -e "  ${W}[6]${NC} Ver V2Ray online"
+echo -e "  ${W}[7]${NC} Ver ZIV online"
+ Reiniciar"
         echo -e "  ${W}[5]${NC} Eliminar"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
@@ -364,7 +368,11 @@ menu_ws() {
             1) instalar_ws ;;
             2) read -p "  Puerto: " P; systemctl start ws-proxy-${P} && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
             3) read -p "  Puerto: " P; systemctl stop ws-proxy-${P} && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            4) read -p "  Puerto: " P; systemctl restart ws-proxy-${P} && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
+            4)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+ read -p "  Puerto: " P; systemctl restart ws-proxy-${P} && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
             5)
                 read -p "  Puerto (0=todos): " DEL_PORT
                 if [ "$DEL_PORT" = "0" ]; then
@@ -394,7 +402,11 @@ menu_badvpn() {
         echo -e "  ${W}[1]${NC} Instalar BadVPN"
         echo -e "  ${W}[2]${NC} Iniciar"
         echo -e "  ${W}[3]${NC} Detener"
-        echo -e "  ${W}[4]${NC} Reiniciar"
+        echo -e "  ${W}[4]${NC}
+echo -e "  ${W}[5]${NC} Ver SSH online"
+echo -e "  ${W}[6]${NC} Ver V2Ray online"
+echo -e "  ${W}[7]${NC} Ver ZIV online"
+ Reiniciar"
         echo -e "  ${W}[5]${NC} Puerto personalizado"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
@@ -426,7 +438,11 @@ EOF
                 echo -e "  ${G}OK BadVPN 7200 y 7300${NC}"; sleep 2 ;;
             2) systemctl start badvpn-7200 badvpn-7300 && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
             3) systemctl stop badvpn-7200 badvpn-7300 && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            4) systemctl restart badvpn-7200 badvpn-7300 && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
+            4)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+ systemctl restart badvpn-7200 badvpn-7300 && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
             5)
                 read -p "  Puerto: " BPORT
                 cat > $DIR_SERVICES/badvpn-${BPORT}.service << EOF
@@ -460,7 +476,11 @@ menu_udp() {
         echo -e "  ${W}[1]${NC} Instalar UDP Custom"
         echo -e "  ${W}[2]${NC} Iniciar"
         echo -e "  ${W}[3]${NC} Detener"
-        echo -e "  ${W}[4]${NC} Reiniciar"
+        echo -e "  ${W}[4]${NC}
+echo -e "  ${W}[5]${NC} Ver SSH online"
+echo -e "  ${W}[6]${NC} Ver V2Ray online"
+echo -e "  ${W}[7]${NC} Ver ZIV online"
+ Reiniciar"
         echo -e "  ${W}[5]${NC} Ver estado"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
@@ -473,7 +493,11 @@ menu_udp() {
                 echo -e "  ${G}OK UDP Custom instalado${NC}"; sleep 2 ;;
             2) systemctl start udp-custom 2>/dev/null || (/root/udp/udp-custom server -exclude 5300 &); echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
             3) systemctl stop udp-custom 2>/dev/null; pkill -f udp-custom 2>/dev/null; echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            4) pkill -f udp-custom 2>/dev/null; sleep 1; systemctl start udp-custom 2>/dev/null || (/root/udp/udp-custom server -exclude 5300 &); echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
+            4)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+ pkill -f udp-custom 2>/dev/null; sleep 1; systemctl start udp-custom 2>/dev/null || (/root/udp/udp-custom server -exclude 5300 &); echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
             5) ss -ulnp | grep udp; echo ""; read -p "  ENTER..." ;;
             0) break ;;
         esac
@@ -487,13 +511,21 @@ menu_udp() {
 menu_ssl() {
     while true; do
         banner; sep; echo -e "  ${Y}  SSL/TLS STUNNEL${NC}"; sep; echo ""
-        echo -e "  Stunnel $(status_service stunnel4)"
+        echo -e "  Stunnel $(status_service stunnel4)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+"
         echo -e "  Puerto 443 $(status_port 443)"
         echo ""; sep
         echo -e "  ${W}[1]${NC} Instalar SSL/TLS Stunnel"
         echo -e "  ${W}[2]${NC} Iniciar"
         echo -e "  ${W}[3]${NC} Detener"
-        echo -e "  ${W}[4]${NC} Reiniciar"
+        echo -e "  ${W}[4]${NC}
+echo -e "  ${W}[5]${NC} Ver SSH online"
+echo -e "  ${W}[6]${NC} Ver V2Ray online"
+echo -e "  ${W}[7]${NC} Ver ZIV online"
+ Reiniciar"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -515,7 +547,11 @@ EOF
                 echo -e "  ${G}OK SSL/TLS en puerto ${SSL_PORT}${NC}"; sleep 2 ;;
             2) systemctl start stunnel4 && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
             3) systemctl stop stunnel4 && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            4) systemctl restart stunnel4 && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
+            4)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+ systemctl restart stunnel4 && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
             0) break ;;
         esac
     done
@@ -587,7 +623,11 @@ EOF
                 echo -e "  Red: ${Y}❬1❭${NC} ws ${Y}❬2❭${NC} tcp ${Y}❬3❭${NC} xhttp ${Y}❬4❭${NC} grpc"
                 read -p "  Opcion: " V2_NET_OPT
                 case $V2_NET_OPT in
-                    1) V2_NET="ws" ;; 2) V2_NET="tcp" ;; 3) V2_NET="xhttp" ;; 4) V2_NET="grpc" ;; *) V2_NET="ws" ;;
+                    1) V2_NET="ws" ;; 2) V2_NET="tcp" ;; 3) V2_NET="xhttp" ;; 4)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+ V2_NET="grpc" ;; *) V2_NET="ws" ;;
                 esac
                 read -p "  Path (ej: /v2ray): " V2_PATH; V2_PATH=${V2_PATH:-/v2ray}
                 echo -e "  TLS: ${Y}❬1❭${NC} Si ${Y}❬2❭${NC} No"
@@ -629,7 +669,11 @@ if 0 <= idx < len(config['inbounds']):
 else: print("Numero invalido")
 PYEOF
                 systemctl restart v2ray; sleep 1 ;;
-            4) systemctl start v2ray && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
+            4)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+ systemctl start v2ray && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
             5) systemctl stop v2ray && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
             6) systemctl restart v2ray && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
             7)
@@ -724,7 +768,11 @@ menu_ziv() {
         echo -e "  ${W}[1]${NC} Instalar ZIV VPN V2 (Recomendado)"
         echo -e "  ${W}[2]${NC} Instalar ZIV VPN V1"
         echo -e "  ${W}[3]${NC} Iniciar"
-        echo -e "  ${W}[4]${NC} Detener"
+        echo -e "  ${W}[4]${NC}
+echo -e "  ${W}[5]${NC} Ver SSH online"
+echo -e "  ${W}[6]${NC} Ver V2Ray online"
+echo -e "  ${W}[7]${NC} Ver ZIV online"
+ Detener"
         echo -e "  ${W}[5]${NC} Reiniciar"
         echo -e "  ${W}[6]${NC} Ver configuracion"
         echo -e "  ${W}[7]${NC} Desinstalar"
@@ -734,7 +782,11 @@ menu_ziv() {
             1) bash <(curl -fsSL https://raw.githubusercontent.com/powermx/zivpn/main/ziv2.sh) ;;
             2) bash <(curl -fsSL https://raw.githubusercontent.com/powermx/zivpn/main/ziv1.sh) ;;
             3) systemctl start zivpn && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
-            4) systemctl stop zivpn && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
+            4)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+ systemctl stop zivpn && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
             5) systemctl restart zivpn && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
             6) cat /etc/zivpn/config.json 2>/dev/null; echo ""; read -p "  ENTER..." ;;
             7) bash <(curl -fsSL https://raw.githubusercontent.com/powermx/zivpn/main/uninstall.sh) 2>/dev/null; echo -e "  ${G}Desinstalado${NC}"; sleep 1 ;;
@@ -849,14 +901,22 @@ menu_users_ziv() {
         echo -e "  ${W}[1]${NC} Crear usuario"
         echo -e "  ${W}[2]${NC} Listar usuarios"
         echo -e "  ${W}[3]${NC} Eliminar usuario"
-        echo -e "  ${W}[4]${NC} Limpiar expirados"
+        echo -e "  ${W}[4]${NC}
+echo -e "  ${W}[5]${NC} Ver SSH online"
+echo -e "  ${W}[6]${NC} Ver V2Ray online"
+echo -e "  ${W}[7]${NC} Ver ZIV online"
+ Limpiar expirados"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
             1) crear_user_ziv ;;
             2) listar_users_ziv ;;
             3) eliminar_user_ziv ;;
-            4) limpiar_expirados_ziv; aplicar_passwords_ziv; echo -e "  ${G}Limpiado${NC}"; sleep 1 ;;
+            4)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+ limpiar_expirados_ziv; aplicar_passwords_ziv; echo -e "  ${G}Limpiado${NC}"; sleep 1 ;;
             0) break ;;
         esac
     done
@@ -953,14 +1013,22 @@ menu_usuarios() {
         echo -e "  ${W}[1]${NC} Crear usuario"
         echo -e "  ${W}[2]${NC} Listar usuarios"
         echo -e "  ${W}[3]${NC} Eliminar usuario"
-        echo -e "  ${W}[4]${NC} Renovar usuario"
+        echo -e "  ${W}[4]${NC}
+echo -e "  ${W}[5]${NC} Ver SSH online"
+echo -e "  ${W}[6]${NC} Ver V2Ray online"
+echo -e "  ${W}[7]${NC} Ver ZIV online"
+ Renovar usuario"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
             1) crear_usuario ;;
             2) listar_usuarios ;;
             3) eliminar_usuario ;;
-            4) renovar_usuario ;;
+            4)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+ renovar_usuario ;;
             0) break ;;
         esac
     done
@@ -1428,7 +1496,11 @@ menu_slowdns() {
         echo -e "  ${W}[1]${NC} Instalar SlowDNS"
         echo -e "  ${W}[2]${NC} Iniciar"
         echo -e "  ${W}[3]${NC} Detener"
-        echo -e "  ${W}[4]${NC} Ver Public Key"
+        echo -e "  ${W}[4]${NC}
+echo -e "  ${W}[5]${NC} Ver SSH online"
+echo -e "  ${W}[6]${NC} Ver V2Ray online"
+echo -e "  ${W}[7]${NC} Ver ZIV online"
+ Ver Public Key"
         echo -e "  ${W}[5]${NC} Desinstalar"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
@@ -1481,7 +1553,11 @@ EOF
                 read -p "  ENTER..." ;;
             2) systemctl start $CLIENT_SERVICE $SERVER_SERVICE && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
             3) systemctl stop $CLIENT_SERVICE $SERVER_SERVICE && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            4) cat $PUBKEY_FILE 2>/dev/null || echo -e "  ${R}No encontrada${NC}"; echo ""; read -p "  ENTER..." ;;
+            4)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+ cat $PUBKEY_FILE 2>/dev/null || echo -e "  ${R}No encontrada${NC}"; echo ""; read -p "  ENTER..." ;;
             5)
                 systemctl stop $CLIENT_SERVICE $SERVER_SERVICE 2>/dev/null
                 systemctl disable $CLIENT_SERVICE $SERVER_SERVICE 2>/dev/null
@@ -1506,7 +1582,11 @@ menu_dropbear() {
         echo -e "  ${W}[1]${NC} Instalar Dropbear"
         echo -e "  ${W}[2]${NC} Iniciar"
         echo -e "  ${W}[3]${NC} Detener"
-        echo -e "  ${W}[4]${NC} Reiniciar"
+        echo -e "  ${W}[4]${NC}
+echo -e "  ${W}[5]${NC} Ver SSH online"
+echo -e "  ${W}[6]${NC} Ver V2Ray online"
+echo -e "  ${W}[7]${NC} Ver ZIV online"
+ Reiniciar"
         echo -e "  ${W}[5]${NC} Cambiar puerto"
         echo -e "  ${W}[6]${NC} Desinstalar"
         echo -e "  ${W}[0]${NC} Volver"; sep
@@ -1516,7 +1596,11 @@ menu_dropbear() {
                 echo -e "
   ${C}Instalando Dropbear...${NC}"
                 apt install -y dropbear
-                read -p "  Puerto Dropbear (default 444): " DB_PORT
+                read -p "  Puerto Dropbear (default 444)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+: " DB_PORT
                 DB_PORT=${DB_PORT:-444}
                 mkdir -p /etc/sshfreeltm
                 echo "$DB_PORT" > /etc/sshfreeltm/dropbear_port
@@ -1551,7 +1635,11 @@ EOF
                 echo -e "  ${G}OK Dropbear instalado en puerto ${DB_PORT}${NC}"; sleep 2 ;;
             2) systemctl start dropbear && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
             3) systemctl stop dropbear && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            4) systemctl restart dropbear && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
+            4)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+ systemctl restart dropbear && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
             5)
                 read -p "  Nuevo puerto: " NEW_PORT
                 echo "$NEW_PORT" > /etc/sshfreeltm/dropbear_port
@@ -1651,7 +1739,11 @@ menu_limpieza() {
             3)
                 banner; sep
                 echo -e "  ${Y}  CONFIGURAR AUTO-REINICIO${NC}"; sep; echo ""
-                read -p "  Intervalo en horas (ej: 1, 6, 12, 24): " REBOOT_HOURS
+                read -p "  Intervalo en horas (ej: 1, 6, 12, 24)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+: " REBOOT_HOURS
                 [ -z "$REBOOT_HOURS" ] && echo -e "  ${R}Cancelado${NC}" && sleep 1 && continue
                 # Crear script de limpieza y reinicio
                 cat > /usr/local/bin/ltm-reboot.sh << REBOOTEOF
@@ -1666,6 +1758,10 @@ REBOOTEOF
                 echo -e "  ${G}OK Auto-reinicio cada ${Y}${REBOOT_HOURS}h${G} configurado${NC}"
                 sleep 2 ;;
             4)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+
                 echo ""; echo -e "  ${W}Cron actual:${NC}"; echo ""
                 crontab -l 2>/dev/null | grep "ltm_reboot\|ltm-reboot" || echo "  Sin auto-reinicio configurado"
                 echo ""; read -p "  ENTER..." ;;
@@ -1762,7 +1858,11 @@ EOF2
                 read -p "  ENTER..." ;;
             2) systemctl start shadowsocks-server && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
             3) systemctl stop shadowsocks-server && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            4) systemctl restart shadowsocks-server && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
+            4)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+ systemctl restart shadowsocks-server && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
             5)
                 banner; sep; echo -e "  ${Y}AGREGAR USUARIO${NC}"; sep; echo ""
                 echo -e "  ${Y}Shadowsocks basico usa una sola password${NC}"
@@ -1834,7 +1934,11 @@ menu_udp_hysteria_mod() {
                 read -p "  ENTER..." ;;
             2) systemctl start hysteria-server && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
             3) systemctl stop hysteria-server && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            4) systemctl restart hysteria-server && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
+            4)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+ systemctl restart hysteria-server && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
             5)
                 banner; sep; echo -e "  ${Y}AGREGAR USUARIO${NC}"; sep; echo ""
                 read -p "  Usuario: " HM_USER
@@ -2039,7 +2143,11 @@ EOF
                 echo -e "  ${NEON}◈${NC} Password: ${Y}$H2_PASS${NC}"
                 read -p "  ENTER..." ;;
             3) systemctl start hysteria-server && echo -e "  ${G}Hysteria V1 iniciado${NC}"; sleep 1 ;;
-            4) systemctl start hysteria2-server && echo -e "  ${G}Hysteria V2 iniciado${NC}"; sleep 1 ;;
+            4)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+ systemctl start hysteria2-server && echo -e "  ${G}Hysteria V2 iniciado${NC}"; sleep 1 ;;
             5) systemctl stop hysteria-server && echo -e "  ${Y}Hysteria V1 detenido${NC}"; sleep 1 ;;
             6) systemctl stop hysteria2-server && echo -e "  ${Y}Hysteria V2 detenido${NC}"; sleep 1 ;;
             7) cat /etc/hysteria/config.json 2>/dev/null || echo "No instalado"; echo ""; read -p "  ENTER..." ;;
@@ -2065,7 +2173,11 @@ menu_herramientas() {
         echo -e "  ${Y}  HERRAMIENTAS Y PROTOCOLOS${NC}"; sep; echo ""
         printf " ${NEON}◈${NC} ${W}WebSocket${NC}  %-12b ${NEON}◈${NC} ${W}BadVPN 7200${NC} %b\n" "$(status_port 80)" "$(status_service badvpn-7200)"
         printf " ${NEON}◈${NC} ${W}UDP Custom${NC} %-11b ${NEON}◈${NC} ${W}BadVPN 7300${NC} %b\n" "$(ps aux | grep -i UDP-Custom | grep -v grep | grep -q . && echo -e "${NEON}◆ ON${NC}" || echo -e "${R}◇ OFF${NC}")" "$(status_service badvpn-7300)"
-        printf " ${NEON}◈${NC} ${W}SSL/TLS${NC}    %-12b ${NEON}◈${NC} ${W}V2Ray${NC}       %b\n" "$(status_service stunnel4)" "$(status_service v2ray)"
+        printf " ${NEON}◈${NC} ${W}SSL/TLS${NC}    %-12b ${NEON}◈${NC} ${W}V2Ray${NC}       %b\n" "$(status_service stunnel4)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+" "$(status_service v2ray)"
         printf " ${NEON}◈${NC} ${W}ZIV VPN${NC}   %-12b ${NEON}◈${NC} ${W}SlowDNS${NC}     %b\n" "$(status_service zivpn)" "$(status_service server-sldns)"
         printf " ${NEON}◈${NC} ${W}Dropbear${NC}  %-12b ${NEON}◈${NC} ${W}LTMUDPv1${NC}    %b\n" "$(status_service dropbear)" "$(status_service hysteria-server)"
         echo ""; sep
@@ -2083,7 +2195,11 @@ menu_herramientas() {
             1) menu_ws ;;
             2) menu_badvpn ;;
             3) menu_udp ;;
-            4) menu_ssl ;;
+            4)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+ menu_ssl ;;
             5) menu_v2ray ;;
             6) menu_ziv ;;
             7) menu_banner_ssh ;;
@@ -2094,14 +2210,22 @@ menu_herramientas() {
 
             12) menu_udp_hysteria_mod ;;
             13) menu_shadowsocks ;;
-            14) menu_limpieza ;;
+            14)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+ menu_limpieza ;;
             9) menu_antiddos ;;
             10) menu_slowdns ;;
             11) menu_dropbear ;;
 
             12) menu_udp_hysteria_mod ;;
             13) menu_shadowsocks ;;
-            14) menu_limpieza ;;
+            14)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+ menu_limpieza ;;
             0) break ;;
             *) echo -e "  ${R}Opcion invalida${NC}"; sleep 1 ;;
         esac
@@ -2468,7 +2592,11 @@ menu_slowdns() {
         echo -e "  ${W}[1]${NC} Instalar SlowDNS"
         echo -e "  ${W}[2]${NC} Iniciar"
         echo -e "  ${W}[3]${NC} Detener"
-        echo -e "  ${W}[4]${NC} Ver Public Key"
+        echo -e "  ${W}[4]${NC}
+echo -e "  ${W}[5]${NC} Ver SSH online"
+echo -e "  ${W}[6]${NC} Ver V2Ray online"
+echo -e "  ${W}[7]${NC} Ver ZIV online"
+ Ver Public Key"
         echo -e "  ${W}[5]${NC} Desinstalar"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
@@ -2521,7 +2649,11 @@ EOF
                 read -p "  ENTER..." ;;
             2) systemctl start $CLIENT_SERVICE $SERVER_SERVICE && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
             3) systemctl stop $CLIENT_SERVICE $SERVER_SERVICE && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            4) cat $PUBKEY_FILE 2>/dev/null || echo -e "  ${R}No encontrada${NC}"; echo ""; read -p "  ENTER..." ;;
+            4)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+ cat $PUBKEY_FILE 2>/dev/null || echo -e "  ${R}No encontrada${NC}"; echo ""; read -p "  ENTER..." ;;
             5)
                 systemctl stop $CLIENT_SERVICE $SERVER_SERVICE 2>/dev/null
                 systemctl disable $CLIENT_SERVICE $SERVER_SERVICE 2>/dev/null
@@ -2546,7 +2678,11 @@ menu_dropbear() {
         echo -e "  ${W}[1]${NC} Instalar Dropbear"
         echo -e "  ${W}[2]${NC} Iniciar"
         echo -e "  ${W}[3]${NC} Detener"
-        echo -e "  ${W}[4]${NC} Reiniciar"
+        echo -e "  ${W}[4]${NC}
+echo -e "  ${W}[5]${NC} Ver SSH online"
+echo -e "  ${W}[6]${NC} Ver V2Ray online"
+echo -e "  ${W}[7]${NC} Ver ZIV online"
+ Reiniciar"
         echo -e "  ${W}[5]${NC} Cambiar puerto"
         echo -e "  ${W}[6]${NC} Desinstalar"
         echo -e "  ${W}[0]${NC} Volver"; sep
@@ -2556,7 +2692,11 @@ menu_dropbear() {
                 echo -e "
   ${C}Instalando Dropbear...${NC}"
                 apt install -y dropbear
-                read -p "  Puerto Dropbear (default 444): " DB_PORT
+                read -p "  Puerto Dropbear (default 444)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+: " DB_PORT
                 DB_PORT=${DB_PORT:-444}
                 mkdir -p /etc/sshfreeltm
                 echo "$DB_PORT" > /etc/sshfreeltm/dropbear_port
@@ -2591,7 +2731,11 @@ EOF
                 echo -e "  ${G}OK Dropbear instalado en puerto ${DB_PORT}${NC}"; sleep 2 ;;
             2) systemctl start dropbear && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
             3) systemctl stop dropbear && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            4) systemctl restart dropbear && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
+            4)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+ systemctl restart dropbear && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
             5)
                 read -p "  Nuevo puerto: " NEW_PORT
                 echo "$NEW_PORT" > /etc/sshfreeltm/dropbear_port
@@ -2783,7 +2927,11 @@ EOF
                 echo -e "  ${NEON}◈${NC} Password: ${Y}$H2_PASS${NC}"
                 read -p "  ENTER..." ;;
             3) systemctl start hysteria-server && echo -e "  ${G}Hysteria V1 iniciado${NC}"; sleep 1 ;;
-            4) systemctl start hysteria2-server && echo -e "  ${G}Hysteria V2 iniciado${NC}"; sleep 1 ;;
+            4)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+ systemctl start hysteria2-server && echo -e "  ${G}Hysteria V2 iniciado${NC}"; sleep 1 ;;
             5) systemctl stop hysteria-server && echo -e "  ${Y}Hysteria V1 detenido${NC}"; sleep 1 ;;
             6) systemctl stop hysteria2-server && echo -e "  ${Y}Hysteria V2 detenido${NC}"; sleep 1 ;;
             7) cat /etc/hysteria/config.json 2>/dev/null || echo "No instalado"; echo ""; read -p "  ENTER..." ;;
@@ -2852,7 +3000,11 @@ menu_principal() {
             1) menu_usuarios ;;
             2) menu_v2ray ;;
             3) menu_users_ziv ;;
-            4) menu_herramientas ;;
+            4)
+5) usuarios_ssh_online_count ;;
+6) usuarios_v2ray_online_count ;;
+7) usuarios_ziv_online_count ;;
+ menu_herramientas ;;
             9) instalar_motd ;;
             10) desinstalar_script ;;
             11) actualizar_script ;;
