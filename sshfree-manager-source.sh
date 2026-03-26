@@ -89,15 +89,18 @@ if [ "$VALID_LICENSE" = "false" ]; then
         echo -e "\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
         echo -e "  \033[1;97m⚡ Instalando dependencias del sistema...\033[0m"
         echo -e "\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
-        apt update -y > /dev/null 2>&1
+        echo -e "  \033[0;36m⏳ Actualizando repos...\033[0m"
+        DEBIAN_FRONTEND=noninteractive apt update -y -o Acquire::ForceIPv4=true > /dev/null 2>&1
+        echo -e "  \033[1;32m✓ Repos actualizados\033[0m"
         install_dep() {
             PKG=$1
             LABEL=${2:-$1}
-            apt install -y $PKG > /dev/null 2>&1
+            echo -ne "  \033[1;96m◈\033[0m \033[1;97m$LABEL\033[0m \033[0;36m...\033[0m"
+            DEBIAN_FRONTEND=noninteractive apt install -y -qq $PKG > /dev/null 2>&1
             if dpkg -l $PKG 2>/dev/null | grep -q "^ii"; then
-                echo -e "  \033[1;96m◈\033[0m \033[1;97m$LABEL\033[0m \033[1;32m✓ OK\033[0m"
+                echo -e "\r  \033[1;96m◈\033[0m \033[1;97m$LABEL\033[0m \033[1;32m✓ OK\033[0m          "
             else
-                echo -e "  \033[1;96m◈\033[0m \033[1;97m$LABEL\033[0m \033[1;31m✗ Error\033[0m"
+                echo -e "\r  \033[1;96m◈\033[0m \033[1;97m$LABEL\033[0m \033[1;31m✗ Error\033[0m       "
             fi
         }
         install_dep curl "curl"
