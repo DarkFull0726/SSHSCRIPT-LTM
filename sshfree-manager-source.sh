@@ -1096,6 +1096,58 @@ actualizar_script() {
     exec /usr/local/bin/menu
 }
 
+menu_atacantes() {
+    banner; sep
+    echo -e "  ${NEON}◆ IPs ATACANTES${NC}"; sep; echo ""
+    
+    # Ver IPs bloqueadas por fail2ban
+    if command -v fail2ban-client > /dev/null 2>&1; then
+        BANNED=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2 | tr ' ' '\n' | grep -v '^$')
+        if [ -n "$BANNED" ]; then
+            echo -e "  ${R}🚨 IPs bloqueadas por Fail2ban:${NC}"
+            echo "$BANNED" | while read ip; do
+                [ -n "$ip" ] && echo -e "  ${NEON}◈${NC} ${R}$ip${NC}"
+            done
+        else
+            echo -e "  ${G}✅ Sin IPs bloqueadas en Fail2ban${NC}"
+        fi
+    fi
+    
+    echo ""
+    
+    # Ver conexiones sospechosas activas
+    echo -e "  ${Y}🔍 Conexiones activas por IP:${NC}"
+    CONNS=$(ss -tn state established | awk 'NR>1{print $5}' | cut -d: -f1 | sort | uniq -c | sort -rn | head -10)
+    if [ -n "$CONNS" ]; then
+        echo "$CONNS" | while read count ip; do
+            [ -z "$ip" ] && continue
+            if [ "$count" -gt 10 ]; then
+                echo -e "  ${R}◈ $ip — $count conexiones ⚠️${NC}"
+            else
+                echo -e "  ${NEON}◈${NC} $ip — ${Y}$count${NC} conexiones"
+            fi
+        done
+    else
+        echo -e "  ${G}✅ Sin conexiones sospechosas${NC}"
+    fi
+    
+    echo ""
+    
+    # Ver logs de iptables DROP recientes
+    echo -e "  ${Y}🛡️ Paquetes bloqueados recientes:${NC}"
+    DROPS=$(dmesg 2>/dev/null | grep "IN=.*OUT=" | tail -5 | grep -oP 'SRC=\K[0-9.]+' | sort | uniq -c | sort -rn)
+    if [ -n "$DROPS" ]; then
+        echo "$DROPS" | while read count ip; do
+            echo -e "  ${NEON}◈${NC} ${R}$ip${NC} — $count paquetes bloqueados"
+        done
+    else
+        echo -e "  ${G}✅ Sin ataques detectados${NC}"
+    fi
+    
+    echo ""; sep
+    read -p "  ENTER..."
+}
+
 menu_antiddos() {
     while true; do
         banner; sep
@@ -1111,6 +1163,7 @@ menu_antiddos() {
         echo -e "  ${W}[1]${NC} Activar Anti-DDoS Agresivo"
         echo -e "  ${W}[2]${NC} Desactivar Anti-DDoS"
         echo -e "  ${W}[3]${NC} Ver reglas activas"
+        echo -e "  ${W}[4]${NC} Ver IPs atacantes"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -1208,6 +1261,19 @@ EOF
                 echo -e "  ${G}✓ Conexiones limitadas por IP${NC}"
                 echo -e "  ${G}✓ Fail2ban activo${NC}"
                 echo ""
+                # Notificar IPs atacantes al admin
+                BANNED_IPS=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2)
+                if [ -n "$BANNED_IPS" ]; then
+                    python3 -c "
+import urllib.request, json
+TOKEN='7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws'
+ADMIN='6290827127'
+msg='🚨 *ANTI-DDoS ACTIVADO*\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🛡️ IPs bloqueadas:\n$BANNED_IPS'
+url=f'https://api.telegram.org/bot{TOKEN}/sendMessage'
+data=json.dumps({'chat_id':ADMIN,'text':msg,'parse_mode':'Markdown'}).encode()
+urllib.request.urlopen(urllib.request.Request(url,data=data,headers={'Content-Type':'application/json'}))
+" 2>/dev/null
+                fi
                 echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"
                 read -p "  ENTER..." ;;
             2)
@@ -1218,6 +1284,7 @@ EOF
                 iptables -P OUTPUT ACCEPT
                 systemctl stop fail2ban 2>/dev/null
                 echo -e "  ${Y}Anti-DDoS desactivado${NC}"; sleep 2 ;;
+            4) menu_atacantes ;;
             3)
                 echo ""
                 iptables -L INPUT -n --line-numbers | head -30
@@ -1242,6 +1309,58 @@ actualizar_script() {
     exec /usr/local/bin/menu
 }
 
+menu_atacantes() {
+    banner; sep
+    echo -e "  ${NEON}◆ IPs ATACANTES${NC}"; sep; echo ""
+    
+    # Ver IPs bloqueadas por fail2ban
+    if command -v fail2ban-client > /dev/null 2>&1; then
+        BANNED=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2 | tr ' ' '\n' | grep -v '^$')
+        if [ -n "$BANNED" ]; then
+            echo -e "  ${R}🚨 IPs bloqueadas por Fail2ban:${NC}"
+            echo "$BANNED" | while read ip; do
+                [ -n "$ip" ] && echo -e "  ${NEON}◈${NC} ${R}$ip${NC}"
+            done
+        else
+            echo -e "  ${G}✅ Sin IPs bloqueadas en Fail2ban${NC}"
+        fi
+    fi
+    
+    echo ""
+    
+    # Ver conexiones sospechosas activas
+    echo -e "  ${Y}🔍 Conexiones activas por IP:${NC}"
+    CONNS=$(ss -tn state established | awk 'NR>1{print $5}' | cut -d: -f1 | sort | uniq -c | sort -rn | head -10)
+    if [ -n "$CONNS" ]; then
+        echo "$CONNS" | while read count ip; do
+            [ -z "$ip" ] && continue
+            if [ "$count" -gt 10 ]; then
+                echo -e "  ${R}◈ $ip — $count conexiones ⚠️${NC}"
+            else
+                echo -e "  ${NEON}◈${NC} $ip — ${Y}$count${NC} conexiones"
+            fi
+        done
+    else
+        echo -e "  ${G}✅ Sin conexiones sospechosas${NC}"
+    fi
+    
+    echo ""
+    
+    # Ver logs de iptables DROP recientes
+    echo -e "  ${Y}🛡️ Paquetes bloqueados recientes:${NC}"
+    DROPS=$(dmesg 2>/dev/null | grep "IN=.*OUT=" | tail -5 | grep -oP 'SRC=\K[0-9.]+' | sort | uniq -c | sort -rn)
+    if [ -n "$DROPS" ]; then
+        echo "$DROPS" | while read count ip; do
+            echo -e "  ${NEON}◈${NC} ${R}$ip${NC} — $count paquetes bloqueados"
+        done
+    else
+        echo -e "  ${G}✅ Sin ataques detectados${NC}"
+    fi
+    
+    echo ""; sep
+    read -p "  ENTER..."
+}
+
 menu_antiddos() {
     while true; do
         banner; sep
@@ -1257,6 +1376,7 @@ menu_antiddos() {
         echo -e "  ${W}[1]${NC} Activar Anti-DDoS Agresivo"
         echo -e "  ${W}[2]${NC} Desactivar Anti-DDoS"
         echo -e "  ${W}[3]${NC} Ver reglas activas"
+        echo -e "  ${W}[4]${NC} Ver IPs atacantes"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -1354,6 +1474,19 @@ EOF
                 echo -e "  ${G}✓ Conexiones limitadas por IP${NC}"
                 echo -e "  ${G}✓ Fail2ban activo${NC}"
                 echo ""
+                # Notificar IPs atacantes al admin
+                BANNED_IPS=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2)
+                if [ -n "$BANNED_IPS" ]; then
+                    python3 -c "
+import urllib.request, json
+TOKEN='7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws'
+ADMIN='6290827127'
+msg='🚨 *ANTI-DDoS ACTIVADO*\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🛡️ IPs bloqueadas:\n$BANNED_IPS'
+url=f'https://api.telegram.org/bot{TOKEN}/sendMessage'
+data=json.dumps({'chat_id':ADMIN,'text':msg,'parse_mode':'Markdown'}).encode()
+urllib.request.urlopen(urllib.request.Request(url,data=data,headers={'Content-Type':'application/json'}))
+" 2>/dev/null
+                fi
                 echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"
                 read -p "  ENTER..." ;;
             2)
@@ -1364,6 +1497,7 @@ EOF
                 iptables -P OUTPUT ACCEPT
                 systemctl stop fail2ban 2>/dev/null
                 echo -e "  ${Y}Anti-DDoS desactivado${NC}"; sleep 2 ;;
+            4) menu_atacantes ;;
             3)
                 echo ""
                 iptables -L INPUT -n --line-numbers | head -30
@@ -2136,6 +2270,58 @@ actualizar_script() {
     exec /usr/local/bin/menu
 }
 
+menu_atacantes() {
+    banner; sep
+    echo -e "  ${NEON}◆ IPs ATACANTES${NC}"; sep; echo ""
+    
+    # Ver IPs bloqueadas por fail2ban
+    if command -v fail2ban-client > /dev/null 2>&1; then
+        BANNED=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2 | tr ' ' '\n' | grep -v '^$')
+        if [ -n "$BANNED" ]; then
+            echo -e "  ${R}🚨 IPs bloqueadas por Fail2ban:${NC}"
+            echo "$BANNED" | while read ip; do
+                [ -n "$ip" ] && echo -e "  ${NEON}◈${NC} ${R}$ip${NC}"
+            done
+        else
+            echo -e "  ${G}✅ Sin IPs bloqueadas en Fail2ban${NC}"
+        fi
+    fi
+    
+    echo ""
+    
+    # Ver conexiones sospechosas activas
+    echo -e "  ${Y}🔍 Conexiones activas por IP:${NC}"
+    CONNS=$(ss -tn state established | awk 'NR>1{print $5}' | cut -d: -f1 | sort | uniq -c | sort -rn | head -10)
+    if [ -n "$CONNS" ]; then
+        echo "$CONNS" | while read count ip; do
+            [ -z "$ip" ] && continue
+            if [ "$count" -gt 10 ]; then
+                echo -e "  ${R}◈ $ip — $count conexiones ⚠️${NC}"
+            else
+                echo -e "  ${NEON}◈${NC} $ip — ${Y}$count${NC} conexiones"
+            fi
+        done
+    else
+        echo -e "  ${G}✅ Sin conexiones sospechosas${NC}"
+    fi
+    
+    echo ""
+    
+    # Ver logs de iptables DROP recientes
+    echo -e "  ${Y}🛡️ Paquetes bloqueados recientes:${NC}"
+    DROPS=$(dmesg 2>/dev/null | grep "IN=.*OUT=" | tail -5 | grep -oP 'SRC=\K[0-9.]+' | sort | uniq -c | sort -rn)
+    if [ -n "$DROPS" ]; then
+        echo "$DROPS" | while read count ip; do
+            echo -e "  ${NEON}◈${NC} ${R}$ip${NC} — $count paquetes bloqueados"
+        done
+    else
+        echo -e "  ${G}✅ Sin ataques detectados${NC}"
+    fi
+    
+    echo ""; sep
+    read -p "  ENTER..."
+}
+
 menu_antiddos() {
     while true; do
         banner; sep
@@ -2151,6 +2337,7 @@ menu_antiddos() {
         echo -e "  ${W}[1]${NC} Activar Anti-DDoS Agresivo"
         echo -e "  ${W}[2]${NC} Desactivar Anti-DDoS"
         echo -e "  ${W}[3]${NC} Ver reglas activas"
+        echo -e "  ${W}[4]${NC} Ver IPs atacantes"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -2248,6 +2435,19 @@ EOF
                 echo -e "  ${G}✓ Conexiones limitadas por IP${NC}"
                 echo -e "  ${G}✓ Fail2ban activo${NC}"
                 echo ""
+                # Notificar IPs atacantes al admin
+                BANNED_IPS=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2)
+                if [ -n "$BANNED_IPS" ]; then
+                    python3 -c "
+import urllib.request, json
+TOKEN='7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws'
+ADMIN='6290827127'
+msg='🚨 *ANTI-DDoS ACTIVADO*\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🛡️ IPs bloqueadas:\n$BANNED_IPS'
+url=f'https://api.telegram.org/bot{TOKEN}/sendMessage'
+data=json.dumps({'chat_id':ADMIN,'text':msg,'parse_mode':'Markdown'}).encode()
+urllib.request.urlopen(urllib.request.Request(url,data=data,headers={'Content-Type':'application/json'}))
+" 2>/dev/null
+                fi
                 echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"
                 read -p "  ENTER..." ;;
             2)
@@ -2258,6 +2458,7 @@ EOF
                 iptables -P OUTPUT ACCEPT
                 systemctl stop fail2ban 2>/dev/null
                 echo -e "  ${Y}Anti-DDoS desactivado${NC}"; sleep 2 ;;
+            4) menu_atacantes ;;
             3)
                 echo ""
                 iptables -L INPUT -n --line-numbers | head -30
@@ -2282,6 +2483,58 @@ actualizar_script() {
     exec /usr/local/bin/menu
 }
 
+menu_atacantes() {
+    banner; sep
+    echo -e "  ${NEON}◆ IPs ATACANTES${NC}"; sep; echo ""
+    
+    # Ver IPs bloqueadas por fail2ban
+    if command -v fail2ban-client > /dev/null 2>&1; then
+        BANNED=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2 | tr ' ' '\n' | grep -v '^$')
+        if [ -n "$BANNED" ]; then
+            echo -e "  ${R}🚨 IPs bloqueadas por Fail2ban:${NC}"
+            echo "$BANNED" | while read ip; do
+                [ -n "$ip" ] && echo -e "  ${NEON}◈${NC} ${R}$ip${NC}"
+            done
+        else
+            echo -e "  ${G}✅ Sin IPs bloqueadas en Fail2ban${NC}"
+        fi
+    fi
+    
+    echo ""
+    
+    # Ver conexiones sospechosas activas
+    echo -e "  ${Y}🔍 Conexiones activas por IP:${NC}"
+    CONNS=$(ss -tn state established | awk 'NR>1{print $5}' | cut -d: -f1 | sort | uniq -c | sort -rn | head -10)
+    if [ -n "$CONNS" ]; then
+        echo "$CONNS" | while read count ip; do
+            [ -z "$ip" ] && continue
+            if [ "$count" -gt 10 ]; then
+                echo -e "  ${R}◈ $ip — $count conexiones ⚠️${NC}"
+            else
+                echo -e "  ${NEON}◈${NC} $ip — ${Y}$count${NC} conexiones"
+            fi
+        done
+    else
+        echo -e "  ${G}✅ Sin conexiones sospechosas${NC}"
+    fi
+    
+    echo ""
+    
+    # Ver logs de iptables DROP recientes
+    echo -e "  ${Y}🛡️ Paquetes bloqueados recientes:${NC}"
+    DROPS=$(dmesg 2>/dev/null | grep "IN=.*OUT=" | tail -5 | grep -oP 'SRC=\K[0-9.]+' | sort | uniq -c | sort -rn)
+    if [ -n "$DROPS" ]; then
+        echo "$DROPS" | while read count ip; do
+            echo -e "  ${NEON}◈${NC} ${R}$ip${NC} — $count paquetes bloqueados"
+        done
+    else
+        echo -e "  ${G}✅ Sin ataques detectados${NC}"
+    fi
+    
+    echo ""; sep
+    read -p "  ENTER..."
+}
+
 menu_antiddos() {
     while true; do
         banner; sep
@@ -2297,6 +2550,7 @@ menu_antiddos() {
         echo -e "  ${W}[1]${NC} Activar Anti-DDoS Agresivo"
         echo -e "  ${W}[2]${NC} Desactivar Anti-DDoS"
         echo -e "  ${W}[3]${NC} Ver reglas activas"
+        echo -e "  ${W}[4]${NC} Ver IPs atacantes"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -2394,6 +2648,19 @@ EOF
                 echo -e "  ${G}✓ Conexiones limitadas por IP${NC}"
                 echo -e "  ${G}✓ Fail2ban activo${NC}"
                 echo ""
+                # Notificar IPs atacantes al admin
+                BANNED_IPS=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2)
+                if [ -n "$BANNED_IPS" ]; then
+                    python3 -c "
+import urllib.request, json
+TOKEN='7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws'
+ADMIN='6290827127'
+msg='🚨 *ANTI-DDoS ACTIVADO*\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🛡️ IPs bloqueadas:\n$BANNED_IPS'
+url=f'https://api.telegram.org/bot{TOKEN}/sendMessage'
+data=json.dumps({'chat_id':ADMIN,'text':msg,'parse_mode':'Markdown'}).encode()
+urllib.request.urlopen(urllib.request.Request(url,data=data,headers={'Content-Type':'application/json'}))
+" 2>/dev/null
+                fi
                 echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"
                 read -p "  ENTER..." ;;
             2)
@@ -2404,6 +2671,7 @@ EOF
                 iptables -P OUTPUT ACCEPT
                 systemctl stop fail2ban 2>/dev/null
                 echo -e "  ${Y}Anti-DDoS desactivado${NC}"; sleep 2 ;;
+            4) menu_atacantes ;;
             3)
                 echo ""
                 iptables -L INPUT -n --line-numbers | head -30
