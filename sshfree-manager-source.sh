@@ -787,7 +787,7 @@ crear_user_ziv() {
     read -p "  Dias de validez (default 30): " ZIV_DAYS; ZIV_DAYS=${ZIV_DAYS:-30}
     EXP_DATE=$(date -d "+${ZIV_DAYS} days" -Iseconds)
     EXP_SHOW=$(date -d "+${ZIV_DAYS} days" +"%d/%m/%Y")
-    SERVER_IP=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
+    SERVER_IP=$(curl -s -4 ifconfig.me 2>/dev/null || ip -4 addr show scope global | grep inet | awk '{print $2}' | cut -d/ -f1 | head -1)
     [ ! -f /etc/zivpn/users.json ] && echo "[]" > /etc/zivpn/users.json
     python3 - << PYEOF
 import json, datetime
@@ -911,7 +911,7 @@ crear_usuario() {
     read -p "  Dias de validez (default 30): " USR_DAYS; USR_DAYS=${USR_DAYS:-30}
     EXP_DATE=$(date -d "+${USR_DAYS} days" +%Y-%m-%d)
     EXP_SHOW=$(date -d "+${USR_DAYS} days" +%d/%m/%Y)
-    SERVER_IP=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
+    SERVER_IP=$(curl -s -4 ifconfig.me 2>/dev/null || ip -4 addr show scope global | grep inet | awk '{print $2}' | cut -d/ -f1 | head -1)
     echo ""; echo -e "  ${C}Creando usuario...${NC}"
     if id "$USR_NAME" &>/dev/null; then
         usermod -e $EXP_DATE $USR_NAME; echo "$USR_NAME:$USR_PASS" | chpasswd
@@ -3090,7 +3090,7 @@ EOF
 menu_principal() {
     while true; do
         banner
-        SRV_IP=$(hostname -I | awk '{print $1}')
+        SRV_IP=$(ip -4 addr show scope global | grep inet | awk '{print $2}' | cut -d/ -f1 | head -1)
         SRV_OS=$(lsb_release -d 2>/dev/null | cut -f2 || echo "Ubuntu")
         SRV_CPU=$(nproc)
         SRV_DATE=$(date +%d/%m/%Y-%H:%M)
