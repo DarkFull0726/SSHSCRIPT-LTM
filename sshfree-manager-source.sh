@@ -401,33 +401,36 @@ menu_badvpn() {
         case $OPT in
             1)
                 if [ ! -f /usr/local/bin/badvpn-udpgw ]; then
-                    echo -e "\n  ${C}Instalando dependencias...${NC}"
+                    echo -e "\n  ${C}Actualizando repositorios...${NC}"
+                    apt update -y > /dev/null 2>&1
+                    echo -e "  ${C}Instalando dependencias...${NC}"
                     apt install -y cmake make gcc g++ git > /dev/null 2>&1
-                    echo -e "  ${C}Clonando repositorio...${NC}"
-                    cd /tmp && rm -rf badvpn
-                    git clone https://github.com/ambrop72/badvpn.git > /dev/null 2>&1
-                    if [ ! -d /tmp/badvpn ]; then
-                        echo -e "  ${R}Error clonando repositorio${NC}"
-                        read -p "  ENTER..."; return
-                    fi
-                    echo -e "  ${C}Compilando BadVPN...${NC}"
-                    cd /tmp/badvpn && mkdir -p build && cd build
-                    cmake .. -DBUILD_NOTHING_BY_DEFAULT=1 -DBUILD_UDPGW=1 > /dev/null 2>&1
-                    make > /dev/null 2>&1
-                    if [ -f /tmp/badvpn/build/udpgw/badvpn-udpgw ]; then
-                        cp /tmp/badvpn/build/udpgw/badvpn-udpgw /usr/local/bin/
-                        chmod +x /usr/local/bin/badvpn-udpgw
-                        echo -e "  ${G}OK Binario instalado${NC}"
-                    else
-                        echo -e "  ${R}Error compilando, intentando metodo alternativo...${NC}"
-                        wget -q -O /usr/local/bin/badvpn-udpgw "https://raw.githubusercontent.com/haobao123456/badvpn/main/badvpn-udpgw"
-                        chmod +x /usr/local/bin/badvpn-udpgw
-                        if [ -f /usr/local/bin/badvpn-udpgw ]; then
-                            echo -e "  ${G}OK Binario descargado${NC}"
-                        else
-                            echo -e "  ${R}No se pudo instalar BadVPN${NC}"
-                            read -p "  ENTER..."; return
+                    # Verificar que cmake se instalo correctamente
+                    if ! command -v cmake > /dev/null 2>&1; then
+                        echo -e "  ${R}cmake no se pudo instalar, descargando binario...${NC}"
+                        wget -q -O /usr/local/bin/badvpn-udpgw "https://github.com/ambrop72/badvpn/releases/download/1.999.130/badvpn-udpgw"
+                        if [ ! -s /usr/local/bin/badvpn-udpgw ]; then
+                            wget -q -O /usr/local/bin/badvpn-udpgw "https://raw.githubusercontent.com/Korving-F/badvpn/master/udpgw/badvpn-udpgw"
                         fi
+                        chmod +x /usr/local/bin/badvpn-udpgw 2>/dev/null
+                    else
+                        echo -e "  ${C}Compilando BadVPN...${NC}"
+                        cd /tmp && rm -rf badvpn
+                        git clone https://github.com/ambrop72/badvpn.git > /dev/null 2>&1
+                        cd /tmp/badvpn && mkdir -p build && cd build
+                        cmake .. -DBUILD_NOTHING_BY_DEFAULT=1 -DBUILD_UDPGW=1 > /dev/null 2>&1
+                        make > /dev/null 2>&1
+                        if [ -f /tmp/badvpn/build/udpgw/badvpn-udpgw ]; then
+                            cp /tmp/badvpn/build/udpgw/badvpn-udpgw /usr/local/bin/
+                            chmod +x /usr/local/bin/badvpn-udpgw
+                        fi
+                    fi
+                    # Verificacion final
+                    if [ -f /usr/local/bin/badvpn-udpgw ] && [ -s /usr/local/bin/badvpn-udpgw ]; then
+                        echo -e "  ${G}OK Binario listo${NC}"
+                    else
+                        echo -e "  ${R}Error: no se pudo instalar badvpn-udpgw${NC}"
+                        read -p "  ENTER..."; return
                     fi
                 fi
                 for PORT in 7200 7300; do
