@@ -84,6 +84,40 @@ if [ "$VALID_LICENSE" = "false" ]; then
         mkdir -p /etc/sshfreeltm
         echo "$INPUT_KEY" > /etc/sshfreeltm/.licensed
         echo -e "  \033[0;32m✅ Key valida — Bienvenido a LTM VPN TOOLS\033[0m"
+        sleep 1
+        echo ""
+        echo -e "\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
+        echo -e "  \033[1;97m⚡ Instalando dependencias del sistema...\033[0m"
+        echo -e "\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
+        apt update -y > /dev/null 2>&1
+        install_dep() {
+            PKG=$1
+            LABEL=${2:-$1}
+            apt install -y $PKG > /dev/null 2>&1
+            if dpkg -l $PKG 2>/dev/null | grep -q "^ii"; then
+                echo -e "  \033[1;96m◈\033[0m \033[1;97m$LABEL\033[0m \033[1;32m✓ OK\033[0m"
+            else
+                echo -e "  \033[1;96m◈\033[0m \033[1;97m$LABEL\033[0m \033[1;31m✗ Error\033[0m"
+            fi
+        }
+        install_dep curl "curl"
+        install_dep wget "wget"
+        install_dep figlet "figlet (ASCII art)"
+        install_dep python3 "python3"
+        install_dep sqlite3 "sqlite3"
+        install_dep net-tools "net-tools"
+        install_dep iptables "iptables"
+        install_dep openssl "openssl"
+        install_dep unzip "unzip"
+        install_dep screen "screen"
+        install_dep cmake "cmake"
+        install_dep make "make"
+        install_dep gcc "gcc"
+        install_dep g++ "g++"
+        install_dep git "git"
+        echo -e "\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
+        echo -e "  \033[1;32m✅ Sistema listo\033[0m"
+        echo -e "\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
         sleep 2
     else
         echo -e "  \033[0;31m❌ $ERROR_MSG\033[0m"
@@ -987,19 +1021,19 @@ instalar_motd() {
     echo -e "  ${Y}  CONFIGURAR MOTD DEL SERVIDOR${NC}"; sep; echo ""
     read -p "  Nombre del servidor: " SRV_NAME
     [ -z "$SRV_NAME" ] && SRV_NAME="SSHFREE LTM"
-    
+
     # Instalar figlet para ASCII art
     apt install -y figlet > /dev/null 2>&1
-    
+
     INSTALL_DATE=$(date +%d-%m-%Y)
-    VERSION="V1.0.0"
-    
-    # Generar ASCII del nombre
-    ASCII_NAME=$(figlet -f slant "$SRV_NAME" 2>/dev/null || echo "$SRV_NAME")
-    
+
     # Guardar fecha de instalación
     echo "$INSTALL_DATE" > /etc/sshfreeltm/install_date
     echo "$SRV_NAME" > /etc/sshfreeltm/server_name
+
+    # Probar figlet
+    echo -e "  ${C}Preview del nombre:${NC}"
+    figlet -f slant "$SRV_NAME" 2>/dev/null || figlet "$SRV_NAME" 2>/dev/null || echo "$SRV_NAME"
     
     # Crear script MOTD dinámico
     cat > /etc/profile.d/sshfree-motd.sh << MOTDEOF
