@@ -421,8 +421,9 @@ menu_ws() {
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe /etc/ssh/banner${NC}"
                 else
+                    generar_banner_txt
                     systemctl restart dropbear
-                    echo -e "  ${G}Dropbear reiniciado con el banner actual${NC}"
+                    echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
                 fi
                 sleep 2 ;;
             8)
@@ -437,6 +438,7 @@ menu_ws() {
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -473,6 +475,7 @@ menu_badvpn() {
         case $OPT in
             1)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -486,6 +489,7 @@ menu_badvpn() {
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -521,6 +525,7 @@ menu_udp() {
         case $OPT in
             1)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -534,6 +539,7 @@ menu_udp() {
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -569,6 +575,7 @@ menu_ssl() {
         case $OPT in
             1)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -582,6 +589,7 @@ menu_ssl() {
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -631,6 +639,7 @@ except: pass
         case $OPT in
             1)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -644,6 +653,7 @@ except: pass
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -694,8 +704,9 @@ menu_ziv() {
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe /etc/ssh/banner${NC}"
                 else
+                    generar_banner_txt
                     systemctl restart dropbear
-                    echo -e "  ${G}Dropbear reiniciado con el banner actual${NC}"
+                    echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
                 fi
                 sleep 2 ;;
             8)
@@ -710,6 +721,7 @@ menu_ziv() {
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -844,8 +856,9 @@ menu_users_ziv() {
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe /etc/ssh/banner${NC}"
                 else
+                    generar_banner_txt
                     systemctl restart dropbear
-                    echo -e "  ${G}Dropbear reiniciado con el banner actual${NC}"
+                    echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
                 fi
                 sleep 2 ;;
             8)
@@ -860,6 +873,7 @@ menu_users_ziv() {
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -979,8 +993,9 @@ menu_usuarios() {
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe /etc/ssh/banner${NC}"
                 else
+                    generar_banner_txt
                     systemctl restart dropbear
-                    echo -e "  ${G}Dropbear reiniciado con el banner actual${NC}"
+                    echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
                 fi
                 sleep 2 ;;
             8)
@@ -995,6 +1010,7 @@ menu_usuarios() {
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -1213,6 +1229,7 @@ menu_antiddos() {
         case $OPT in
             1)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -1226,6 +1243,7 @@ menu_antiddos() {
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -1328,6 +1346,7 @@ menu_antiddos() {
         case $OPT in
             1)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -1341,6 +1360,7 @@ menu_antiddos() {
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -1418,6 +1438,7 @@ menu_slowdns() {
         case $OPT in
             1)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -1431,6 +1452,7 @@ menu_slowdns() {
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -1472,6 +1494,7 @@ menu_dropbear() {
         case $OPT in
             1)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -1485,6 +1508,7 @@ menu_dropbear() {
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -1538,6 +1562,7 @@ menu_banner_ssh() {
         case $OPT in
             1)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -1551,6 +1576,7 @@ menu_banner_ssh() {
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -1585,13 +1611,15 @@ menu_limpieza() {
         case $OPT in
             1)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             2)
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe /etc/ssh/banner${NC}"
                 else
+                    generar_banner_txt
                     systemctl restart sshd
-                    echo -e "  ${G}SSH reiniciado con el banner actual${NC}"
+                    echo -e "  ${G}SSH reiniciado con el banner en texto plano${NC}"
                 fi
                 sleep 2 ;;
             3)
@@ -1628,8 +1656,9 @@ REBOOTEOF
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe /etc/ssh/banner${NC}"
                 else
+                    generar_banner_txt
                     systemctl restart dropbear
-                    echo -e "  ${G}Dropbear reiniciado con el banner actual${NC}"
+                    echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
                 fi
                 sleep 2 ;;
             8)
@@ -1644,6 +1673,7 @@ REBOOTEOF
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -1680,6 +1710,7 @@ menu_shadowsocks() {
         case $OPT in
             1)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -1693,6 +1724,7 @@ menu_shadowsocks() {
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -1725,6 +1757,7 @@ menu_udp_hysteria_mod() {
         case $OPT in
             1)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -1738,6 +1771,7 @@ menu_udp_hysteria_mod() {
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -1772,6 +1806,7 @@ menu_hysteria() {
         case $OPT in
             1)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -1785,6 +1820,7 @@ menu_hysteria() {
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -1844,8 +1880,9 @@ menu_herramientas() {
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe /etc/ssh/banner${NC}"
                 else
+                    generar_banner_txt
                     systemctl restart dropbear
-                    echo -e "  ${G}Dropbear reiniciado con el banner actual${NC}"
+                    echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
                 fi
                 sleep 2 ;;
             8)
@@ -1860,6 +1897,7 @@ menu_herramientas() {
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -1977,6 +2015,7 @@ menu_antiddos() {
         case $OPT in
             1)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -1990,6 +2029,7 @@ menu_antiddos() {
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -2092,6 +2132,7 @@ menu_antiddos() {
         case $OPT in
             1)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -2105,6 +2146,7 @@ menu_antiddos() {
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -2182,6 +2224,7 @@ menu_slowdns() {
         case $OPT in
             1)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -2195,6 +2238,7 @@ menu_slowdns() {
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -2236,6 +2280,7 @@ menu_dropbear() {
         case $OPT in
             1)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -2249,6 +2294,7 @@ menu_dropbear() {
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -2302,6 +2348,7 @@ menu_banner_ssh() {
         case $OPT in
             1)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -2315,6 +2362,7 @@ menu_banner_ssh() {
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -2349,6 +2397,7 @@ menu_hysteria() {
         case $OPT in
             1)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -2362,6 +2411,7 @@ menu_hysteria() {
                 sleep 2 ;;
             9)
                 nano /etc/ssh/banner
+                generar_banner_txt
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -2452,3 +2502,16 @@ echo -e "\033[0;32mComando menu instalado\033[0m"
 
 
 # Convertir HTML a texto plano (eliminar etiquetas)
+
+# Generar versión de texto plano (sin HTML) para SSH y Dropbear
+generar_banner_txt() {
+    local origen="/etc/ssh/banner"
+    local destino="/etc/ssh/banner.txt"
+    if [ ! -f "$origen" ]; then
+        echo -e "${R}No existe $origen${NC}" >&2
+        return 1
+    fi
+    # Eliminar etiquetas HTML, entidades y espacios sobrantes
+    sed 's/<[^>]*>//g; s/&[a-zA-Z0-9#]\{2,6\};//g; s/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d' "$origen" > "$destino"
+    echo -e "${G}Banner de texto generado en $destino${NC}"
+}
