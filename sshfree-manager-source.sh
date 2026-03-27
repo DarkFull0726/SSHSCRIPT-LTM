@@ -5216,6 +5216,91 @@ PYSCRIPT
     python3 "$tmp_py" "$archivo"
     rm -f "$tmp_py"
 }
+
+# Convertir HTML a texto con colores ANSI
+convertir_banner_html() {
+    local archivo="$1"
+    local tmp_py="/tmp/convert_banner_$$.py"
+    cat > "$tmp_py" << "PYSCRIPT"
+import sys, re, html, os
+
+def hex_to_ansi(hex_color):
+    hex_color = hex_color.lstrip("#")
+    r = int(hex_color[0:2], 16)
+    g = int(hex_color[2:4], 16)
+    b = int(hex_color[4:6], 16)
+    return f"\033[38;2;{r};{g};{b}m"
+
+def process(html_text):
+    result = []
+    i = 0
+    color_stack = []
+    while i < len(html_text):
+        if html_text[i] == "<":
+            tag_end = html_text.find(">", i)
+            if tag_end == -1:
+                break
+            tag_content = html_text[i+1:tag_end]
+            tag_name = tag_content.split()[0].lower() if tag_content else ""
+            if tag_name.startswith("/"):
+                if color_stack:
+                    color_stack.pop()
+                    if color_stack:
+                        result.append(color_stack[-1])
+                    else:
+                        result.append("\033[0m")
+                i = tag_end + 1
+                continue
+            style_match = re.search(r'style="([^"]*)"', tag_content)
+            if style_match:
+                style = style_match.group(1)
+                color_match = re.search(r'color:\s*#([0-9a-fA-F]{6})', style)
+                if color_match:
+                    ansi = hex_to_ansi("#" + color_match.group(1))
+                    if color_stack:
+                        color_stack[-1] = ansi
+                    else:
+                        color_stack.append(ansi)
+                    result.append(ansi)
+            i = tag_end + 1
+        elif html_text[i] == "&":
+            semicolon = html_text.find(";", i)
+            if semicolon != -1:
+                ent = html_text[i+1:semicolon]
+                if ent == "lt": result.append("<")
+                elif ent == "gt": result.append(">")
+                elif ent == "amp": result.append("&")
+                else: result.append(html.unescape(html_text[i:semicolon+1]))
+                i = semicolon + 1
+            else:
+                result.append(html_text[i])
+                i += 1
+        else:
+            result.append(html_text[i])
+            i += 1
+    return "".join(result)
+
+if len(sys.argv) != 2:
+    sys.exit(1)
+
+file_path = sys.argv[1]
+if not os.path.exists(file_path):
+    sys.exit(0)
+
+with open(file_path, "r", encoding="utf-8") as f:
+    content = f.read()
+
+cleaned = process(content)
+cleaned = re.sub(r"\s+", " ", cleaned)
+cleaned += "\033[0m"
+
+with open(file_path, "w", encoding="utf-8") as f:
+    f.write(cleaned)
+PYSCRIPT
+    python3 "$tmp_py" "$archivo"
+    rm -f "$tmp_py"
+}
+
 [ "$EUID" -ne 0 ] && echo -e "${R}Ejecuta como root${NC}" && exit 1
 menu_principal
 
