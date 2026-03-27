@@ -489,6 +489,10 @@ BANNEREOF
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -653,6 +657,10 @@ BANNEREOF
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -755,6 +763,10 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
@@ -878,6 +890,10 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
@@ -1167,6 +1183,10 @@ BANNEREOF
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -1272,6 +1292,10 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
@@ -1485,6 +1509,10 @@ BANNEREOF
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -1659,6 +1687,10 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
@@ -2073,6 +2105,10 @@ BANNEREOF
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -2359,6 +2395,10 @@ BANNEREOF
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -2561,6 +2601,10 @@ BANNEREOF
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -2725,6 +2769,10 @@ BANNEREOF
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -2798,6 +2846,10 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
@@ -2933,6 +2985,10 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
@@ -3090,6 +3146,10 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
@@ -3301,6 +3361,10 @@ BANNEREOF
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -3475,6 +3539,10 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
@@ -3724,6 +3792,10 @@ BANNEREOF
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -3838,6 +3910,10 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
@@ -4151,6 +4227,10 @@ BANNEREOF
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -4437,6 +4517,10 @@ BANNEREOF
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -4639,6 +4723,10 @@ BANNEREOF
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -4803,6 +4891,10 @@ BANNEREOF
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -4876,6 +4968,10 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
@@ -5011,6 +5107,10 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
@@ -5248,6 +5348,10 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 # Convertir HTML a ANSI después de editar
                 convertir_banner_html
                 # Convertir HTML a ANSI después de editar
