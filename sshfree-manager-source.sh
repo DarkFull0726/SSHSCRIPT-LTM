@@ -5226,13 +5226,25 @@ PYSCRIPT
 
 
 
+
+
+
 # Convertir HTML a texto con colores ANSI (guardar en /etc/ssh/banner)
+# Si no existe /etc/ssh/banner.html, lo crea con un banner por defecto
 convertir_banner_html() {
     local origen="/etc/ssh/banner.html"
     local destino="/etc/ssh/banner"
     if [ ! -f "$origen" ]; then
-        echo -e "${R}No existe /etc/ssh/banner.html${NC}" >&2
-        return 1
+        echo -e "${Y}No existe $origen, creando uno por defecto...${NC}"
+        cat > "$origen" << 'HTMLDEFAULT'
+<h1 style="text-align:center"><span><big><big><span style="color: #00ff48">L</span><span style="color: #0dff5a">T</span><span style="color: #19fe6b">M</span><span style="color: #26fe7d"> </span><span style="color: #32fd8e">S</span><span style="color: #3ffda0">E</span><span style="color: #4cfcb1">R</span><span style="color: #58fcc3">V</span><span style="color: #65fbd4">I</span><span style="color: #71fbe6">D</span><span style="color: #7efaf7">OR</span><small></div><div><span style="color: #ff0000">NETFREE LTM VPS MIAMI 🇺🇲</span>
+<div><div><span style="color: #00ff83">🚫</span><span style="color: #00ff87"></span><span style="color: #00ff8b">P</span><span style="color: #00ff8f">R</span><span style="color: #00ff93">O</span><span style="color: #00ff97">H</span><span style="color: #00ff9b">I</span><span style="color: #00ff9f">B</span><span style="color: #00ffa3">I</span><span style="color: #00ffa7">D</span><span style="color: #00ffab">A</span><span style="color: #00ffb0"> L</span><span style="color: #00ffb4">A</span> <span style="color: #00ffb8">V</span><span style="color: #00ffbc"></span><span style="color: #00ffc0">E</span><span style="color: #00ffc4">N</span><span style="color: #00ffc8">T</span><span style="color: #00ffcc">A</span><span style="color: #00ffd0"></span><span style="color: #00ffd4"</span><span style="color: #00ffd8">🚫</span></div>
+<div><span style="color: #009aff">G</span><span style="color: #00cdc1">R</span><span style="color: #00ff83">U</span><span style="color: #80cc42">P</span><span style="color: #ff9900">O</span></div>https://t.me/+AzYZK49QGys4MDVh
+<div><span style="color: #009aff">C</span><span style="color: #00cdc1">A</span><span style="color: #00ff83">N</span><span style="color: #80cc42">A</span><span style="color: #ff9900">L</span></div>https://t.me/+g8bjM5B2izkyNzYx
+<big><big><big><big><big><big>🤑💥</big></big></big></big></big></big>
+<h2 style="text-align:center;"><small><small><small><small><small><small><span style="color: #faff00">∘₊✧ </span><span style="color:#ffbf00;">™✶▲▽DarkFull༻༒</span></small></small></small></small></small></small></h2>
+HTMLDEFAULT
+        echo -e "${G}Banner por defecto creado en $origen${NC}"
     fi
     local tmp_py="/tmp/convert_banner_$$.py"
     cat > "$tmp_py" << "PYSCRIPT"
