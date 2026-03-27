@@ -1276,37 +1276,30 @@ menu_antiddos() {
                 echo -e "  ${G}  ✓ Reglas guardadas${NC}"
 
                 echo -e "  ${C}  Configurando Fail2ban...${NC}"
-                python3 - << PYEOF2
-import os
-jail = [
-    "[DEFAULT]",
-    "bantime = 3600",
-    "findtime = 600",
-    "maxretry = 3",
-    "ignoreip = 127.0.0.1/8",
-    "",
-    "[sshd]",
-    "enabled = true",
-    "port = ssh",
-    "maxretry = 3",
-    "bantime = 86400",
-    "",
-    "[http-get-dos]",
-    "enabled = true",
-    "port = http,https",
-    "filter = http-get-dos",
-    "logpath = /var/log/nginx/access.log",
-    "maxretry = 100",
-    "findtime = 60",
-    "bantime = 3600",
-]
-os.makedirs("/etc/fail2ban", exist_ok=True)
-with open("/etc/fail2ban/jail.local", "w") as f:
-    f.write("
-".join(jail) + "
-")
-print("  [0;32m  ✓ Fail2ban configurado[0m")
-PYEOF2
+                mkdir -p /etc/fail2ban
+                cat > /etc/fail2ban/jail.local << EOF_JAIL
+[DEFAULT]
+bantime = 3600
+findtime = 600
+maxretry = 3
+ignoreip = 127.0.0.1/8
+
+[sshd]
+enabled = true
+port = ssh
+maxretry = 3
+bantime = 86400
+
+[http-get-dos]
+enabled = true
+port = http,https
+filter = http-get-dos
+logpath = /var/log/nginx/access.log
+maxretry = 100
+findtime = 60
+bantime = 3600
+EOF_JAIL
+                echo -e "  ${G}  ✓ Fail2ban configurado${NC}"
 
                 systemctl enable fail2ban -q 2>/dev/null
                 systemctl restart fail2ban 2>/dev/null
@@ -1316,26 +1309,11 @@ PYEOF2
                     echo -e "  ${G}  ✓ Fail2ban activo${NC}" || \
                     echo -e "  ${Y}  ⚠ Verifica: systemctl status fail2ban${NC}"
 
-                python3 - << PYEOF2
-import urllib.request, json, subprocess
-TOKEN = "7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws"
-ADMIN = "6290827127"
-try:
-    r = subprocess.run(["fail2ban-client","status","sshd"], capture_output=True, text=True, timeout=5)
-    lines = [l for l in r.stdout.splitlines() if "Banned IP" in l]
-    banned = lines[0].split(":")[1].strip() if lines else "Ninguna aun"
-except Exception:
-    banned = "No disponible"
-emoji = chr(0x1F6A8)
-msg = emoji + " *ANTI-DDoS ACTIVADO*
-" + banned
-url = "https://api.telegram.org/bot" + TOKEN + "/sendMessage"
-data = json.dumps({"chat_id": ADMIN, "text": msg, "parse_mode": "Markdown"}).encode()
-try:
-    urllib.request.urlopen(urllib.request.Request(url, data=data, headers={"Content-Type":"application/json"}), timeout=5)
-except Exception:
-    pass
-PYEOF2
+                BANNED_IPS=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2 | xargs)
+                if [ -n "$BANNED_IPS" ]; then
+                    curl -s -X POST "https://api.telegram.org/bot7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws/sendMessage" \
+                        -d "chat_id=6290827127&text=Anti-DDoS+Activado+-+IPs:+${BANNED_IPS}&parse_mode=Markdown" > /dev/null 2>&1
+                fi
 
                 echo ""; sep
                 echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"; sep
@@ -1496,37 +1474,30 @@ menu_antiddos() {
                 echo -e "  ${G}  ✓ Reglas guardadas${NC}"
 
                 echo -e "  ${C}  Configurando Fail2ban...${NC}"
-                python3 - << PYEOF2
-import os
-jail = [
-    "[DEFAULT]",
-    "bantime = 3600",
-    "findtime = 600",
-    "maxretry = 3",
-    "ignoreip = 127.0.0.1/8",
-    "",
-    "[sshd]",
-    "enabled = true",
-    "port = ssh",
-    "maxretry = 3",
-    "bantime = 86400",
-    "",
-    "[http-get-dos]",
-    "enabled = true",
-    "port = http,https",
-    "filter = http-get-dos",
-    "logpath = /var/log/nginx/access.log",
-    "maxretry = 100",
-    "findtime = 60",
-    "bantime = 3600",
-]
-os.makedirs("/etc/fail2ban", exist_ok=True)
-with open("/etc/fail2ban/jail.local", "w") as f:
-    f.write("
-".join(jail) + "
-")
-print("  [0;32m  ✓ Fail2ban configurado[0m")
-PYEOF2
+                mkdir -p /etc/fail2ban
+                cat > /etc/fail2ban/jail.local << EOF_JAIL
+[DEFAULT]
+bantime = 3600
+findtime = 600
+maxretry = 3
+ignoreip = 127.0.0.1/8
+
+[sshd]
+enabled = true
+port = ssh
+maxretry = 3
+bantime = 86400
+
+[http-get-dos]
+enabled = true
+port = http,https
+filter = http-get-dos
+logpath = /var/log/nginx/access.log
+maxretry = 100
+findtime = 60
+bantime = 3600
+EOF_JAIL
+                echo -e "  ${G}  ✓ Fail2ban configurado${NC}"
 
                 systemctl enable fail2ban -q 2>/dev/null
                 systemctl restart fail2ban 2>/dev/null
@@ -1536,26 +1507,11 @@ PYEOF2
                     echo -e "  ${G}  ✓ Fail2ban activo${NC}" || \
                     echo -e "  ${Y}  ⚠ Verifica: systemctl status fail2ban${NC}"
 
-                python3 - << PYEOF2
-import urllib.request, json, subprocess
-TOKEN = "7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws"
-ADMIN = "6290827127"
-try:
-    r = subprocess.run(["fail2ban-client","status","sshd"], capture_output=True, text=True, timeout=5)
-    lines = [l for l in r.stdout.splitlines() if "Banned IP" in l]
-    banned = lines[0].split(":")[1].strip() if lines else "Ninguna aun"
-except Exception:
-    banned = "No disponible"
-emoji = chr(0x1F6A8)
-msg = emoji + " *ANTI-DDoS ACTIVADO*
-" + banned
-url = "https://api.telegram.org/bot" + TOKEN + "/sendMessage"
-data = json.dumps({"chat_id": ADMIN, "text": msg, "parse_mode": "Markdown"}).encode()
-try:
-    urllib.request.urlopen(urllib.request.Request(url, data=data, headers={"Content-Type":"application/json"}), timeout=5)
-except Exception:
-    pass
-PYEOF2
+                BANNED_IPS=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2 | xargs)
+                if [ -n "$BANNED_IPS" ]; then
+                    curl -s -X POST "https://api.telegram.org/bot7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws/sendMessage" \
+                        -d "chat_id=6290827127&text=Anti-DDoS+Activado+-+IPs:+${BANNED_IPS}&parse_mode=Markdown" > /dev/null 2>&1
+                fi
 
                 echo ""; sep
                 echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"; sep
@@ -2464,37 +2420,30 @@ menu_antiddos() {
                 echo -e "  ${G}  ✓ Reglas guardadas${NC}"
 
                 echo -e "  ${C}  Configurando Fail2ban...${NC}"
-                python3 - << PYEOF2
-import os
-jail = [
-    "[DEFAULT]",
-    "bantime = 3600",
-    "findtime = 600",
-    "maxretry = 3",
-    "ignoreip = 127.0.0.1/8",
-    "",
-    "[sshd]",
-    "enabled = true",
-    "port = ssh",
-    "maxretry = 3",
-    "bantime = 86400",
-    "",
-    "[http-get-dos]",
-    "enabled = true",
-    "port = http,https",
-    "filter = http-get-dos",
-    "logpath = /var/log/nginx/access.log",
-    "maxretry = 100",
-    "findtime = 60",
-    "bantime = 3600",
-]
-os.makedirs("/etc/fail2ban", exist_ok=True)
-with open("/etc/fail2ban/jail.local", "w") as f:
-    f.write("
-".join(jail) + "
-")
-print("  [0;32m  ✓ Fail2ban configurado[0m")
-PYEOF2
+                mkdir -p /etc/fail2ban
+                cat > /etc/fail2ban/jail.local << EOF_JAIL
+[DEFAULT]
+bantime = 3600
+findtime = 600
+maxretry = 3
+ignoreip = 127.0.0.1/8
+
+[sshd]
+enabled = true
+port = ssh
+maxretry = 3
+bantime = 86400
+
+[http-get-dos]
+enabled = true
+port = http,https
+filter = http-get-dos
+logpath = /var/log/nginx/access.log
+maxretry = 100
+findtime = 60
+bantime = 3600
+EOF_JAIL
+                echo -e "  ${G}  ✓ Fail2ban configurado${NC}"
 
                 systemctl enable fail2ban -q 2>/dev/null
                 systemctl restart fail2ban 2>/dev/null
@@ -2504,26 +2453,11 @@ PYEOF2
                     echo -e "  ${G}  ✓ Fail2ban activo${NC}" || \
                     echo -e "  ${Y}  ⚠ Verifica: systemctl status fail2ban${NC}"
 
-                python3 - << PYEOF2
-import urllib.request, json, subprocess
-TOKEN = "7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws"
-ADMIN = "6290827127"
-try:
-    r = subprocess.run(["fail2ban-client","status","sshd"], capture_output=True, text=True, timeout=5)
-    lines = [l for l in r.stdout.splitlines() if "Banned IP" in l]
-    banned = lines[0].split(":")[1].strip() if lines else "Ninguna aun"
-except Exception:
-    banned = "No disponible"
-emoji = chr(0x1F6A8)
-msg = emoji + " *ANTI-DDoS ACTIVADO*
-" + banned
-url = "https://api.telegram.org/bot" + TOKEN + "/sendMessage"
-data = json.dumps({"chat_id": ADMIN, "text": msg, "parse_mode": "Markdown"}).encode()
-try:
-    urllib.request.urlopen(urllib.request.Request(url, data=data, headers={"Content-Type":"application/json"}), timeout=5)
-except Exception:
-    pass
-PYEOF2
+                BANNED_IPS=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2 | xargs)
+                if [ -n "$BANNED_IPS" ]; then
+                    curl -s -X POST "https://api.telegram.org/bot7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws/sendMessage" \
+                        -d "chat_id=6290827127&text=Anti-DDoS+Activado+-+IPs:+${BANNED_IPS}&parse_mode=Markdown" > /dev/null 2>&1
+                fi
 
                 echo ""; sep
                 echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"; sep
@@ -2684,37 +2618,30 @@ menu_antiddos() {
                 echo -e "  ${G}  ✓ Reglas guardadas${NC}"
 
                 echo -e "  ${C}  Configurando Fail2ban...${NC}"
-                python3 - << PYEOF2
-import os
-jail = [
-    "[DEFAULT]",
-    "bantime = 3600",
-    "findtime = 600",
-    "maxretry = 3",
-    "ignoreip = 127.0.0.1/8",
-    "",
-    "[sshd]",
-    "enabled = true",
-    "port = ssh",
-    "maxretry = 3",
-    "bantime = 86400",
-    "",
-    "[http-get-dos]",
-    "enabled = true",
-    "port = http,https",
-    "filter = http-get-dos",
-    "logpath = /var/log/nginx/access.log",
-    "maxretry = 100",
-    "findtime = 60",
-    "bantime = 3600",
-]
-os.makedirs("/etc/fail2ban", exist_ok=True)
-with open("/etc/fail2ban/jail.local", "w") as f:
-    f.write("
-".join(jail) + "
-")
-print("  [0;32m  ✓ Fail2ban configurado[0m")
-PYEOF2
+                mkdir -p /etc/fail2ban
+                cat > /etc/fail2ban/jail.local << EOF_JAIL
+[DEFAULT]
+bantime = 3600
+findtime = 600
+maxretry = 3
+ignoreip = 127.0.0.1/8
+
+[sshd]
+enabled = true
+port = ssh
+maxretry = 3
+bantime = 86400
+
+[http-get-dos]
+enabled = true
+port = http,https
+filter = http-get-dos
+logpath = /var/log/nginx/access.log
+maxretry = 100
+findtime = 60
+bantime = 3600
+EOF_JAIL
+                echo -e "  ${G}  ✓ Fail2ban configurado${NC}"
 
                 systemctl enable fail2ban -q 2>/dev/null
                 systemctl restart fail2ban 2>/dev/null
@@ -2724,26 +2651,11 @@ PYEOF2
                     echo -e "  ${G}  ✓ Fail2ban activo${NC}" || \
                     echo -e "  ${Y}  ⚠ Verifica: systemctl status fail2ban${NC}"
 
-                python3 - << PYEOF2
-import urllib.request, json, subprocess
-TOKEN = "7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws"
-ADMIN = "6290827127"
-try:
-    r = subprocess.run(["fail2ban-client","status","sshd"], capture_output=True, text=True, timeout=5)
-    lines = [l for l in r.stdout.splitlines() if "Banned IP" in l]
-    banned = lines[0].split(":")[1].strip() if lines else "Ninguna aun"
-except Exception:
-    banned = "No disponible"
-emoji = chr(0x1F6A8)
-msg = emoji + " *ANTI-DDoS ACTIVADO*
-" + banned
-url = "https://api.telegram.org/bot" + TOKEN + "/sendMessage"
-data = json.dumps({"chat_id": ADMIN, "text": msg, "parse_mode": "Markdown"}).encode()
-try:
-    urllib.request.urlopen(urllib.request.Request(url, data=data, headers={"Content-Type":"application/json"}), timeout=5)
-except Exception:
-    pass
-PYEOF2
+                BANNED_IPS=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2 | xargs)
+                if [ -n "$BANNED_IPS" ]; then
+                    curl -s -X POST "https://api.telegram.org/bot7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws/sendMessage" \
+                        -d "chat_id=6290827127&text=Anti-DDoS+Activado+-+IPs:+${BANNED_IPS}&parse_mode=Markdown" > /dev/null 2>&1
+                fi
 
                 echo ""; sep
                 echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"; sep
