@@ -2408,9 +2408,9 @@ menu_principal() {
             1) menu_usuarios ;;
             2) menu_v2ray ;;
             3) menu_users_ziv ;;
-            5) usuarios_ssh_online_count ;;
-            6) usuarios_v2ray_online_count ;;
-            7) usuarios_ziv_online_count ;;
+            5) usuarios_ssh_online_count ;; 
+            6) usuarios_v2ray_online_count ;; 
+            7) usuarios_ziv_online_count ;; 
             4) menu_herramientas ;;
             9) instalar_motd ;;
             10) desinstalar_script ;;
