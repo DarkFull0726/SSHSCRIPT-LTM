@@ -5223,9 +5223,17 @@ PYSCRIPT
 
 
 
-# Convertir HTML a texto con colores ANSI (con saltos de línea forzados)
+
+
+
+# Convertir HTML a texto con colores ANSI (guardar en /etc/ssh/banner)
 convertir_banner_html() {
-    local archivo="$1"
+    local origen="/etc/ssh/banner.html"
+    local destino="/etc/ssh/banner"
+    if [ ! -f "$origen" ]; then
+        echo -e "${R}No existe /etc/ssh/banner.html${NC}" >&2
+        return 1
+    fi
     local tmp_py="/tmp/convert_banner_$$.py"
     cat > "$tmp_py" << "PYSCRIPT"
 import sys, re, html, os
@@ -5244,7 +5252,6 @@ def process(html_text):
     block_tags = {"div", "h1", "h2", "h3", "h4", "h5", "h6", "p", "big", "small"}
     inline_break = {"br"}
 
-    # Función auxiliar para agregar salto de línea
     def add_newline():
         if not result or result[-1] != "\n":
             result.append("\n")
@@ -5256,7 +5263,6 @@ def process(html_text):
                 break
             tag_content = html_text[i+1:tag_end]
             tag_name = tag_content.split()[0].lower() if tag_content else ""
-            # Cierre de etiqueta
             if tag_name.startswith("/"):
                 real_tag = tag_name[1:]
                 if real_tag in block_tags:
@@ -5269,10 +5275,8 @@ def process(html_text):
                         result.append("\033[0m")
                 i = tag_end + 1
                 continue
-            # Etiqueta de apertura
             if tag_name in block_tags:
                 add_newline()
-            # Buscar color en estilo
             style_match = re.search(r'style="([^"]*)"', tag_content)
             if style_match:
                 style = style_match.group(1)
@@ -5284,7 +5288,6 @@ def process(html_text):
                     else:
                         color_stack.append(ansi)
                     result.append(ansi)
-            # Etiqueta <br>
             if tag_name in inline_break:
                 add_newline()
             i = tag_end + 1
@@ -5303,7 +5306,6 @@ def process(html_text):
         else:
             result.append(html_text[i])
             i += 1
-    # Añadir un salto final y reset
     result.append("\033[0m")
     return "".join(result)
 
@@ -5318,15 +5320,20 @@ with open(file_path, "r", encoding="utf-8") as f:
     content = f.read()
 
 cleaned = process(content)
-# Eliminar múltiples saltos de línea consecutivos (más de 2)
 cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
-# Limpiar espacios al inicio/final
 cleaned = cleaned.strip()
 with open(file_path, "w", encoding="utf-8") as f:
     f.write(cleaned)
 PYSCRIPT
-    python3 "$tmp_py" "$archivo"
+    python3 "$tmp_py" "$origen"
     rm -f "$tmp_py"
+    cp "$origen" "$destino" 2>/dev/null
+    if [ $? -eq 0 ]; then
+        echo -e "${G}Banner convertido correctamente${NC}"
+    else
+        echo -e "${R}Error en la conversión${NC}"
+        return 1
+    fi
 }
 
 [ "$EUID" -ne 0 ] && echo -e "${R}Ejecuta como root${NC}" && exit 1
