@@ -1204,9 +1204,8 @@ menu_antiddos() {
     while true; do
         banner; sep
         echo -e "  ${Y}  ANTI-DDOS${NC}"; sep; echo ""
-        # Ver estado
-        DDOS_ST=$(iptables -L INPUT -n 2>/dev/null | grep -c "limit\|REJECT\|DROP")
-        if [[ "${DDOS_ST:-0}" -gt 3 ]]; then
+        DDOS_ACTIVE=$(iptables -L INPUT -n 2>/dev/null | grep -q "limit" && echo 1 || echo 0)
+        if [ "$DDOS_ACTIVE" = "1" ]; then
             echo -e "  Estado: ${G}[ACTIVO]${NC}"
         else
             echo -e "  Estado: ${R}[INACTIVO]${NC}"
@@ -1221,67 +1220,67 @@ menu_antiddos() {
         case $OPT in
             1)
                 echo -e "
-  ${C}Aplicando Anti-DDoS agresivo...${NC}"
-                apt install -y iptables-persistent fail2ban > /dev/null 2>&1
+  ${C}[1/5] Instalando dependencias...${NC}"
+                DEBIAN_FRONTEND=noninteractive apt install -y -qq iptables-persistent fail2ban 2>&1 | \
+                    grep -E "^(Get|Setting|Processing|Unpacking)" | while read line; do echo "    $line"; done
+                echo -e "  ${G}  ✓ Dependencias listas${NC}"
 
-                # Limpiar reglas previas
-                iptables -F
-                iptables -X
-                iptables -Z
+                echo -e "  ${C}[2/5] Limpiando reglas previas...${NC}"
+                iptables -F; iptables -X; iptables -Z
+                echo -e "  ${G}  ✓ Reglas limpiadas${NC}"
 
-                # Política por defecto
+                echo -e "  ${C}[3/5] Aplicando politicas base...${NC}"
                 iptables -P INPUT ACCEPT
                 iptables -P FORWARD DROP
                 iptables -P OUTPUT ACCEPT
-
-                # Permitir loopback
                 iptables -A INPUT -i lo -j ACCEPT
                 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+                echo -e "  ${G}  ✓ Politicas base aplicadas${NC}"
 
-                # Permitir puertos activos
-                for PORT in $(ss -tlnp | awk '/LISTEN/{print $4}' | grep -o '[0-9]*$' | sort -u); do
+                echo -e "  ${C}[4/5] Abriendo puertos activos...${NC}"
+                for PORT in $(ss -tlnp | awk '/LISTEN/{print $4}' | grep -oE '[0-9]+$' | sort -u); do
                     iptables -A INPUT -p tcp --dport $PORT -j ACCEPT
+                    echo -e "  ${DIM}    TCP $PORT abierto${NC}"
                 done
-                for PORT in $(ss -ulnp | awk '/UNCONN/{print $4}' | grep -o '[0-9]*$' | sort -u); do
+                for PORT in $(ss -ulnp | awk '/UNCONN/{print $4}' | grep -oE '[0-9]+$' | sort -u); do
                     iptables -A INPUT -p udp --dport $PORT -j ACCEPT
+                    echo -e "  ${DIM}    UDP $PORT abierto${NC}"
                 done
+                echo -e "  ${G}  ✓ Puertos configurados${NC}"
 
-                # Anti SYN Flood
+                echo -e "  ${C}[5/5] Aplicando reglas anti-ataque...${NC}"
                 iptables -A INPUT -p tcp --syn -m limit --limit 10/s --limit-burst 20 -j ACCEPT
                 iptables -A INPUT -p tcp --syn -j DROP
-
-                # Anti UDP Flood
+                echo -e "  ${G}  ✓ SYN Flood bloqueado${NC}"
                 iptables -A INPUT -p udp -m limit --limit 50/s --limit-burst 100 -j ACCEPT
                 iptables -A INPUT -p udp -j DROP
-
-                # Anti ICMP Flood (ping)
+                echo -e "  ${G}  ✓ UDP Flood bloqueado${NC}"
                 iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 2/s --limit-burst 4 -j ACCEPT
                 iptables -A INPUT -p icmp -j DROP
-
-                # Bloquear escaneo de puertos
+                echo -e "  ${G}  ✓ ICMP Flood bloqueado${NC}"
                 iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
                 iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
                 iptables -A INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
-
-                # Limitar conexiones por IP
+                echo -e "  ${G}  ✓ Port scanning bloqueado${NC}"
                 iptables -A INPUT -p tcp --dport 22 -m connlimit --connlimit-above 5 -j REJECT
                 iptables -A INPUT -p tcp -m connlimit --connlimit-above 50 -j REJECT
-
-                # Anti brute force SSH
                 iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --set
                 iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --update --seconds 60 --hitcount 5 -j DROP
-
-                # Bloquear IPs privadas falsas
                 iptables -A INPUT -s 10.0.0.0/8 ! -i lo -j DROP
                 iptables -A INPUT -s 172.16.0.0/12 ! -i lo -j DROP
                 iptables -A INPUT -s 192.168.0.0/16 ! -i lo -j DROP
+                echo -e "  ${G}  ✓ Brute Force y spoofing bloqueados${NC}"
 
-                # Guardar reglas
+                echo -e "  ${C}  Guardando reglas...${NC}"
                 iptables-save > /etc/iptables/rules.v4 2>/dev/null || iptables-save > /etc/iptables.rules
+                echo -e "  ${G}  ✓ Reglas guardadas${NC}"
 
-                # Configurar fail2ban
-                cat > /etc/fail2ban/jail.local << EOF
-[DEFAULT]
+                echo -e "  ${C}  Configurando Fail2ban...${NC}"
+                python3 - << PYEOF2
+import os
+os.makedirs("/etc/fail2ban", exist_ok=True)
+with open("/etc/fail2ban/jail.local", "w") as f:
+    f.write("[DEFAULT]
 bantime = 3600
 findtime = 600
 maxretry = 3
@@ -1301,47 +1300,50 @@ logpath = /var/log/nginx/access.log
 maxretry = 100
 findtime = 60
 bantime = 3600
-EOF
-                systemctl enable fail2ban
-                systemctl restart fail2ban 2>/dev/null
+")
+print("  [0;32m  ✓ Fail2ban configurado[0m")
+PYEOF2
 
-                echo -e "  ${G}✓ SYN Flood bloqueado${NC}"
-                echo -e "  ${G}✓ UDP Flood bloqueado${NC}"
-                echo -e "  ${G}✓ ICMP Flood bloqueado${NC}"
-                echo -e "  ${G}✓ Port scanning bloqueado${NC}"
-                echo -e "  ${G}✓ Brute Force SSH bloqueado${NC}"
-                echo -e "  ${G}✓ Conexiones limitadas por IP${NC}"
-                echo -e "  ${G}✓ Fail2ban activo${NC}"
-                echo ""
-                # Notificar IPs atacantes al admin
-                BANNED_IPS=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2)
-                if [ -n "$BANNED_IPS" ]; then
-                    python3 -c "
-import urllib.request, json
-TOKEN='7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws'
-ADMIN='6290827127'
-msg='🚨 *ANTI-DDoS ACTIVADO*\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🛡️ IPs bloqueadas:\n$BANNED_IPS'
-url=f'https://api.telegram.org/bot{TOKEN}/sendMessage'
-data=json.dumps({'chat_id':ADMIN,'text':msg,'parse_mode':'Markdown'}).encode()
-urllib.request.urlopen(urllib.request.Request(url,data=data,headers={'Content-Type':'application/json'}))
-" 2>/dev/null
-                fi
-                echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"
+                systemctl enable fail2ban -q 2>/dev/null
+                systemctl restart fail2ban 2>/dev/null
+                echo -ne "  ${C}  Iniciando Fail2ban${NC}"
+                for i in 1 2 3 4 5; do sleep 0.5; echo -ne "."; done; echo ""
+                systemctl is-active --quiet fail2ban && \
+                    echo -e "  ${G}  ✓ Fail2ban activo${NC}" || \
+                    echo -e "  ${Y}  ⚠ Verifica: systemctl status fail2ban${NC}"
+
+                python3 - << PYEOF2
+import urllib.request, json, subprocess
+TOKEN = "7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws"
+ADMIN = "6290827127"
+try:
+    r = subprocess.run(["fail2ban-client","status","sshd"], capture_output=True, text=True, timeout=5)
+    lines = [l for l in r.stdout.splitlines() if "Banned IP" in l]
+    banned = lines[0].split(":")[1].strip() if lines else "Ninguna aun"
+except Exception:
+    banned = "No disponible"
+msg = "🚨 *ANTI-DDoS ACTIVADO*
+" + banned
+url = "https://api.telegram.org/bot" + TOKEN + "/sendMessage"
+data = json.dumps({"chat_id": ADMIN, "text": msg, "parse_mode": "Markdown"}).encode()
+try:
+    urllib.request.urlopen(urllib.request.Request(url, data=data, headers={"Content-Type":"application/json"}), timeout=5)
+except Exception:
+    pass
+PYEOF2
+
+                echo ""; sep
+                echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"; sep
                 read -p "  ENTER..." ;;
             2)
-                iptables -F
-                iptables -X
-                iptables -P INPUT ACCEPT
-                iptables -P FORWARD ACCEPT
-                iptables -P OUTPUT ACCEPT
+                iptables -F; iptables -X
+                iptables -P INPUT ACCEPT; iptables -P FORWARD ACCEPT; iptables -P OUTPUT ACCEPT
                 systemctl stop fail2ban 2>/dev/null
                 echo -e "  ${Y}Anti-DDoS desactivado${NC}"; sleep 2 ;;
-            4) menu_atacantes ;;
             3)
-                echo ""
-                iptables -L INPUT -n --line-numbers | head -30
-                echo ""
+                echo ""; iptables -L INPUT -n --line-numbers | head -30; echo ""
                 read -p "  ENTER..." ;;
+            4) menu_atacantes ;;
             0) break ;;
         esac
     done
@@ -1417,9 +1419,8 @@ menu_antiddos() {
     while true; do
         banner; sep
         echo -e "  ${Y}  ANTI-DDOS${NC}"; sep; echo ""
-        # Ver estado
-        DDOS_ST=$(iptables -L INPUT -n 2>/dev/null | grep -c "limit\|REJECT\|DROP")
-        if [[ "${DDOS_ST:-0}" -gt 3 ]]; then
+        DDOS_ACTIVE=$(iptables -L INPUT -n 2>/dev/null | grep -q "limit" && echo 1 || echo 0)
+        if [ "$DDOS_ACTIVE" = "1" ]; then
             echo -e "  Estado: ${G}[ACTIVO]${NC}"
         else
             echo -e "  Estado: ${R}[INACTIVO]${NC}"
@@ -1434,67 +1435,67 @@ menu_antiddos() {
         case $OPT in
             1)
                 echo -e "
-  ${C}Aplicando Anti-DDoS agresivo...${NC}"
-                apt install -y iptables-persistent fail2ban > /dev/null 2>&1
+  ${C}[1/5] Instalando dependencias...${NC}"
+                DEBIAN_FRONTEND=noninteractive apt install -y -qq iptables-persistent fail2ban 2>&1 | \
+                    grep -E "^(Get|Setting|Processing|Unpacking)" | while read line; do echo "    $line"; done
+                echo -e "  ${G}  ✓ Dependencias listas${NC}"
 
-                # Limpiar reglas previas
-                iptables -F
-                iptables -X
-                iptables -Z
+                echo -e "  ${C}[2/5] Limpiando reglas previas...${NC}"
+                iptables -F; iptables -X; iptables -Z
+                echo -e "  ${G}  ✓ Reglas limpiadas${NC}"
 
-                # Política por defecto
+                echo -e "  ${C}[3/5] Aplicando politicas base...${NC}"
                 iptables -P INPUT ACCEPT
                 iptables -P FORWARD DROP
                 iptables -P OUTPUT ACCEPT
-
-                # Permitir loopback
                 iptables -A INPUT -i lo -j ACCEPT
                 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+                echo -e "  ${G}  ✓ Politicas base aplicadas${NC}"
 
-                # Permitir puertos activos
-                for PORT in $(ss -tlnp | awk '/LISTEN/{print $4}' | grep -o '[0-9]*$' | sort -u); do
+                echo -e "  ${C}[4/5] Abriendo puertos activos...${NC}"
+                for PORT in $(ss -tlnp | awk '/LISTEN/{print $4}' | grep -oE '[0-9]+$' | sort -u); do
                     iptables -A INPUT -p tcp --dport $PORT -j ACCEPT
+                    echo -e "  ${DIM}    TCP $PORT abierto${NC}"
                 done
-                for PORT in $(ss -ulnp | awk '/UNCONN/{print $4}' | grep -o '[0-9]*$' | sort -u); do
+                for PORT in $(ss -ulnp | awk '/UNCONN/{print $4}' | grep -oE '[0-9]+$' | sort -u); do
                     iptables -A INPUT -p udp --dport $PORT -j ACCEPT
+                    echo -e "  ${DIM}    UDP $PORT abierto${NC}"
                 done
+                echo -e "  ${G}  ✓ Puertos configurados${NC}"
 
-                # Anti SYN Flood
+                echo -e "  ${C}[5/5] Aplicando reglas anti-ataque...${NC}"
                 iptables -A INPUT -p tcp --syn -m limit --limit 10/s --limit-burst 20 -j ACCEPT
                 iptables -A INPUT -p tcp --syn -j DROP
-
-                # Anti UDP Flood
+                echo -e "  ${G}  ✓ SYN Flood bloqueado${NC}"
                 iptables -A INPUT -p udp -m limit --limit 50/s --limit-burst 100 -j ACCEPT
                 iptables -A INPUT -p udp -j DROP
-
-                # Anti ICMP Flood (ping)
+                echo -e "  ${G}  ✓ UDP Flood bloqueado${NC}"
                 iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 2/s --limit-burst 4 -j ACCEPT
                 iptables -A INPUT -p icmp -j DROP
-
-                # Bloquear escaneo de puertos
+                echo -e "  ${G}  ✓ ICMP Flood bloqueado${NC}"
                 iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
                 iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
                 iptables -A INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
-
-                # Limitar conexiones por IP
+                echo -e "  ${G}  ✓ Port scanning bloqueado${NC}"
                 iptables -A INPUT -p tcp --dport 22 -m connlimit --connlimit-above 5 -j REJECT
                 iptables -A INPUT -p tcp -m connlimit --connlimit-above 50 -j REJECT
-
-                # Anti brute force SSH
                 iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --set
                 iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --update --seconds 60 --hitcount 5 -j DROP
-
-                # Bloquear IPs privadas falsas
                 iptables -A INPUT -s 10.0.0.0/8 ! -i lo -j DROP
                 iptables -A INPUT -s 172.16.0.0/12 ! -i lo -j DROP
                 iptables -A INPUT -s 192.168.0.0/16 ! -i lo -j DROP
+                echo -e "  ${G}  ✓ Brute Force y spoofing bloqueados${NC}"
 
-                # Guardar reglas
+                echo -e "  ${C}  Guardando reglas...${NC}"
                 iptables-save > /etc/iptables/rules.v4 2>/dev/null || iptables-save > /etc/iptables.rules
+                echo -e "  ${G}  ✓ Reglas guardadas${NC}"
 
-                # Configurar fail2ban
-                cat > /etc/fail2ban/jail.local << EOF
-[DEFAULT]
+                echo -e "  ${C}  Configurando Fail2ban...${NC}"
+                python3 - << PYEOF2
+import os
+os.makedirs("/etc/fail2ban", exist_ok=True)
+with open("/etc/fail2ban/jail.local", "w") as f:
+    f.write("[DEFAULT]
 bantime = 3600
 findtime = 600
 maxretry = 3
@@ -1514,47 +1515,50 @@ logpath = /var/log/nginx/access.log
 maxretry = 100
 findtime = 60
 bantime = 3600
-EOF
-                systemctl enable fail2ban
-                systemctl restart fail2ban 2>/dev/null
+")
+print("  [0;32m  ✓ Fail2ban configurado[0m")
+PYEOF2
 
-                echo -e "  ${G}✓ SYN Flood bloqueado${NC}"
-                echo -e "  ${G}✓ UDP Flood bloqueado${NC}"
-                echo -e "  ${G}✓ ICMP Flood bloqueado${NC}"
-                echo -e "  ${G}✓ Port scanning bloqueado${NC}"
-                echo -e "  ${G}✓ Brute Force SSH bloqueado${NC}"
-                echo -e "  ${G}✓ Conexiones limitadas por IP${NC}"
-                echo -e "  ${G}✓ Fail2ban activo${NC}"
-                echo ""
-                # Notificar IPs atacantes al admin
-                BANNED_IPS=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2)
-                if [ -n "$BANNED_IPS" ]; then
-                    python3 -c "
-import urllib.request, json
-TOKEN='7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws'
-ADMIN='6290827127'
-msg='🚨 *ANTI-DDoS ACTIVADO*\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🛡️ IPs bloqueadas:\n$BANNED_IPS'
-url=f'https://api.telegram.org/bot{TOKEN}/sendMessage'
-data=json.dumps({'chat_id':ADMIN,'text':msg,'parse_mode':'Markdown'}).encode()
-urllib.request.urlopen(urllib.request.Request(url,data=data,headers={'Content-Type':'application/json'}))
-" 2>/dev/null
-                fi
-                echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"
+                systemctl enable fail2ban -q 2>/dev/null
+                systemctl restart fail2ban 2>/dev/null
+                echo -ne "  ${C}  Iniciando Fail2ban${NC}"
+                for i in 1 2 3 4 5; do sleep 0.5; echo -ne "."; done; echo ""
+                systemctl is-active --quiet fail2ban && \
+                    echo -e "  ${G}  ✓ Fail2ban activo${NC}" || \
+                    echo -e "  ${Y}  ⚠ Verifica: systemctl status fail2ban${NC}"
+
+                python3 - << PYEOF2
+import urllib.request, json, subprocess
+TOKEN = "7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws"
+ADMIN = "6290827127"
+try:
+    r = subprocess.run(["fail2ban-client","status","sshd"], capture_output=True, text=True, timeout=5)
+    lines = [l for l in r.stdout.splitlines() if "Banned IP" in l]
+    banned = lines[0].split(":")[1].strip() if lines else "Ninguna aun"
+except Exception:
+    banned = "No disponible"
+msg = "🚨 *ANTI-DDoS ACTIVADO*
+" + banned
+url = "https://api.telegram.org/bot" + TOKEN + "/sendMessage"
+data = json.dumps({"chat_id": ADMIN, "text": msg, "parse_mode": "Markdown"}).encode()
+try:
+    urllib.request.urlopen(urllib.request.Request(url, data=data, headers={"Content-Type":"application/json"}), timeout=5)
+except Exception:
+    pass
+PYEOF2
+
+                echo ""; sep
+                echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"; sep
                 read -p "  ENTER..." ;;
             2)
-                iptables -F
-                iptables -X
-                iptables -P INPUT ACCEPT
-                iptables -P FORWARD ACCEPT
-                iptables -P OUTPUT ACCEPT
+                iptables -F; iptables -X
+                iptables -P INPUT ACCEPT; iptables -P FORWARD ACCEPT; iptables -P OUTPUT ACCEPT
                 systemctl stop fail2ban 2>/dev/null
                 echo -e "  ${Y}Anti-DDoS desactivado${NC}"; sleep 2 ;;
-            4) menu_atacantes ;;
             3)
-                echo ""
-                iptables -L INPUT -n --line-numbers | head -30
-                echo ""
+                echo ""; iptables -L INPUT -n --line-numbers | head -30; echo ""
                 read -p "  ENTER..." ;;
+            4) menu_atacantes ;;
             0) break ;;
         esac
     done
@@ -2378,9 +2382,8 @@ menu_antiddos() {
     while true; do
         banner; sep
         echo -e "  ${Y}  ANTI-DDOS${NC}"; sep; echo ""
-        # Ver estado
-        DDOS_ST=$(iptables -L INPUT -n 2>/dev/null | grep -c "limit\|REJECT\|DROP")
-        if [[ "${DDOS_ST:-0}" -gt 3 ]]; then
+        DDOS_ACTIVE=$(iptables -L INPUT -n 2>/dev/null | grep -q "limit" && echo 1 || echo 0)
+        if [ "$DDOS_ACTIVE" = "1" ]; then
             echo -e "  Estado: ${G}[ACTIVO]${NC}"
         else
             echo -e "  Estado: ${R}[INACTIVO]${NC}"
@@ -2395,67 +2398,67 @@ menu_antiddos() {
         case $OPT in
             1)
                 echo -e "
-  ${C}Aplicando Anti-DDoS agresivo...${NC}"
-                apt install -y iptables-persistent fail2ban > /dev/null 2>&1
+  ${C}[1/5] Instalando dependencias...${NC}"
+                DEBIAN_FRONTEND=noninteractive apt install -y -qq iptables-persistent fail2ban 2>&1 | \
+                    grep -E "^(Get|Setting|Processing|Unpacking)" | while read line; do echo "    $line"; done
+                echo -e "  ${G}  ✓ Dependencias listas${NC}"
 
-                # Limpiar reglas previas
-                iptables -F
-                iptables -X
-                iptables -Z
+                echo -e "  ${C}[2/5] Limpiando reglas previas...${NC}"
+                iptables -F; iptables -X; iptables -Z
+                echo -e "  ${G}  ✓ Reglas limpiadas${NC}"
 
-                # Política por defecto
+                echo -e "  ${C}[3/5] Aplicando politicas base...${NC}"
                 iptables -P INPUT ACCEPT
                 iptables -P FORWARD DROP
                 iptables -P OUTPUT ACCEPT
-
-                # Permitir loopback
                 iptables -A INPUT -i lo -j ACCEPT
                 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+                echo -e "  ${G}  ✓ Politicas base aplicadas${NC}"
 
-                # Permitir puertos activos
-                for PORT in $(ss -tlnp | awk '/LISTEN/{print $4}' | grep -o '[0-9]*$' | sort -u); do
+                echo -e "  ${C}[4/5] Abriendo puertos activos...${NC}"
+                for PORT in $(ss -tlnp | awk '/LISTEN/{print $4}' | grep -oE '[0-9]+$' | sort -u); do
                     iptables -A INPUT -p tcp --dport $PORT -j ACCEPT
+                    echo -e "  ${DIM}    TCP $PORT abierto${NC}"
                 done
-                for PORT in $(ss -ulnp | awk '/UNCONN/{print $4}' | grep -o '[0-9]*$' | sort -u); do
+                for PORT in $(ss -ulnp | awk '/UNCONN/{print $4}' | grep -oE '[0-9]+$' | sort -u); do
                     iptables -A INPUT -p udp --dport $PORT -j ACCEPT
+                    echo -e "  ${DIM}    UDP $PORT abierto${NC}"
                 done
+                echo -e "  ${G}  ✓ Puertos configurados${NC}"
 
-                # Anti SYN Flood
+                echo -e "  ${C}[5/5] Aplicando reglas anti-ataque...${NC}"
                 iptables -A INPUT -p tcp --syn -m limit --limit 10/s --limit-burst 20 -j ACCEPT
                 iptables -A INPUT -p tcp --syn -j DROP
-
-                # Anti UDP Flood
+                echo -e "  ${G}  ✓ SYN Flood bloqueado${NC}"
                 iptables -A INPUT -p udp -m limit --limit 50/s --limit-burst 100 -j ACCEPT
                 iptables -A INPUT -p udp -j DROP
-
-                # Anti ICMP Flood (ping)
+                echo -e "  ${G}  ✓ UDP Flood bloqueado${NC}"
                 iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 2/s --limit-burst 4 -j ACCEPT
                 iptables -A INPUT -p icmp -j DROP
-
-                # Bloquear escaneo de puertos
+                echo -e "  ${G}  ✓ ICMP Flood bloqueado${NC}"
                 iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
                 iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
                 iptables -A INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
-
-                # Limitar conexiones por IP
+                echo -e "  ${G}  ✓ Port scanning bloqueado${NC}"
                 iptables -A INPUT -p tcp --dport 22 -m connlimit --connlimit-above 5 -j REJECT
                 iptables -A INPUT -p tcp -m connlimit --connlimit-above 50 -j REJECT
-
-                # Anti brute force SSH
                 iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --set
                 iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --update --seconds 60 --hitcount 5 -j DROP
-
-                # Bloquear IPs privadas falsas
                 iptables -A INPUT -s 10.0.0.0/8 ! -i lo -j DROP
                 iptables -A INPUT -s 172.16.0.0/12 ! -i lo -j DROP
                 iptables -A INPUT -s 192.168.0.0/16 ! -i lo -j DROP
+                echo -e "  ${G}  ✓ Brute Force y spoofing bloqueados${NC}"
 
-                # Guardar reglas
+                echo -e "  ${C}  Guardando reglas...${NC}"
                 iptables-save > /etc/iptables/rules.v4 2>/dev/null || iptables-save > /etc/iptables.rules
+                echo -e "  ${G}  ✓ Reglas guardadas${NC}"
 
-                # Configurar fail2ban
-                cat > /etc/fail2ban/jail.local << EOF
-[DEFAULT]
+                echo -e "  ${C}  Configurando Fail2ban...${NC}"
+                python3 - << PYEOF2
+import os
+os.makedirs("/etc/fail2ban", exist_ok=True)
+with open("/etc/fail2ban/jail.local", "w") as f:
+    f.write("[DEFAULT]
 bantime = 3600
 findtime = 600
 maxretry = 3
@@ -2475,47 +2478,50 @@ logpath = /var/log/nginx/access.log
 maxretry = 100
 findtime = 60
 bantime = 3600
-EOF
-                systemctl enable fail2ban
-                systemctl restart fail2ban 2>/dev/null
+")
+print("  [0;32m  ✓ Fail2ban configurado[0m")
+PYEOF2
 
-                echo -e "  ${G}✓ SYN Flood bloqueado${NC}"
-                echo -e "  ${G}✓ UDP Flood bloqueado${NC}"
-                echo -e "  ${G}✓ ICMP Flood bloqueado${NC}"
-                echo -e "  ${G}✓ Port scanning bloqueado${NC}"
-                echo -e "  ${G}✓ Brute Force SSH bloqueado${NC}"
-                echo -e "  ${G}✓ Conexiones limitadas por IP${NC}"
-                echo -e "  ${G}✓ Fail2ban activo${NC}"
-                echo ""
-                # Notificar IPs atacantes al admin
-                BANNED_IPS=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2)
-                if [ -n "$BANNED_IPS" ]; then
-                    python3 -c "
-import urllib.request, json
-TOKEN='7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws'
-ADMIN='6290827127'
-msg='🚨 *ANTI-DDoS ACTIVADO*\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🛡️ IPs bloqueadas:\n$BANNED_IPS'
-url=f'https://api.telegram.org/bot{TOKEN}/sendMessage'
-data=json.dumps({'chat_id':ADMIN,'text':msg,'parse_mode':'Markdown'}).encode()
-urllib.request.urlopen(urllib.request.Request(url,data=data,headers={'Content-Type':'application/json'}))
-" 2>/dev/null
-                fi
-                echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"
+                systemctl enable fail2ban -q 2>/dev/null
+                systemctl restart fail2ban 2>/dev/null
+                echo -ne "  ${C}  Iniciando Fail2ban${NC}"
+                for i in 1 2 3 4 5; do sleep 0.5; echo -ne "."; done; echo ""
+                systemctl is-active --quiet fail2ban && \
+                    echo -e "  ${G}  ✓ Fail2ban activo${NC}" || \
+                    echo -e "  ${Y}  ⚠ Verifica: systemctl status fail2ban${NC}"
+
+                python3 - << PYEOF2
+import urllib.request, json, subprocess
+TOKEN = "7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws"
+ADMIN = "6290827127"
+try:
+    r = subprocess.run(["fail2ban-client","status","sshd"], capture_output=True, text=True, timeout=5)
+    lines = [l for l in r.stdout.splitlines() if "Banned IP" in l]
+    banned = lines[0].split(":")[1].strip() if lines else "Ninguna aun"
+except Exception:
+    banned = "No disponible"
+msg = "🚨 *ANTI-DDoS ACTIVADO*
+" + banned
+url = "https://api.telegram.org/bot" + TOKEN + "/sendMessage"
+data = json.dumps({"chat_id": ADMIN, "text": msg, "parse_mode": "Markdown"}).encode()
+try:
+    urllib.request.urlopen(urllib.request.Request(url, data=data, headers={"Content-Type":"application/json"}), timeout=5)
+except Exception:
+    pass
+PYEOF2
+
+                echo ""; sep
+                echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"; sep
                 read -p "  ENTER..." ;;
             2)
-                iptables -F
-                iptables -X
-                iptables -P INPUT ACCEPT
-                iptables -P FORWARD ACCEPT
-                iptables -P OUTPUT ACCEPT
+                iptables -F; iptables -X
+                iptables -P INPUT ACCEPT; iptables -P FORWARD ACCEPT; iptables -P OUTPUT ACCEPT
                 systemctl stop fail2ban 2>/dev/null
                 echo -e "  ${Y}Anti-DDoS desactivado${NC}"; sleep 2 ;;
-            4) menu_atacantes ;;
             3)
-                echo ""
-                iptables -L INPUT -n --line-numbers | head -30
-                echo ""
+                echo ""; iptables -L INPUT -n --line-numbers | head -30; echo ""
                 read -p "  ENTER..." ;;
+            4) menu_atacantes ;;
             0) break ;;
         esac
     done
@@ -2591,7 +2597,6 @@ menu_antiddos() {
     while true; do
         banner; sep
         echo -e "  ${Y}  ANTI-DDOS${NC}"; sep; echo ""
-        # Ver estado
         DDOS_ACTIVE=$(iptables -L INPUT -n 2>/dev/null | grep -q "limit" && echo 1 || echo 0)
         if [ "$DDOS_ACTIVE" = "1" ]; then
             echo -e "  Estado: ${G}[ACTIVO]${NC}"
@@ -2608,67 +2613,67 @@ menu_antiddos() {
         case $OPT in
             1)
                 echo -e "
-  ${C}Aplicando Anti-DDoS agresivo...${NC}"
-                apt install -y iptables-persistent fail2ban > /dev/null 2>&1
+  ${C}[1/5] Instalando dependencias...${NC}"
+                DEBIAN_FRONTEND=noninteractive apt install -y -qq iptables-persistent fail2ban 2>&1 | \
+                    grep -E "^(Get|Setting|Processing|Unpacking)" | while read line; do echo "    $line"; done
+                echo -e "  ${G}  ✓ Dependencias listas${NC}"
 
-                # Limpiar reglas previas
-                iptables -F
-                iptables -X
-                iptables -Z
+                echo -e "  ${C}[2/5] Limpiando reglas previas...${NC}"
+                iptables -F; iptables -X; iptables -Z
+                echo -e "  ${G}  ✓ Reglas limpiadas${NC}"
 
-                # Política por defecto
+                echo -e "  ${C}[3/5] Aplicando politicas base...${NC}"
                 iptables -P INPUT ACCEPT
                 iptables -P FORWARD DROP
                 iptables -P OUTPUT ACCEPT
-
-                # Permitir loopback
                 iptables -A INPUT -i lo -j ACCEPT
                 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+                echo -e "  ${G}  ✓ Politicas base aplicadas${NC}"
 
-                # Permitir puertos activos
-                for PORT in $(ss -tlnp | awk '/LISTEN/{print $4}' | grep -o '[0-9]*$' | sort -u); do
+                echo -e "  ${C}[4/5] Abriendo puertos activos...${NC}"
+                for PORT in $(ss -tlnp | awk '/LISTEN/{print $4}' | grep -oE '[0-9]+$' | sort -u); do
                     iptables -A INPUT -p tcp --dport $PORT -j ACCEPT
+                    echo -e "  ${DIM}    TCP $PORT abierto${NC}"
                 done
-                for PORT in $(ss -ulnp | awk '/UNCONN/{print $4}' | grep -o '[0-9]*$' | sort -u); do
+                for PORT in $(ss -ulnp | awk '/UNCONN/{print $4}' | grep -oE '[0-9]+$' | sort -u); do
                     iptables -A INPUT -p udp --dport $PORT -j ACCEPT
+                    echo -e "  ${DIM}    UDP $PORT abierto${NC}"
                 done
+                echo -e "  ${G}  ✓ Puertos configurados${NC}"
 
-                # Anti SYN Flood
+                echo -e "  ${C}[5/5] Aplicando reglas anti-ataque...${NC}"
                 iptables -A INPUT -p tcp --syn -m limit --limit 10/s --limit-burst 20 -j ACCEPT
                 iptables -A INPUT -p tcp --syn -j DROP
-
-                # Anti UDP Flood
+                echo -e "  ${G}  ✓ SYN Flood bloqueado${NC}"
                 iptables -A INPUT -p udp -m limit --limit 50/s --limit-burst 100 -j ACCEPT
                 iptables -A INPUT -p udp -j DROP
-
-                # Anti ICMP Flood (ping)
+                echo -e "  ${G}  ✓ UDP Flood bloqueado${NC}"
                 iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 2/s --limit-burst 4 -j ACCEPT
                 iptables -A INPUT -p icmp -j DROP
-
-                # Bloquear escaneo de puertos
+                echo -e "  ${G}  ✓ ICMP Flood bloqueado${NC}"
                 iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
                 iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
                 iptables -A INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
-
-                # Limitar conexiones por IP
+                echo -e "  ${G}  ✓ Port scanning bloqueado${NC}"
                 iptables -A INPUT -p tcp --dport 22 -m connlimit --connlimit-above 5 -j REJECT
                 iptables -A INPUT -p tcp -m connlimit --connlimit-above 50 -j REJECT
-
-                # Anti brute force SSH
                 iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --set
                 iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --update --seconds 60 --hitcount 5 -j DROP
-
-                # Bloquear IPs privadas falsas
                 iptables -A INPUT -s 10.0.0.0/8 ! -i lo -j DROP
                 iptables -A INPUT -s 172.16.0.0/12 ! -i lo -j DROP
                 iptables -A INPUT -s 192.168.0.0/16 ! -i lo -j DROP
+                echo -e "  ${G}  ✓ Brute Force y spoofing bloqueados${NC}"
 
-                # Guardar reglas
+                echo -e "  ${C}  Guardando reglas...${NC}"
                 iptables-save > /etc/iptables/rules.v4 2>/dev/null || iptables-save > /etc/iptables.rules
+                echo -e "  ${G}  ✓ Reglas guardadas${NC}"
 
-                # Configurar fail2ban
-                cat > /etc/fail2ban/jail.local << EOF
-[DEFAULT]
+                echo -e "  ${C}  Configurando Fail2ban...${NC}"
+                python3 - << PYEOF2
+import os
+os.makedirs("/etc/fail2ban", exist_ok=True)
+with open("/etc/fail2ban/jail.local", "w") as f:
+    f.write("[DEFAULT]
 bantime = 3600
 findtime = 600
 maxretry = 3
@@ -2688,47 +2693,50 @@ logpath = /var/log/nginx/access.log
 maxretry = 100
 findtime = 60
 bantime = 3600
-EOF
-                systemctl enable fail2ban
-                systemctl restart fail2ban 2>/dev/null
+")
+print("  [0;32m  ✓ Fail2ban configurado[0m")
+PYEOF2
 
-                echo -e "  ${G}✓ SYN Flood bloqueado${NC}"
-                echo -e "  ${G}✓ UDP Flood bloqueado${NC}"
-                echo -e "  ${G}✓ ICMP Flood bloqueado${NC}"
-                echo -e "  ${G}✓ Port scanning bloqueado${NC}"
-                echo -e "  ${G}✓ Brute Force SSH bloqueado${NC}"
-                echo -e "  ${G}✓ Conexiones limitadas por IP${NC}"
-                echo -e "  ${G}✓ Fail2ban activo${NC}"
-                echo ""
-                # Notificar IPs atacantes al admin
-                BANNED_IPS=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2)
-                if [ -n "$BANNED_IPS" ]; then
-                    python3 -c "
-import urllib.request, json
-TOKEN='7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws'
-ADMIN='6290827127'
-msg='🚨 *ANTI-DDoS ACTIVADO*\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🛡️ IPs bloqueadas:\n$BANNED_IPS'
-url=f'https://api.telegram.org/bot{TOKEN}/sendMessage'
-data=json.dumps({'chat_id':ADMIN,'text':msg,'parse_mode':'Markdown'}).encode()
-urllib.request.urlopen(urllib.request.Request(url,data=data,headers={'Content-Type':'application/json'}))
-" 2>/dev/null
-                fi
-                echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"
+                systemctl enable fail2ban -q 2>/dev/null
+                systemctl restart fail2ban 2>/dev/null
+                echo -ne "  ${C}  Iniciando Fail2ban${NC}"
+                for i in 1 2 3 4 5; do sleep 0.5; echo -ne "."; done; echo ""
+                systemctl is-active --quiet fail2ban && \
+                    echo -e "  ${G}  ✓ Fail2ban activo${NC}" || \
+                    echo -e "  ${Y}  ⚠ Verifica: systemctl status fail2ban${NC}"
+
+                python3 - << PYEOF2
+import urllib.request, json, subprocess
+TOKEN = "7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws"
+ADMIN = "6290827127"
+try:
+    r = subprocess.run(["fail2ban-client","status","sshd"], capture_output=True, text=True, timeout=5)
+    lines = [l for l in r.stdout.splitlines() if "Banned IP" in l]
+    banned = lines[0].split(":")[1].strip() if lines else "Ninguna aun"
+except Exception:
+    banned = "No disponible"
+msg = "🚨 *ANTI-DDoS ACTIVADO*
+" + banned
+url = "https://api.telegram.org/bot" + TOKEN + "/sendMessage"
+data = json.dumps({"chat_id": ADMIN, "text": msg, "parse_mode": "Markdown"}).encode()
+try:
+    urllib.request.urlopen(urllib.request.Request(url, data=data, headers={"Content-Type":"application/json"}), timeout=5)
+except Exception:
+    pass
+PYEOF2
+
+                echo ""; sep
+                echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"; sep
                 read -p "  ENTER..." ;;
             2)
-                iptables -F
-                iptables -X
-                iptables -P INPUT ACCEPT
-                iptables -P FORWARD ACCEPT
-                iptables -P OUTPUT ACCEPT
+                iptables -F; iptables -X
+                iptables -P INPUT ACCEPT; iptables -P FORWARD ACCEPT; iptables -P OUTPUT ACCEPT
                 systemctl stop fail2ban 2>/dev/null
                 echo -e "  ${Y}Anti-DDoS desactivado${NC}"; sleep 2 ;;
-            4) menu_atacantes ;;
             3)
-                echo ""
-                iptables -L INPUT -n --line-numbers | head -30
-                echo ""
+                echo ""; iptables -L INPUT -n --line-numbers | head -30; echo ""
                 read -p "  ENTER..." ;;
+            4) menu_atacantes ;;
             0) break ;;
         esac
     done
