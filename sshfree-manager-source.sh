@@ -2555,27 +2555,6 @@ BAN
     done
 }
 [ "$EUID" -ne 0 ] && echo -e "${R}Ejecuta como root${NC}" && exit 1
-menu_principal
-
-# Auto-instalar comando menu
-wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/DarkFull0726/SSHSCRIPT-LTM/main/sshscript-ltm.sh"
-chmod +x /usr/local/bin/menu
-echo -e "\033[0;32mComando menu instalado\033[0m"
-
-
-
-
-
-# Convertir HTML a texto plano (eliminar etiquetas)
-
-# Generar versión de texto plano (sin HTML) para SSH y Dropbear
-
-
-# Función que llama al conversor externo (usada desde el menú)
-_convert_banner() {
-    /usr/local/bin/convert-banner-txt
-}
-
 # ============================================================
 # FUNCIONES PARA VER USUARIOS CONECTADOS
 # ============================================================
@@ -2709,5 +2688,27 @@ usuarios_ziv_online_count() {
     echo ""
     echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
     read -p "  ENTER..."
+}
+
+
+menu_principal
+
+# Auto-instalar comando menu
+wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/DarkFull0726/SSHSCRIPT-LTM/main/sshscript-ltm.sh"
+chmod +x /usr/local/bin/menu
+echo -e "\033[0;32mComando menu instalado\033[0m"
+
+
+
+
+
+# Convertir HTML a texto plano (eliminar etiquetas)
+
+# Generar versión de texto plano (sin HTML) para SSH y Dropbear
+
+
+# Función que llama al conversor externo (usada desde el menú)
+_convert_banner() {
+    /usr/local/bin/convert-banner-txt
 }
 
