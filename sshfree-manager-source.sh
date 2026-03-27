@@ -1,2 +1,2714 @@
 #!/bin/bash
-eval "$(echo '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' | base64 -d | gunzip)"
+# ═══════════════════════════════════════════════════════
+#   SSHFREE LTM — Gestor de Servicios VPN/SSH
+#   by DarkZFull • @DarkZFull
+#   Ubuntu 22/24/25
+# ═══════════════════════════════════════════════════════
+
+SCRIPT_VERSION="3.1"
+R='\033[0;31m'
+G='\033[0;32m'
+Y='\033[1;33m'
+C='\033[0;96m'
+W='\033[1;97m'
+B='\033[0;34m'
+P='\033[0;35m'
+NC='\033[0m'
+
+# Generar versión de texto plano (sin HTML) para SSH y Dropbear
+generar_banner_txt() {
+    local origen="/etc/ssh/banner"
+    local destino="/etc/ssh/banner.txt"
+    if [ ! -f "$origen" ]; then
+        echo -e "${R}No existe $origen${NC}" >&2
+        return 1
+    fi
+    sed 's/<[^>]*>//g; s/&[a-zA-Z0-9#]\{2,6\};//g; s/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d' "$origen" > "$destino"
+    echo -e "${G}Banner de texto generado en $destino${NC}"
+}
+
+# Generar versión de texto plano (sin HTML) para SSH y Dropbear
+generar_banner_txt() {
+    local origen="/etc/ssh/banner"
+    local destino="/etc/ssh/banner.txt"
+    if [ ! -f "$origen" ]; then
+        echo -e "${R}No existe $origen${NC}" >&2
+        return 1
+    fi
+    # Eliminar etiquetas HTML y entidades
+    sed 's/<[^>]*>//g; s/&[a-zA-Z0-9#]\{2,6\};//g; s/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d' "$origen" > "$destino"
+    echo -e "${G}Banner de texto generado en $destino${NC}"
+}
+
+# Generar versión de texto plano (sin HTML) para SSH y Dropbear
+
+
+# Generar versión de texto plano (sin HTML) para SSH y Dropbear
+
+
+# Generar versión de texto plano (sin HTML) para SSH y Dropbear
+
+BOLD='\033[1m'
+NEON='\033[1;96m'
+DIM='\033[2;37m'
+LINE='◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆'
+LINE2='◇─────────────────────────────────────────────◇'
+DIR_SCRIPTS="/etc/sshfreeltm"
+DIR_SERVICES="/etc/systemd/system"
+mkdir -p $DIR_SCRIPTS
+
+# Desactivar restricciones PAM de contraseña
+sed -i 's/pam_unix.so obscure/pam_unix.so/' /etc/pam.d/common-password 2>/dev/null
+sed -i 's/use_authtok //' /etc/pam.d/common-password 2>/dev/null
+sed -i '/pam_pwquality/d' /etc/pam.d/common-password 2>/dev/null
+sed -i '/pam_cracklib/d' /etc/pam.d/common-password 2>/dev/null
+
+# Configurar UFW si esta activo
+if command -v ufw > /dev/null 2>&1 && ufw status | grep -q "Status: active"; then
+    ufw allow 22/tcp > /dev/null 2>&1
+    ufw allow 80/tcp > /dev/null 2>&1
+    ufw allow 443/tcp > /dev/null 2>&1
+    ufw allow 8080/tcp > /dev/null 2>&1
+    ufw allow 8388/tcp > /dev/null 2>&1
+    ufw allow 8388/udp > /dev/null 2>&1
+    ufw allow 7200/tcp > /dev/null 2>&1
+    ufw allow 7300/tcp > /dev/null 2>&1
+    ufw allow 5667/udp > /dev/null 2>&1
+    ufw allow 36712/udp > /dev/null 2>&1
+    ufw allow 90/tcp > /dev/null 2>&1
+    ufw reload > /dev/null 2>&1
+fi
+
+# ══════════════════════════════════════════
+# VERIFICACION DE LICENCIA
+# ══════════════════════════════════════════
+# Verificar licencia real
+LICENSED_KEY=""
+[ -f /etc/sshfreeltm/.licensed ] && LICENSED_KEY=$(cat /etc/sshfreeltm/.licensed 2>/dev/null)
+VALID_LICENSE=false
+if [ -n "$LICENSED_KEY" ] && [[ "$LICENSED_KEY" == LTM-SCRIPT-KEY-* ]]; then
+    VALID_LICENSE=true
+fi
+if [ "$VALID_LICENSE" = "false" ]; then
+    clear
+    echo -e "\033[1;96m"
+    figlet -f small "LTM VPN TOOLS" 2>/dev/null || echo "LTM VPN TOOLS"
+    echo -e "\033[0m"
+    echo -e "\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
+    echo -e "  \033[1;97m⚡ LTM VPN TOOLS v3.1 by @DarkZFull\033[0m"
+    echo -e "\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
+    echo ""
+    echo -e "  \033[1;33m🔐 Se requiere una KEY de licencia para instalar\033[0m"
+    echo -e "  \033[2;37m   Obtén tu KEY con @DarkZFull\033[0m"
+    echo ""
+    echo -e "\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
+    read -p "  🗝️  Ingresa tu KEY: " INPUT_KEY
+    echo ""
+    command -v curl > /dev/null 2>&1 || apt install -y curl > /dev/null 2>&1
+    echo -e "  \033[0;36m⏳  Verificando key...\033[0m"
+
+    VPS_IP=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
+    VPS_OS=$(lsb_release -d 2>/dev/null | cut -f2 || echo "Ubuntu")
+    VERIFY_RESULT=$(curl -s -X POST http://172.233.176.159:6000/api/key/verify -H "Content-Type: application/json" -d "{\"key\": \"$INPUT_KEY\", \"ip\": \"$VPS_IP\", \"os\": \"$VPS_OS\"}" 2>/dev/null)
+
+    IS_OK=$(echo $VERIFY_RESULT | python3 -c "import sys,json; print(json.load(sys.stdin).get('ok','false'))" 2>/dev/null)
+    ERROR_MSG=$(echo $VERIFY_RESULT | python3 -c "import sys,json; print(json.load(sys.stdin).get('error','Error desconocido'))" 2>/dev/null)
+
+    if [ "$IS_OK" = "True" ]; then
+        mkdir -p /etc/sshfreeltm
+        echo "$INPUT_KEY" > /etc/sshfreeltm/.licensed
+        echo -e "  \033[0;32m✅ Key valida — Bienvenido a LTM VPN TOOLS\033[0m"
+        sleep 1
+        echo ""
+        echo -e "\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
+        echo -e "  \033[1;97m⚡ Instalando dependencias del sistema...\033[0m"
+        echo -e "\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
+        echo -e "  \033[0;36m⏳ Actualizando repos...\033[0m"
+        DEBIAN_FRONTEND=noninteractive apt update -y -o Acquire::ForceIPv4=true > /dev/null 2>&1
+        echo -e "  \033[1;32m✓ Repos actualizados\033[0m"
+        install_dep() {
+            PKG=$1
+            LABEL=${2:-$1}
+            echo -ne "  \033[1;96m◈\033[0m \033[1;97m$LABEL\033[0m \033[0;36m...\033[0m"
+            DEBIAN_FRONTEND=noninteractive apt install -y -qq $PKG > /dev/null 2>&1
+            if dpkg -l $PKG 2>/dev/null | grep -q "^ii"; then
+                echo -e "\r  \033[1;96m◈\033[0m \033[1;97m$LABEL\033[0m \033[1;32m✓ OK\033[0m          "
+            else
+                echo -e "\r  \033[1;96m◈\033[0m \033[1;97m$LABEL\033[0m \033[1;31m✗ Error\033[0m       "
+            fi
+        }
+        install_dep curl "curl"
+        install_dep wget "wget"
+        install_dep figlet "figlet (ASCII art)"
+        install_dep python3 "python3"
+        install_dep sqlite3 "sqlite3"
+        install_dep net-tools "net-tools"
+        install_dep iptables "iptables"
+        install_dep openssl "openssl"
+        install_dep unzip "unzip"
+        install_dep screen "screen"
+        install_dep cmake "cmake"
+        install_dep make "make"
+        install_dep gcc "gcc"
+        install_dep g++ "g++"
+        install_dep git "git"
+        echo -e "\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
+        echo -e "  \033[1;32m✅ Sistema listo\033[0m"
+        echo -e "\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
+        sleep 2
+    else
+        echo -e "  \033[0;31m❌ $ERROR_MSG\033[0m"
+        echo -e "  \033[2;37m   Obtén tu KEY con @DarkZFull\033[0m"
+        sleep 3
+        exit 1
+    fi
+fi
+
+
+
+# Deshabilitar mensajes de bienvenida de Ubuntu
+touch ~/.hushlogin 2>/dev/null
+chmod -x /etc/update-motd.d/* 2>/dev/null
+> /etc/motd 2>/dev/null
+
+# Dar permisos a certificados letsencrypt
+if [ -d /etc/letsencrypt ]; then
+    chmod 755 /etc/letsencrypt/live/ /etc/letsencrypt/archive/ 2>/dev/null
+    find /etc/letsencrypt -name "*.pem" -exec chmod 644 {} \; 2>/dev/null
+fi
+
+# Preguntar nombre ASCII al instalar por primera vez
+if [ ! -f /etc/sshfreeltm/server_name ]; then
+    mkdir -p /etc/sshfreeltm
+    apt install -y figlet > /dev/null 2>&1
+    echo ""
+    echo -e "\033[1;33mEscribe el nombre que aparecera en el menu:\033[0m"
+    read -p "Nombre: " INSTALL_NAME
+    INSTALL_NAME=${INSTALL_NAME:-"SSHFREE LTM"}
+    echo "$INSTALL_NAME" > /etc/sshfreeltm/server_name
+    echo "$(date +%d-%m-%Y)" > /etc/sshfreeltm/install_date
+fi
+
+# Preguntar nombre ASCII al instalar por primera vez
+if [ ! -f /etc/sshfreeltm/server_name ]; then
+    mkdir -p /etc/sshfreeltm
+    apt install -y figlet > /dev/null 2>&1
+    echo ""
+    echo -e "\033[1;33mEscribe el nombre que aparecera en el menu:\033[0m"
+    read -p "Nombre: " INSTALL_NAME
+    INSTALL_NAME=${INSTALL_NAME:-"SSHFREE LTM"}
+    echo "$INSTALL_NAME" > /etc/sshfreeltm/server_name
+    echo "$(date +%d-%m-%Y)" > /etc/sshfreeltm/install_date
+fi
+
+# Instalar MOTD automáticamente
+cat > /etc/profile.d/sshfree-motd.sh << 'MOTDSCRIPT'
+#!/bin/bash
+PURPLE='\033[0;35m' CYAN='\033[0;36m' GREEN='\033[0;32m'
+YELLOW='\033[1;33m' WHITE='\033[1;37m' NC='\033[0m'
+INSTALL_DATE=$(cat /etc/sshfreeltm/install_date 2>/dev/null || echo "N/A")
+SRV_NAME=$(cat /etc/sshfreeltm/server_name 2>/dev/null || echo "SSHFREE LTM")
+CURRENT_DATE=$(date +%d-%m-%Y)
+CURRENT_TIME=$(date +%H:%M:%S)
+UPTIME=$(uptime -p | sed 's/up //')
+RAM_FREE=$(free -h | awk '/^Mem:/{print $4}')
+echo -e "${PURPLE}"
+figlet -f small "$SRV_NAME" 2>/dev/null || echo "  $SRV_NAME"
+echo -e "${NC}"
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "  ${YELLOW}SERVIDOR INSTALADO EL${NC}   : ${WHITE}$INSTALL_DATE${NC}"
+echo -e "  ${YELLOW}FECHA/HORA ACTUAL${NC}        : ${WHITE}$CURRENT_DATE - $CURRENT_TIME${NC}"
+echo -e "  ${YELLOW}NOMBRE DEL SERVIDOR${NC}      : ${WHITE}$(hostname)${NC}"
+echo -e "  ${YELLOW}TIEMPO EN LINEA${NC}          : ${WHITE}$UPTIME${NC}"
+echo -e "  ${YELLOW}VERSION INSTALADA${NC}        : ${WHITE}V1.0.0${NC}"
+echo -e "  ${YELLOW}MEMORIA RAM LIBRE${NC}        : ${WHITE}$RAM_FREE${NC}"
+echo -e "  ${YELLOW}CREADOR DEL SCRIPT${NC}       : ${PURPLE}@DarkZFull ❴LTM❵${NC}"
+echo -e "  ${GREEN}BIENVENIDO DE NUEVO!${NC}"
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "  Teclee ${YELLOW}menu${NC} para ver el MENU LTM"
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+MOTDSCRIPT
+chmod +x /etc/profile.d/sshfree-motd.sh
+[ -f /etc/motd ] && > /etc/motd
+
+banner() {
+    clear
+    SRV_NAME=$(cat /etc/sshfreeltm/server_name 2>/dev/null || echo "SSHFREE LTM")
+    echo -e "${NEON}"
+    figlet -f small "$SRV_NAME" 2>/dev/null || echo "  $SRV_NAME"
+    echo -e "${NC}"
+    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+    echo -e "  ${W}⚡ Gestor VPN/SSH${NC} ${DIM}by${NC} ${NEON}@DarkZFull${NC}  ${Y}❖ v${SCRIPT_VERSION}${NC}"
+    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+    echo ""
+}
+
+sep() { echo -e "${NEON}${LINE}${NC}"; }
+sep2() { echo -e "${DIM}${LINE2}${NC}"; }
+
+status_service() {
+    systemctl is-active --quiet "$1" 2>/dev/null && echo -e "${NEON}◆ ON ${NC}" || echo -e "${R}◇ OFF${NC}"
+}
+
+status_port() {
+    ss -${2:-t}lnp 2>/dev/null | grep -q ":${1} " && echo -e "${NEON}◆ ON ${NC}" || echo -e "${R}◇ OFF${NC}"
+}
+# Generar versión de texto plano (sin HTML) para SSH y Dropbear
+
+
+# Generar versión de texto plano (sin HTML) para SSH y Dropbear
+
+
+
+
+# ══════════════════════════════════════════
+#   WEBSOCKET PYTHON
+# ══════════════════════════════════════════
+
+instalar_ws() {
+    banner; sep
+    echo -e "  ${Y}Configurar WebSocket Python${NC}"; sep; echo ""
+    read -p "  Puerto WebSocket (ej: 80): " WS_PORT; WS_PORT=${WS_PORT:-80}
+    read -p "  Puerto local SSH (ej: 22): " SSH_PORT; SSH_PORT=${SSH_PORT:-22}
+    echo ""; sep
+    echo -e "  ${W}RESPONSE (101 para WebSocket, 200 default):${NC}"
+    read -p "  RESPONSE: " STATUS_RESP; STATUS_RESP=${STATUS_RESP:-200}
+    echo ""; read -p "  Mini-Banner: " BANNER_MSG
+    BANNER_MSG=${BANNER_MSG:-"SSHFREE LTM by DarkZFull"}
+    echo ""; sep
+    echo -e "  ${W}Encabezado personalizado (ENTER para default):${NC}"
+    read -p "  Cabecera: " CUSTOM_HEADER
+    [ -z "$CUSTOM_HEADER" ] && CUSTOM_HEADER="\r\nContent-length: 0\r\n\r\nHTTP/1.1 200 Connection Established\r\n\r\n"
+
+    cat > $DIR_SCRIPTS/proxy_ws_${WS_PORT}.py << PYEOF
+#!/usr/bin/env python3
+import socket, threading, select, sys, time
+LISTENING_ADDR = '0.0.0.0'
+LISTENING_PORT = ${WS_PORT}
+BUFLEN = 4096 * 4
+TIMEOUT = 60
+DEFAULT_HOST = b'127.0.0.1:${SSH_PORT}'
+MSG = '${BANNER_MSG}'.encode('utf-8')
+STATUS_RESP = b'${STATUS_RESP}'
+FTAG = b'${CUSTOM_HEADER}'
+RESPONSE = b'HTTP/1.1 ' + STATUS_RESP + b' ' + MSG + b' ' + FTAG
+
+class Server(threading.Thread):
+    def __init__(self, host, port):
+        threading.Thread.__init__(self)
+        self.running = False; self.host = host; self.port = port
+        self.threads = []; self.threadsLock = threading.Lock(); self.logLock = threading.Lock()
+    def run(self):
+        self.soc = socket.socket(socket.AF_INET)
+        self.soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.soc.settimeout(2); self.soc.bind((self.host, int(self.port))); self.soc.listen(0)
+        self.running = True
+        try:
+            while self.running:
+                try: c, addr = self.soc.accept(); c.setblocking(1)
+                except socket.timeout: continue
+                conn = ConnectionHandler(c, self, addr); conn.start(); self.addConn(conn)
+        finally: self.running = False; self.soc.close()
+    def printLog(self, log):
+        self.logLock.acquire(); print(log); self.logLock.release()
+    def addConn(self, conn):
+        try:
+            self.threadsLock.acquire()
+            if self.running: self.threads.append(conn)
+        finally: self.threadsLock.release()
+    def removeConn(self, conn):
+        try: self.threadsLock.acquire(); self.threads.remove(conn)
+        finally: self.threadsLock.release()
+    def close(self):
+        try:
+            self.running = False; self.threadsLock.acquire()
+            for c in list(self.threads): c.close()
+        finally: self.threadsLock.release()
+
+class ConnectionHandler(threading.Thread):
+    def __init__(self, socClient, server, addr):
+        threading.Thread.__init__(self)
+        self.clientClosed = False; self.targetClosed = True
+        self.client = socClient; self.client_buffer = b''
+        self.server = server; self.log = 'Connection: ' + str(addr)
+    def close(self):
+        try:
+            if not self.clientClosed: self.client.shutdown(socket.SHUT_RDWR); self.client.close()
+        except: pass
+        finally: self.clientClosed = True
+        try:
+            if not self.targetClosed: self.target.shutdown(socket.SHUT_RDWR); self.target.close()
+        except: pass
+        finally: self.targetClosed = True
+    def run(self):
+        try:
+            self.client_buffer = self.client.recv(BUFLEN)
+            hostPort = self.findHeader(self.client_buffer, b'X-Real-Host')
+            if hostPort == b'': hostPort = DEFAULT_HOST
+            split = self.findHeader(self.client_buffer, b'X-Split')
+            if split != b'': self.client.recv(BUFLEN)
+            if hostPort != b'':
+                if hostPort.startswith(b'127.0.0.1') or hostPort.startswith(b'localhost'):
+                    self.method_CONNECT(hostPort)
+                else: self.client.send(b'HTTP/1.1 403 Forbidden!\r\n\r\n')
+            else: self.client.send(b'HTTP/1.1 400 NoXRealHost!\r\n\r\n')
+        except Exception as e:
+            self.log += ' - error: ' + str(e); self.server.printLog(self.log)
+        finally: self.close(); self.server.removeConn(self)
+    def findHeader(self, head, header):
+        aux = head.find(header + b': ')
+        if aux == -1: return b''
+        aux = head.find(b':', aux); head = head[aux + 2:]
+        aux = head.find(b'\r\n')
+        if aux == -1: return b''
+        return head[:aux]
+    def connect_target(self, host):
+        i = host.find(b':')
+        if i != -1: port = int(host[i + 1:]); host = host[:i]
+        else: port = ${SSH_PORT}
+        (soc_family, soc_type, proto, _, address) = socket.getaddrinfo(host, port)[0]
+        self.target = socket.socket(soc_family, soc_type, proto)
+        self.targetClosed = False; self.target.connect(address)
+    def method_CONNECT(self, path):
+        self.log += ' - CONNECT ' + path.decode()
+        self.connect_target(path); self.client.sendall(RESPONSE)
+        self.client_buffer = b''; self.server.printLog(self.log); self.doCONNECT()
+    def doCONNECT(self):
+        socs = [self.client, self.target]; count = 0; error = False
+        while True:
+            count += 1
+            (recv, _, err) = select.select(socs, [], socs, 3)
+            if err: error = True
+            if recv:
+                for in_ in recv:
+                    try:
+                        data = in_.recv(BUFLEN)
+                        if data:
+                            if in_ is self.target: self.client.send(data)
+                            else:
+                                while data: byte = self.target.send(data); data = data[byte:]
+                            count = 0
+                        else: break
+                    except: error = True; break
+            if count == TIMEOUT: error = True
+            if error: break
+
+if __name__ == '__main__':
+    print(f"\033[0;34m{'*'*8} \033[1;32mPROXY PYTHON3 WEBSOCKET \033[0;34m{'*'*8}\n")
+    print(f"\033[1;33mPUERTO:\033[1;32m {LISTENING_PORT}\n")
+    server = Server(LISTENING_ADDR, LISTENING_PORT); server.start()
+    while True:
+        try: time.sleep(2)
+        except KeyboardInterrupt: server.close(); break
+PYEOF
+
+    chmod +x $DIR_SCRIPTS/proxy_ws_${WS_PORT}.py
+    cat > $DIR_SERVICES/ws-proxy-${WS_PORT}.service << EOF
+[Unit]
+Description=WebSocket Proxy Python Puerto ${WS_PORT}
+After=network.target
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/bin/python3 ${DIR_SCRIPTS}/proxy_ws_${WS_PORT}.py ${WS_PORT}
+Restart=always
+RestartSec=5
+[Install]
+WantedBy=multi-user.target
+EOF
+    systemctl daemon-reload; systemctl enable ws-proxy-${WS_PORT}; systemctl start ws-proxy-${WS_PORT}
+    sleep 2
+    systemctl is-active --quiet ws-proxy-${WS_PORT} && echo -e "\n  ${G}OK WebSocket activo en puerto ${WS_PORT}${NC}" || echo -e "\n  ${R}Error${NC}"
+    read -p "  ENTER..."
+}
+
+menu_ws() {
+    while true; do
+        banner; sep; echo -e "  ${Y}  WEBSOCKET PYTHON${NC}"; sep; echo ""
+        for f in $(ls $DIR_SERVICES/ws-proxy-*.service 2>/dev/null); do
+            name=$(basename $f .service); port=$(echo $name | grep -o '[0-9]*$')
+            echo -e "  Puerto ${Y}${port}${NC} $(status_service $name)"
+        done
+        echo ""; sep
+        echo -e "  ${W}[1]${NC} Instalar/Configurar"
+        echo -e "  ${W}[2]${NC} Iniciar"
+        echo -e "  ${W}[3]${NC} Detener"
+        echo -e "  ${W}[4]${NC} Reiniciar"
+        echo -e "  ${W}[5]${NC} Eliminar"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
+        echo -e "  ${W}[0]${NC} Volver"; sep
+        read -p "  Opcion: " OPT
+        case $OPT in
+            1) instalar_ws ;;
+            2) read -p "  Puerto: " P; systemctl start ws-proxy-${P} && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
+            3) read -p "  Puerto: " P; systemctl stop ws-proxy-${P} && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
+            4) read -p "  Puerto: " P; systemctl restart ws-proxy-${P} && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
+            5)
+                read -p "  Puerto (0=todos): " DEL_PORT
+                if [ "$DEL_PORT" = "0" ]; then
+                    for f in $DIR_SERVICES/ws-proxy-*.service; do
+                        name=$(basename $f .service); systemctl stop $name; systemctl disable $name; rm -f $f
+                    done; rm -f $DIR_SCRIPTS/proxy_ws_*.py
+                else
+                    systemctl stop ws-proxy-${DEL_PORT}; systemctl disable ws-proxy-${DEL_PORT}
+                    rm -f $DIR_SERVICES/ws-proxy-${DEL_PORT}.service $DIR_SCRIPTS/proxy_ws_${DEL_PORT}.py
+                fi
+                systemctl daemon-reload; echo -e "  ${G}Eliminado${NC}"; sleep 1 ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe /etc/ssh/banner${NC}"
+                else
+                    /usr/local/bin/convert-banner-txt
+                    systemctl restart dropbear
+                    echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
+            0) break ;;
+        esac
+    done
+}
+
+# ══════════════════════════════════════════
+#   BADVPN
+# ══════════════════════════════════════════
+
+menu_badvpn() {
+    while true; do
+        banner; sep; echo -e "  ${Y}  BADVPN UDP GATEWAY${NC}"; sep; echo ""
+        echo -e "  BadVPN 7200 $(status_service badvpn-7200)"
+        echo -e "  BadVPN 7300 $(status_service badvpn-7300)"
+        echo ""; sep
+        echo -e "  ${W}[1]${NC} Instalar BadVPN"
+        echo -e "  ${W}[2]${NC} Iniciar"
+        echo -e "  ${W}[3]${NC} Detener"
+        echo -e "  ${W}[4]${NC} Reiniciar"
+        echo -e "  ${W}[5]${NC} Puerto personalizado"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
+        echo -e "  ${W}[0]${NC} Volver"; sep
+        read -p "  Opcion: " OPT
+        case $OPT in
+            1)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
+            0) break ;;
+        esac
+    done
+}
+
+# ══════════════════════════════════════════
+#   UDP CUSTOM
+# ══════════════════════════════════════════
+
+menu_udp() {
+    while true; do
+        banner; sep; echo -e "  ${Y}  UDP CUSTOM${NC}"; sep; echo ""
+        ps aux | grep -i "udp-custom\|UDP-Custom" | grep -v grep | grep -q . && echo -e "  UDP Custom ${G}[ON]${NC}" || echo -e "  UDP Custom ${R}[OFF]${NC}"
+        echo ""; sep
+        echo -e "  ${W}[1]${NC} Instalar UDP Custom"
+        echo -e "  ${W}[2]${NC} Iniciar"
+        echo -e "  ${W}[3]${NC} Detener"
+        echo -e "  ${W}[4]${NC} Reiniciar"
+        echo -e "  ${W}[5]${NC} Ver estado"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
+        echo -e "  ${W}[0]${NC} Volver"; sep
+        read -p "  Opcion: " OPT
+        case $OPT in
+            1)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
+            0) break ;;
+        esac
+    done
+}
+
+# ══════════════════════════════════════════
+#   SSL/TLS STUNNEL
+# ══════════════════════════════════════════
+
+menu_ssl() {
+    while true; do
+        banner; sep; echo -e "  ${Y}  SSL/TLS STUNNEL${NC}"; sep; echo ""
+        echo -e "  Stunnel $(status_service stunnel4)"
+        echo -e "  Puerto 443 $(status_port 443)"
+        echo ""; sep
+        echo -e "  ${W}[1]${NC} Instalar SSL/TLS Stunnel"
+        echo -e "  ${W}[2]${NC} Iniciar"
+        echo -e "  ${W}[3]${NC} Detener"
+        echo -e "  ${W}[4]${NC} Reiniciar"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
+        echo -e "  ${W}[0]${NC} Volver"; sep
+        read -p "  Opcion: " OPT
+        case $OPT in
+            1)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
+            0) break ;;
+        esac
+    done
+}
+
+# ══════════════════════════════════════════
+#   V2RAY
+# ══════════════════════════════════════════
+
+menu_v2ray() {
+    while true; do
+        banner; sep
+        echo -e "  ${NEON}◆ V2RAY VMESS${NC}"; sep; echo ""
+        echo -e "  V2Ray $(status_service v2ray)"
+        if [ -f /usr/local/etc/v2ray/config.json ]; then
+            python3 -c "
+import json
+try:
+    with open('/usr/local/etc/v2ray/config.json') as f: c=json.load(f)
+    inbounds = c.get('inbounds',[])
+    if not inbounds:
+        print('  \033[2;37m  Sin inbounds configurados\033[0m')
+    for ib in inbounds:
+        net=ib.get('streamSettings',{}).get('network','tcp')
+        tls=ib.get('streamSettings',{}).get('security','none')
+        tls_icon='\033[1;96m TLS\033[0m' if tls=='tls' else ''
+        print(f'  \033[1;96m◈\033[0m \033[1;97mPuerto \033[1;33m{ib[\"port\"]}\033[0m \033[2;37m|\033[0m \033[1;96m{ib[\"protocol\"]}\033[0m \033[2;37m|\033[0m {net}{tls_icon}')
+except: pass
+" 2>/dev/null
+        fi
+        echo ""; sep
+        printf " ${Y}❬1❭ ⚡ Instalar V2Ray      ❬2❭ ➕ Agregar inbound${NC}\n"
+        printf " ${Y}❬3❭ 🗑  Eliminar inbound    ❬4❭ ▶  Iniciar${NC}\n"
+        printf " ${Y}❬5❭ ⏹  Detener             ❬6❭ 🔄 Reiniciar${NC}\n"
+        printf " ${Y}❬7❭ 👤 Crear usuario        ❬8❭ 📋 Ver usuarios${NC}\n"
+        printf " ${R}❬9❭ 🗑  Desinstalar V2Ray${NC}\n"
+        sep
+        printf " ${R}❬0❭ Volver${NC}\n"; sep; echo ""
+        read -p " Opcion: " OPT
+        case $OPT in
+            1)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
+            0) break ;;
+            *) echo -e "  ${R}Opcion invalida${NC}"; sleep 1 ;;
+        esac
+    done
+}
+
+
+
+# ══════════════════════════════════════════
+#   ZIV VPN
+# ══════════════════════════════════════════
+
+menu_ziv() {
+    while true; do
+        banner; sep; echo -e "  ${Y}  ZIV VPN UDP${NC}"; sep; echo ""
+        echo -e "  ZIV VPN $(status_service zivpn)"
+        [ -f /etc/zivpn/config.json ] && PORT=$(cat /etc/zivpn/config.json | python3 -c "import json,sys; print(json.load(sys.stdin).get('listen',':5667').replace(':',''))" 2>/dev/null) && echo -e "  Puerto: ${Y}${PORT}${NC}"
+        echo ""; sep
+        echo -e "  ${W}[1]${NC} Instalar ZIV VPN V2 (Recomendado)"
+        echo -e "  ${W}[2]${NC} Instalar ZIV VPN V1"
+        echo -e "  ${W}[3]${NC} Iniciar"
+        echo -e "  ${W}[4]${NC} Detener"
+        echo -e "  ${W}[5]${NC} Reiniciar"
+        echo -e "  ${W}[6]${NC} Ver configuracion"
+        echo -e "  ${W}[7]${NC} Desinstalar"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
+        echo -e "  ${W}[0]${NC} Volver"; sep
+        read -p "  Opcion: " OPT
+        case $OPT in
+            1) bash <(curl -fsSL https://raw.githubusercontent.com/powermx/zivpn/main/ziv2.sh) ;;
+            2) bash <(curl -fsSL https://raw.githubusercontent.com/powermx/zivpn/main/ziv1.sh) ;;
+            3) systemctl start zivpn && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
+            4) systemctl stop zivpn && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
+            5) usuarios_ssh_online_count ;;
+            6) usuarios_v2ray_online_count ;;
+            7) usuarios_ziv_online_count ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe /etc/ssh/banner${NC}"
+                else
+                    /usr/local/bin/convert-banner-txt
+                    systemctl restart dropbear
+                    echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
+            0) break ;;
+        esac
+    done
+}
+
+# ══════════════════════════════════════════
+#   USUARIOS ZIV VPN
+# ══════════════════════════════════════════
+
+aplicar_passwords_ziv() {
+    [ ! -f /etc/zivpn/users.json ] && echo "[]" > /etc/zivpn/users.json
+    python3 - << PYEOF
+import json, datetime
+with open("/etc/zivpn/users.json") as f: users = json.load(f)
+now = datetime.datetime.now()
+active = [u["password"] for u in users if datetime.datetime.fromisoformat(u["expires"].split("+")[0].split(".")[0]) > now]
+if not active: active = ["zi"]
+with open("/etc/zivpn/config.json") as f: config = json.load(f)
+# Mantener passwords existentes y agregar nuevas sin duplicar
+existing = config["auth"]["config"]
+merged = list(set(existing + active))
+config["auth"]["config"] = merged
+with open("/etc/zivpn/config.json", "w") as f: json.dump(config, f, indent=2)
+PYEOF
+    systemctl restart zivpn 2>/dev/null
+}
+
+crear_user_ziv() {
+    banner; sep; echo -e "  ${Y}  CREAR USUARIO ZIV VPN${NC}"; sep; echo ""
+    read -p "  Contraseña: " ZIV_PASS
+    [ -z "$ZIV_PASS" ] && echo -e "  ${R}Contraseña requerida${NC}" && sleep 1 && return
+    read -p "  Dias de validez (default 30): " ZIV_DAYS; ZIV_DAYS=${ZIV_DAYS:-30}
+    EXP_DATE=$(date -d "+${ZIV_DAYS} days" -Iseconds)
+    EXP_SHOW=$(date -d "+${ZIV_DAYS} days" +"%d/%m/%Y")
+    SERVER_IP=$(curl -s -4 ifconfig.me 2>/dev/null || ip -4 addr show scope global | grep inet | awk '{print $2}' | cut -d/ -f1 | head -1)
+    [ ! -f /etc/zivpn/users.json ] && echo "[]" > /etc/zivpn/users.json
+    python3 - << PYEOF
+import json, datetime
+with open("/etc/zivpn/users.json") as f: users = json.load(f)
+users.append({"password": "$ZIV_PASS", "expires": "$EXP_DATE", "created": datetime.datetime.now().isoformat()})
+with open("/etc/zivpn/users.json", "w") as f: json.dump(users, f, indent=2)
+PYEOF
+    aplicar_passwords_ziv
+    echo ""; sep
+    echo -e "  ${Y}  CREDENCIALES ZIV VPN${NC}"; sep
+    echo -e "  ${W}IP:${NC}       $SERVER_IP"
+    echo -e "  ${W}Puerto:${NC}   5667"
+    echo -e "  ${W}Pass:${NC}     $ZIV_PASS"
+    echo -e "  ${W}Expira:${NC}   $EXP_SHOW ($ZIV_DAYS dias)"
+    echo ""; sep; read -p "  ENTER..."
+}
+
+listar_users_ziv() {
+    banner; sep; echo -e "  ${Y}  USUARIOS ZIV VPN${NC}"; sep; echo ""
+    [ ! -f /etc/zivpn/users.json ] && echo "[]" > /etc/zivpn/users.json
+    python3 - << PYEOF
+import json, datetime
+with open("/etc/zivpn/users.json") as f: users = json.load(f)
+if not users: print("  Sin usuarios")
+else:
+    now = datetime.datetime.now()
+    for u in users:
+        exp = datetime.datetime.fromisoformat(u["expires"])
+        estado = "\033[0;32m[ACTIVO]\033[0m" if exp > now else "\033[0;31m[EXPIRADO]\033[0m"
+        print(f"  Pass: {u['password']:<20} Expira: {exp.strftime('%d/%m/%Y')}  {estado}")
+PYEOF
+    echo ""; read -p "  ENTER..."
+}
+
+eliminar_user_ziv() {
+    banner; sep; echo -e "  ${R}  ELIMINAR USUARIO ZIV VPN${NC}"; sep; echo ""
+    [ ! -f /etc/zivpn/users.json ] && echo "[]" > /etc/zivpn/users.json
+    python3 -c "
+import json
+with open('/etc/zivpn/users.json') as f: u=json.load(f)
+[print(f'  - {x[\"password\"]}') for x in u] if u else print('  Sin usuarios')
+"
+    echo ""; read -p "  Contraseña a eliminar: " DEL_PASS
+    python3 - << PYEOF
+import json
+with open("/etc/zivpn/users.json") as f: users = json.load(f)
+users = [u for u in users if u["password"] != "$DEL_PASS"]
+with open("/etc/zivpn/users.json", "w") as f: json.dump(users, f, indent=2)
+PYEOF
+    aplicar_passwords_ziv; echo -e "  ${G}Eliminado${NC}"; sleep 1
+}
+
+limpiar_expirados_ziv() {
+    [ ! -f /etc/zivpn/users.json ] && echo "[]" > /etc/zivpn/users.json
+    python3 - << PYEOF
+import json, datetime
+with open("/etc/zivpn/users.json") as f: users = json.load(f)
+now = datetime.datetime.now()
+activos = [u for u in users if datetime.datetime.fromisoformat(u["expires"]) > now]
+exp = len(users) - len(activos)
+with open("/etc/zivpn/users.json", "w") as f: json.dump(activos, f, indent=2)
+print(f"  {exp} expirados eliminados" if exp > 0 else "  Sin expirados")
+PYEOF
+}
+
+menu_users_ziv() {
+    while true; do
+        banner; sep; echo -e "  ${Y}  USUARIOS ZIV VPN${NC}"; sep; echo ""
+        [ ! -f /etc/zivpn/users.json ] && echo "[]" > /etc/zivpn/users.json
+        TOTAL=$(python3 -c "import json; print(len(json.load(open('/etc/zivpn/users.json'))))" 2>/dev/null || echo 0)
+        echo -e "  Total usuarios: ${G}${TOTAL}${NC}"
+        echo -e "  ZIV VPN: $(status_service zivpn)"
+        echo ""; sep
+        echo -e "  ${W}[1]${NC} Crear usuario"
+        echo -e "  ${W}[2]${NC} Listar usuarios"
+        echo -e "  ${W}[3]${NC} Eliminar usuario"
+        echo -e "  ${W}[4]${NC} Limpiar expirados"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
+        echo -e "  ${W}[0]${NC} Volver"; sep
+        read -p "  Opcion: " OPT
+        case $OPT in
+            1) crear_user_ziv ;;
+            2) listar_users_ziv ;;
+            3) eliminar_user_ziv ;;
+            4) limpiar_expirados_ziv; aplicar_passwords_ziv; echo -e "  ${G}Limpiado${NC}"; sleep 1 ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe /etc/ssh/banner${NC}"
+                else
+                    /usr/local/bin/convert-banner-txt
+                    systemctl restart dropbear
+                    echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
+            0) break ;;
+        esac
+    done
+}
+
+# ══════════════════════════════════════════
+#   USUARIOS SSH
+# ══════════════════════════════════════════
+
+listar_usuarios() {
+    banner; sep; echo -e "  ${Y}  USUARIOS SSH ACTIVOS${NC}"; sep; echo ""
+    printf "  %-20s %-15s %s\n" "Usuario" "Expira" "Estado"
+    sep
+    awk -F: '$3>=1000 && $1!="nobody" {print $1}' /etc/passwd | while read user; do
+        EXP=$(chage -l $user 2>/dev/null | grep "Account expires" | cut -d: -f2 | xargs)
+        if [ "$EXP" = "never" ] || [ -z "$EXP" ]; then
+            printf "  ${Y}%-20s${NC} %-15s\n" "$user" "Sin expirar"
+        else
+            EXP_TS=$(date -d "$EXP" +%s 2>/dev/null || echo 0)
+            NOW_TS=$(date +%s)
+            if [ $EXP_TS -lt $NOW_TS ]; then
+                printf "  ${R}%-20s${NC} %-15s ${R}[EXPIRADO]${NC}\n" "$user" "$EXP"
+            else
+                printf "  ${G}%-20s${NC} %-15s\n" "$user" "$EXP"
+            fi
+        fi
+    done
+    echo ""; sep; read -p "  ENTER..."
+}
+
+crear_usuario() {
+    banner; sep; echo -e "  ${Y}  CREAR USUARIO SSH${NC}"; sep; echo ""
+    read -p "  Nombre de usuario: " USR_NAME
+    [ -z "$USR_NAME" ] && echo -e "  ${R}Nombre requerido${NC}" && sleep 1 && return
+    read -p "  Contraseña (ENTER para generar): " USR_PASS
+    [ -z "$USR_PASS" ] && USR_PASS=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 10 | head -n 1) && echo -e "  ${G}Generada: ${W}${USR_PASS}${NC}"
+    read -p "  Dias de validez (default 30): " USR_DAYS; USR_DAYS=${USR_DAYS:-30}
+    EXP_DATE=$(date -d "+${USR_DAYS} days" +%Y-%m-%d)
+    EXP_SHOW=$(date -d "+${USR_DAYS} days" +%d/%m/%Y)
+    SERVER_IP=$(curl -s -4 ifconfig.me 2>/dev/null || ip -4 addr show scope global | grep inet | awk '{print $2}' | cut -d/ -f1 | head -1)
+    echo ""; echo -e "  ${C}Creando usuario...${NC}"
+    if id "$USR_NAME" &>/dev/null; then
+        usermod -e $EXP_DATE $USR_NAME; echo "$USR_NAME:$USR_PASS" | chpasswd
+    else
+        useradd -M -s /bin/false -e $EXP_DATE $USR_NAME
+        echo "$USR_NAME:$USR_PASS" | chpasswd
+        chage -E $EXP_DATE -M 99999 $USR_NAME; usermod -f 0 $USR_NAME
+    fi
+    echo ""; sep; echo -e "  ${Y}  CREDENCIALES${NC}"; sep
+    echo -e "  ${W}Usuario:${NC}  $USR_NAME"
+    echo -e "  ${W}Password:${NC} $USR_PASS"
+    echo -e "  ${W}IP:${NC}       $SERVER_IP"
+    echo -e "  ${W}Expira:${NC}   $EXP_SHOW ($USR_DAYS dias)"
+    echo ""; sep; echo -e "  ${Y}  CONEXIONES DISPONIBLES${NC}"; sep; echo ""
+    echo -e "  ${C}SSH Directo:${NC}"; echo -e "  ${W}$SERVER_IP:22@$USR_NAME:$USR_PASS${NC}"; echo ""
+    ss -tlnp | grep -q ":80 " && echo -e "  ${C}WS Puerto 80:${NC}" && echo -e "  ${W}$SERVER_IP:80@$USR_NAME:$USR_PASS${NC}" && echo ""
+    systemctl is-active --quiet stunnel4 2>/dev/null && echo -e "  ${C}SSL/TLS 443:${NC}" && echo -e "  ${W}$SERVER_IP:443@$USR_NAME:$USR_PASS${NC}" && echo ""
+    ps aux | grep -i "udp-custom\|UDP-Custom" | grep -v grep | grep -q . && echo -e "  ${C}UDP Custom:${NC}" && echo -e "  ${W}$SERVER_IP:1-65535@$USR_NAME:$USR_PASS${NC}" && echo ""
+    (systemctl is-active --quiet badvpn-7200 2>/dev/null || systemctl is-active --quiet badvpn-7300 2>/dev/null) && echo -e "  ${C}BadVPN:${NC}" && systemctl is-active --quiet badvpn-7200 && echo -e "  ${W}Puerto 7200 activo${NC}" && systemctl is-active --quiet badvpn-7300 && echo -e "  ${W}Puerto 7300 activo${NC}" && echo ""
+    sep; read -p "  ENTER..."
+}
+
+eliminar_usuario() {
+    banner; sep; echo -e "  ${R}  ELIMINAR USUARIO SSH${NC}"; sep; echo ""
+    awk -F: '$3>=1000 && $1!="nobody" {print $1}' /etc/passwd | while read user; do printf "  ${Y}%-20s${NC}\n" "$user"; done
+    echo ""; read -p "  Usuario a eliminar: " DEL_USR
+    if id "$DEL_USR" &>/dev/null; then
+        pkill -u "$DEL_USR" 2>/dev/null; userdel -f "$DEL_USR" 2>/dev/null
+        echo -e "  ${G}OK Usuario $DEL_USR eliminado${NC}"
+    else echo -e "  ${R}Usuario no encontrado${NC}"; fi
+    sleep 2
+}
+
+renovar_usuario() {
+    banner; sep; echo -e "  ${Y}  RENOVAR USUARIO SSH${NC}"; sep; echo ""
+    awk -F: '$3>=1000 && $1!="nobody" {print $1}' /etc/passwd | while read user; do
+        EXP=$(chage -l $user 2>/dev/null | grep "Account expires" | cut -d: -f2 | xargs)
+        printf "  ${Y}%-20s${NC} %s\n" "$user" "$EXP"
+    done
+    echo ""; read -p "  Usuario a renovar: " REN_USR
+    id "$REN_USR" &>/dev/null || { echo -e "  ${R}No encontrado${NC}"; sleep 1; return; }
+    read -p "  Dias a agregar (default 30): " REN_DAYS; REN_DAYS=${REN_DAYS:-30}
+    EXP_DATE=$(date -d "+${REN_DAYS} days" +%Y-%m-%d)
+    EXP_SHOW=$(date -d "+${REN_DAYS} days" +%d/%m/%Y)
+    usermod -e $EXP_DATE $REN_USR; chage -E $EXP_DATE $REN_USR
+    echo -e "  ${G}OK $REN_USR renovado hasta $EXP_SHOW${NC}"; sleep 2
+}
+
+menu_usuarios() {
+    while true; do
+        banner; sep; echo -e "  ${Y}  GESTIÓN DE USUARIOS SSH${NC}"; sep; echo ""
+        TOTAL=$(awk -F: '$3>=1000 && $1!="nobody" {print $1}' /etc/passwd | wc -l)
+        echo -e "  Total usuarios: ${G}${TOTAL}${NC}"; echo ""; sep
+        echo -e "  ${W}[1]${NC} Crear usuario"
+        echo -e "  ${W}[2]${NC} Listar usuarios"
+        echo -e "  ${W}[3]${NC} Eliminar usuario"
+        echo -e "  ${W}[4]${NC} Renovar usuario"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
+        echo -e "  ${W}[0]${NC} Volver"; sep
+        read -p "  Opcion: " OPT
+        case $OPT in
+            1) crear_usuario ;;
+            2) listar_usuarios ;;
+            3) eliminar_usuario ;;
+            4) renovar_usuario ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe /etc/ssh/banner${NC}"
+                else
+                    /usr/local/bin/convert-banner-txt
+                    systemctl restart dropbear
+                    echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
+            0) break ;;
+        esac
+    done
+}
+
+
+instalar_motd() {
+    banner; sep
+    echo -e "  ${Y}  CONFIGURAR MOTD DEL SERVIDOR${NC}"; sep; echo ""
+    read -p "  Nombre del servidor: " SRV_NAME
+    [ -z "$SRV_NAME" ] && SRV_NAME="SSHFREE LTM"
+
+    # Instalar figlet para ASCII art
+    apt install -y figlet > /dev/null 2>&1
+
+    INSTALL_DATE=$(date +%d-%m-%Y)
+
+    # Guardar fecha de instalación
+    echo "$INSTALL_DATE" > /etc/sshfreeltm/install_date
+    echo "$SRV_NAME" > /etc/sshfreeltm/server_name
+
+    # Probar figlet
+    echo -e "  ${C}Preview del nombre:${NC}"
+    figlet -f slant "$SRV_NAME" 2>/dev/null || figlet "$SRV_NAME" 2>/dev/null || echo "$SRV_NAME"
+    
+    # Crear script MOTD dinámico
+    cat > /etc/profile.d/sshfree-motd.sh << MOTDEOF
+#!/bin/bash
+PURPLE='[0;35m'
+CYAN='[0;36m'
+GREEN='[0;32m'
+YELLOW='[1;33m'
+WHITE='[1;37m'
+NC='[0m'
+
+INSTALL_DATE=\$(cat /etc/sshfreeltm/install_date 2>/dev/null || echo "N/A")
+SRV_NAME=\$(cat /etc/sshfreeltm/server_name 2>/dev/null || echo "SSHFREE LTM")
+CURRENT_DATE=\$(date +%d-%m-%Y)
+CURRENT_TIME=\$(date +%H:%M:%S)
+UPTIME=\$(uptime -p | sed 's/up //')
+RAM_FREE=\$(free -h | awk '/^Mem:/{print \$4}')
+HOSTNAME=\$(hostname)
+
+echo -e "\${PURPLE}"
+figlet -f slant "\$SRV_NAME" 2>/dev/null || echo "\$SRV_NAME"
+echo -e "\${NC}"
+echo -e "\${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\${NC}"
+echo -e "  \${YELLOW}SERVIDOR INSTALADO EL\${NC}   : \${WHITE}\$INSTALL_DATE\${NC}"
+echo -e "  \${YELLOW}FECHA/HORA ACTUAL\${NC}        : \${WHITE}\$CURRENT_DATE - \$CURRENT_TIME\${NC}"
+echo -e "  \${YELLOW}NOMBRE DEL SERVIDOR\${NC}      : \${WHITE}\$HOSTNAME\${NC}"
+echo -e "  \${YELLOW}TIEMPO EN LINEA\${NC}          : \${WHITE}\$UPTIME\${NC}"
+echo -e "  \${YELLOW}VERSION INSTALADA\${NC}        : \${WHITE}V1.0.0\${NC}"
+echo -e "  \${YELLOW}MEMORIA RAM LIBRE\${NC}        : \${WHITE}\$RAM_FREE\${NC}"
+echo -e "  \${YELLOW}CREADOR DEL SCRIPT\${NC}       : \${PURPLE}@DarkZFull ❴LTM❵\${NC}"
+echo -e "  \${GREEN}BIENVENIDO DE NUEVO!\${NC}"
+echo -e "\${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\${NC}"
+echo -e "  Teclee \${YELLOW}menu\${NC} para ver el MENU LTM"
+echo -e "\${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\${NC}"
+echo ""
+MOTDEOF
+
+    chmod +x /etc/profile.d/sshfree-motd.sh
+    
+    # Deshabilitar MOTD por defecto de Ubuntu
+    [ -f /etc/motd ] && > /etc/motd
+    
+    echo -e "
+  ${G}OK MOTD configurado para ${SRV_NAME}${NC}"
+    echo -e "  ${Y}Se mostrara al conectarte por SSH${NC}"
+    sleep 2
+}
+
+# ══════════════════════════════════════════
+#   MENÚ PRINCIPAL
+# ══════════════════════════════════════════
+
+desinstalar_script() {
+    banner; sep
+    echo -e "  ${R}  DESINSTALAR SCRIPT${NC}"; sep; echo ""
+    echo -e "  ${Y}Esto eliminará:${NC}"
+    echo -e "  - Comando menu"
+    echo -e "  - MOTD del servidor"
+    echo -e "  - Archivos de configuracion"
+    echo -e "  - Servicios instalados (WS, BadVPN, etc)"
+    echo ""
+    read -p "  Confirmar (si/no): " CONFIRM
+    [ "$CONFIRM" != "si" ] && echo -e "  ${Y}Cancelado${NC}" && sleep 1 && return
+
+    echo -e "\n  ${C}Desinstalando...${NC}"
+    # Detener y eliminar servicios
+    for svc in ws-proxy-* badvpn-* udp-custom stunnel4 v2ray zivpn hysteria-server; do
+        systemctl stop $svc 2>/dev/null
+        systemctl disable $svc 2>/dev/null
+        rm -f /etc/systemd/system/$svc.service
+    done
+    systemctl daemon-reload
+
+    # Eliminar archivos
+    rm -f /usr/local/bin/menu
+    rm -f /etc/profile.d/sshfree-motd.sh
+    rm -rf /etc/sshfreeltm
+    rm -rf $DIR_SCRIPTS
+
+    echo -e "  ${G}Script desinstalado correctamente${NC}"
+    sleep 2
+    exit 0
+}
+actualizar_script() {
+    banner; sep
+    echo -e "  ${Y}  ACTUALIZAR SCRIPT${NC}"; sep; echo ""
+    echo -e "  ${C}Descargando ultima version...${NC}"
+    echo -e "  ${C}Descargando ultima version...${NC}"
+    wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/DarkFull0726/SSHSCRIPT-LTM/main/sshscript-ltm.sh?$(date +%s)"
+    chmod +x /usr/local/bin/menu
+    mkdir -p /etc/sshfreeltm
+    touch /etc/sshfreeltm/.licensed
+    echo -e "  ${G}OK Script actualizado a v$(grep SCRIPT_VERSION /usr/local/bin/menu | head -1 | grep -o '[0-9.]*')${NC}"
+    sleep 2
+    exec /usr/local/bin/menu
+}
+
+actualizar_script() {
+    banner; sep
+    echo -e "  ${Y}  ACTUALIZAR SCRIPT${NC}"; sep; echo ""
+    echo -e "  ${C}Descargando ultima version...${NC}"
+    echo -e "  ${C}Descargando ultima version...${NC}"
+    wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/DarkFull0726/SSHSCRIPT-LTM/main/sshscript-ltm.sh?$(date +%s)"
+    chmod +x /usr/local/bin/menu
+    mkdir -p /etc/sshfreeltm
+    touch /etc/sshfreeltm/.licensed
+    echo -e "  ${G}OK Script actualizado a v$(grep SCRIPT_VERSION /usr/local/bin/menu | head -1 | grep -o '[0-9.]*')${NC}"
+    sleep 2
+    exec /usr/local/bin/menu
+}
+
+menu_atacantes() {
+    banner; sep
+    echo -e "  ${NEON}◆ IPs ATACANTES${NC}"; sep; echo ""
+    
+    # Ver IPs bloqueadas por fail2ban
+    if command -v fail2ban-client > /dev/null 2>&1; then
+        BANNED=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2 | tr ' ' '\n' | grep -v '^$')
+        if [ -n "$BANNED" ]; then
+            echo -e "  ${R}🚨 IPs bloqueadas por Fail2ban:${NC}"
+            echo "$BANNED" | while read ip; do
+                [ -n "$ip" ] && echo -e "  ${NEON}◈${NC} ${R}$ip${NC}"
+            done
+        else
+            echo -e "  ${G}✅ Sin IPs bloqueadas en Fail2ban${NC}"
+        fi
+    fi
+    
+    echo ""
+    
+    # Ver conexiones sospechosas activas
+    echo -e "  ${Y}🔍 Conexiones activas por IP:${NC}"
+    CONNS=$(ss -tn state established | awk 'NR>1{print $5}' | cut -d: -f1 | sort | uniq -c | sort -rn | head -10)
+    if [ -n "$CONNS" ]; then
+        echo "$CONNS" | while read count ip; do
+            [ -z "$ip" ] && continue
+            if [ "$count" -gt 10 ]; then
+                echo -e "  ${R}◈ $ip — $count conexiones ⚠️${NC}"
+            else
+                echo -e "  ${NEON}◈${NC} $ip — ${Y}$count${NC} conexiones"
+            fi
+        done
+    else
+        echo -e "  ${G}✅ Sin conexiones sospechosas${NC}"
+    fi
+    
+    echo ""
+    
+    # Ver logs de iptables DROP recientes
+    echo -e "  ${Y}🛡️ Paquetes bloqueados recientes:${NC}"
+    DROPS=$(dmesg 2>/dev/null | grep "IN=.*OUT=" | tail -5 | grep -oP 'SRC=\K[0-9.]+' | sort | uniq -c | sort -rn)
+    if [ -n "$DROPS" ]; then
+        echo "$DROPS" | while read count ip; do
+            echo -e "  ${NEON}◈${NC} ${R}$ip${NC} — $count paquetes bloqueados"
+        done
+    else
+        echo -e "  ${G}✅ Sin ataques detectados${NC}"
+    fi
+    
+    echo ""; sep
+    read -p "  ENTER..."
+}
+
+menu_antiddos() {
+    while true; do
+        banner; sep
+        echo -e "  ${Y}  ANTI-DDOS${NC}"; sep; echo ""
+        DDOS_ACTIVE=$(iptables -L INPUT -n 2>/dev/null | grep -q "limit" && echo 1 || echo 0)
+        if [ "$DDOS_ACTIVE" = "1" ]; then
+            echo -e "  Estado: ${G}[ACTIVO]${NC}"
+        else
+            echo -e "  Estado: ${R}[INACTIVO]${NC}"
+        fi
+        echo ""; sep
+        echo -e "  ${W}[1]${NC} Activar Anti-DDoS Agresivo"
+        echo -e "  ${W}[2]${NC} Desactivar Anti-DDoS"
+        echo -e "  ${W}[3]${NC} Ver reglas activas"
+        echo -e "  ${W}[4]${NC} Ver IPs atacantes"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
+        echo -e "  ${W}[0]${NC} Volver"; sep
+        read -p "  Opcion: " OPT
+        case $OPT in
+            1)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
+            0) break ;;
+        esac
+    done
+}
+
+actualizar_script() {
+    banner; sep
+    echo -e "  ${Y}  ACTUALIZAR SCRIPT${NC}"; sep; echo ""
+    echo -e "  ${C}Descargando ultima version...${NC}"
+    echo -e "  ${C}Descargando ultima version...${NC}"
+    wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/DarkFull0726/SSHSCRIPT-LTM/main/sshscript-ltm.sh?$(date +%s)"
+    chmod +x /usr/local/bin/menu
+    mkdir -p /etc/sshfreeltm
+    touch /etc/sshfreeltm/.licensed
+    echo -e "  ${G}OK Script actualizado a v$(grep SCRIPT_VERSION /usr/local/bin/menu | head -1 | grep -o '[0-9.]*')${NC}"
+    sleep 2
+    exec /usr/local/bin/menu
+}
+
+menu_atacantes() {
+    banner; sep
+    echo -e "  ${NEON}◆ IPs ATACANTES${NC}"; sep; echo ""
+    
+    # Ver IPs bloqueadas por fail2ban
+    if command -v fail2ban-client > /dev/null 2>&1; then
+        BANNED=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2 | tr ' ' '\n' | grep -v '^$')
+        if [ -n "$BANNED" ]; then
+            echo -e "  ${R}🚨 IPs bloqueadas por Fail2ban:${NC}"
+            echo "$BANNED" | while read ip; do
+                [ -n "$ip" ] && echo -e "  ${NEON}◈${NC} ${R}$ip${NC}"
+            done
+        else
+            echo -e "  ${G}✅ Sin IPs bloqueadas en Fail2ban${NC}"
+        fi
+    fi
+    
+    echo ""
+    
+    # Ver conexiones sospechosas activas
+    echo -e "  ${Y}🔍 Conexiones activas por IP:${NC}"
+    CONNS=$(ss -tn state established | awk 'NR>1{print $5}' | cut -d: -f1 | sort | uniq -c | sort -rn | head -10)
+    if [ -n "$CONNS" ]; then
+        echo "$CONNS" | while read count ip; do
+            [ -z "$ip" ] && continue
+            if [ "$count" -gt 10 ]; then
+                echo -e "  ${R}◈ $ip — $count conexiones ⚠️${NC}"
+            else
+                echo -e "  ${NEON}◈${NC} $ip — ${Y}$count${NC} conexiones"
+            fi
+        done
+    else
+        echo -e "  ${G}✅ Sin conexiones sospechosas${NC}"
+    fi
+    
+    echo ""
+    
+    # Ver logs de iptables DROP recientes
+    echo -e "  ${Y}🛡️ Paquetes bloqueados recientes:${NC}"
+    DROPS=$(dmesg 2>/dev/null | grep "IN=.*OUT=" | tail -5 | grep -oP 'SRC=\K[0-9.]+' | sort | uniq -c | sort -rn)
+    if [ -n "$DROPS" ]; then
+        echo "$DROPS" | while read count ip; do
+            echo -e "  ${NEON}◈${NC} ${R}$ip${NC} — $count paquetes bloqueados"
+        done
+    else
+        echo -e "  ${G}✅ Sin ataques detectados${NC}"
+    fi
+    
+    echo ""; sep
+    read -p "  ENTER..."
+}
+
+menu_antiddos() {
+    while true; do
+        banner; sep
+        echo -e "  ${Y}  ANTI-DDOS${NC}"; sep; echo ""
+        DDOS_ACTIVE=$(iptables -L INPUT -n 2>/dev/null | grep -q "limit" && echo 1 || echo 0)
+        if [ "$DDOS_ACTIVE" = "1" ]; then
+            echo -e "  Estado: ${G}[ACTIVO]${NC}"
+        else
+            echo -e "  Estado: ${R}[INACTIVO]${NC}"
+        fi
+        echo ""; sep
+        echo -e "  ${W}[1]${NC} Activar Anti-DDoS Agresivo"
+        echo -e "  ${W}[2]${NC} Desactivar Anti-DDoS"
+        echo -e "  ${W}[3]${NC} Ver reglas activas"
+        echo -e "  ${W}[4]${NC} Ver IPs atacantes"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
+        echo -e "  ${W}[0]${NC} Volver"; sep
+        read -p "  Opcion: " OPT
+        case $OPT in
+            1)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
+            0) break ;;
+        esac
+    done
+}
+
+menu_speed_udp() {
+    banner; sep
+    echo -e "  ${Y}  MEJORAR VELOCIDAD UDP${NC}"; sep; echo ""
+    echo -e "  ${C}Aplicando optimizaciones...${NC}"
+    echo ""
+
+    # BBR
+    modprobe tcp_bbr 2>/dev/null
+    echo "tcp_bbr" >> /etc/modules-load.d/modules.conf 2>/dev/null
+    echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
+    echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
+
+    # Buffers UDP
+    echo "net.core.rmem_max=134217728" >> /etc/sysctl.conf
+    echo "net.core.wmem_max=134217728" >> /etc/sysctl.conf
+    echo "net.core.rmem_default=25165824" >> /etc/sysctl.conf
+    echo "net.core.wmem_default=25165824" >> /etc/sysctl.conf
+    echo "net.core.netdev_max_backlog=65536" >> /etc/sysctl.conf
+    echo "net.ipv4.udp_rmem_min=8192" >> /etc/sysctl.conf
+    echo "net.ipv4.udp_wmem_min=8192" >> /etc/sysctl.conf
+
+    # Aplicar cambios
+    sysctl -p > /dev/null 2>&1
+
+    # Verificar BBR
+    BBR=$(sysctl net.ipv4.tcp_congestion_control 2>/dev/null | grep -o bbr)
+    if [ "$BBR" = "bbr" ]; then
+        echo -e "  ${G}✓ BBR activado${NC}"
+    else
+        echo -e "  ${Y}✓ Buffers optimizados (BBR no disponible en este kernel)${NC}"
+    fi
+    echo -e "  ${G}✓ Buffers UDP maximizados${NC}"
+    echo -e "  ${G}✓ Network backlog optimizado${NC}"
+    echo ""
+    sep
+    echo -e "  ${G}OK Optimizacion aplicada${NC}"
+    read -p "  ENTER..."
+}
+
+menu_slowdns() {
+    SLOWDNS_DIR="/etc/slowdns"
+    SERVER_SERVICE="server-sldns"
+    CLIENT_SERVICE="client-sldns"
+    PUBKEY_FILE="$SLOWDNS_DIR/server.pub"
+    while true; do
+        banner; sep
+        echo -e "  ${Y}  SLOWDNS${NC}"; sep; echo ""
+        SDNS_ST=$(systemctl is-active $SERVER_SERVICE 2>/dev/null)
+        [ "$SDNS_ST" = "active" ] && echo -e "  Estado: ${G}[ACTIVO]${NC}" || echo -e "  Estado: ${R}[INACTIVO]${NC}"
+        [ -f "$PUBKEY_FILE" ] && echo -e "  PubKey: ${W}$(cat $PUBKEY_FILE)${NC}"
+        echo ""; sep
+        echo -e "  ${W}[1]${NC} Instalar SlowDNS"
+        echo -e "  ${W}[2]${NC} Iniciar"
+        echo -e "  ${W}[3]${NC} Detener"
+        echo -e "  ${W}[4]${NC} Ver Public Key"
+        echo -e "  ${W}[5]${NC} Desinstalar"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
+        echo -e "  ${W}[0]${NC} Volver"; sep
+        read -p "  Opcion: " OPT
+        case $OPT in
+            1)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
+            0) break ;;
+        esac
+    done
+}
+
+
+
+menu_banner_ssh() {
+    while true; do
+        banner; sep
+        echo -e "  ${NEON}◆ BANNER SSH & HTTP CUSTOM${NC}"; sep; echo ""
+
+        # Estado SSH Banner
+        if grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null; then
+            echo -e "  ${NEON}◈${NC} ${W}Banner SSH:${NC}        ${NEON}◆ ACTIVO${NC}"
+        else
+            echo -e "  ${NEON}◈${NC} ${W}Banner SSH:${NC}        ${R}◇ INACTIVO${NC}"
+        fi
+
+        # Estado Banner HTTP Custom (WebSocket)
+        WS_FILES=$(ls /etc/sshfreeltm/proxy_ws_*.py 2>/dev/null | head -1)
+        if [ -n "$WS_FILES" ]; then
+            CURRENT_MSG=$(grep "^MSG = " "$WS_FILES" 2>/dev/null | sed "s/MSG = '\(.*\)'.encode.*/\1/")
+            echo -e "  ${NEON}◈${NC} ${W}Banner HTTP Custom:${NC} ${Y}${CURRENT_MSG:-No configurado}${NC}"
+        else
+            echo -e "  ${NEON}◈${NC} ${W}Banner HTTP Custom:${NC} ${R}Sin WebSocket activo${NC}"
+        fi
+
+        echo ""; sep
+        echo -e "  ${NEON}── SSH BANNER ──────────────────${NC}"
+        echo -e "  ${W}[1]${NC} Editar banner SSH (nano)"
+        echo -e "  ${W}[2]${NC} Activar banner SSH"
+        echo -e "  ${W}[3]${NC} Desactivar banner SSH"
+        echo -e "  ${W}[4]${NC} Ver banner SSH actual"
+        echo ""
+        echo -e "  ${NEON}── HTTP CUSTOM BANNER ──────────${NC}"
+        echo -e "  ${W}[5]${NC} Editar banner HTTP Custom"
+        echo -e "  ${W}[6]${NC} Ver banner HTTP Custom actual"
+        echo ""
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
+        echo -e "  ${W}[0]${NC} Volver"; sep
+        read -p "  Opcion: " OPT
+        case $OPT in
+            1)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
+            0) break ;;
+        esac
+    done
+}
+
+menu_limpieza() {
+    while true; do
+        banner; sep
+        echo -e "  ${NEON}◆ LIMPIEZA Y AUTO-REINICIO${NC}"; sep; echo ""
+        # Ver estado del cron de reinicio
+        CRON_ST=$(crontab -l 2>/dev/null | grep -c "reboot\|ltm_reboot" || echo 0)
+        [ "$CRON_ST" -gt 0 ] && echo -e "  ${NEON}◈${NC} ${W}Auto-reinicio:${NC} ${NEON}◆ ACTIVO${NC}" || echo -e "  ${NEON}◈${NC} ${W}Auto-reinicio:${NC} ${R}◇ INACTIVO${NC}"
+        RAM_FREE=$(free -h | awk '/^Mem:/{print $4}')
+        RAM_USED=$(free -h | awk '/^Mem:/{print $3}')
+        echo -e "  ${NEON}◈${NC} ${W}RAM Libre:${NC} ${Y}${RAM_FREE}${NC} | ${W}Usada:${NC} ${Y}${RAM_USED}${NC}"
+        echo ""; sep
+        printf " ${Y}❬1❭ Limpiar cache RAM ahora${NC}\n"
+        printf " ${Y}❬2❭ Limpiar archivos temporales${NC}\n"
+        printf " ${Y}❬3❭ Configurar auto-reinicio${NC}\n"
+        printf " ${Y}❬4❭ Ver cron de reinicio${NC}\n"
+        printf " ${R}❬5❭ Desactivar auto-reinicio${NC}\n"
+        printf " ${Y}❬6❭ Reiniciar ahora${NC}\n"
+        sep; printf " ${R}❬0❭ Volver${NC}\n"; sep; echo ""
+        read -p " Opcion: " OPT
+        case $OPT in
+            1)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            2)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe /etc/ssh/banner${NC}"
+                else
+                    generar_banner_txt
+                    systemctl restart sshd
+                    echo -e "  ${G}SSH reiniciado con el banner en texto plano${NC}"
+                fi
+                sleep 2 ;;
+            3)
+                banner; sep
+                echo -e "  ${Y}  CONFIGURAR AUTO-REINICIO${NC}"; sep; echo ""
+                read -p "  Intervalo en horas (ej: 1, 6, 12, 24): " REBOOT_HOURS
+                [ -z "$REBOOT_HOURS" ] && echo -e "  ${R}Cancelado${NC}" && sleep 1 && continue
+                # Crear script de limpieza y reinicio
+                cat > /usr/local/bin/ltm-reboot.sh << REBOOTEOF
+#!/bin/bash
+sync
+echo 3 > /proc/sys/vm/drop_caches
+/sbin/reboot
+REBOOTEOF
+                chmod +x /usr/local/bin/ltm-reboot.sh
+                # Agregar cron
+                (crontab -l 2>/dev/null | grep -v "ltm_reboot\|ltm-reboot"; echo "0 */$REBOOT_HOURS * * * /usr/local/bin/ltm-reboot.sh # ltm_reboot") | crontab -
+                echo -e "  ${G}OK Auto-reinicio cada ${Y}${REBOOT_HOURS}h${G} configurado${NC}"
+                sleep 2 ;;
+            4)
+                echo ""; echo -e "  ${W}Cron actual:${NC}"; echo ""
+                crontab -l 2>/dev/null | grep "ltm_reboot\|ltm-reboot" || echo "  Sin auto-reinicio configurado"
+                echo ""; read -p "  ENTER..." ;;
+            5)
+                (crontab -l 2>/dev/null | grep -v "ltm_reboot\|ltm-reboot") | crontab -
+                echo -e "  ${G}Auto-reinicio desactivado${NC}"; sleep 2 ;;
+            6)
+                read -p "  Confirmar reinicio (si/no): " CONFIRM
+                [ "$CONFIRM" = "si" ] && {
+                    echo -e "  ${Y}Reiniciando en 3 segundos...${NC}"
+                    sleep 3
+                    /sbin/reboot; } ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe /etc/ssh/banner${NC}"
+                else
+                    /usr/local/bin/convert-banner-txt
+                    systemctl restart dropbear
+                    echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
+            0) break ;;
+        esac
+    done
+}
+
+menu_shadowsocks() {
+    while true; do
+        banner; sep
+        echo -e "  ${NEON}◆ SHADOWSOCKS${NC}"; sep; echo ""
+        SS_ST=$(systemctl is-active shadowsocks-server 2>/dev/null)
+        [ "$SS_ST" = "active" ] && echo -e "  ${NEON}◈${NC} ${W}Shadowsocks${NC} ${NEON}◆ ON${NC}" || echo -e "  ${NEON}◈${NC} ${W}Shadowsocks${NC} ${R}◇ OFF${NC}"
+        if [ -f /etc/shadowsocks/config.json ]; then
+            SS_PORT=$(python3 -c "import json; c=json.load(open('/etc/shadowsocks/config.json')); print(c.get('server_port','8388'))" 2>/dev/null)
+            SS_METHOD=$(python3 -c "import json; c=json.load(open('/etc/shadowsocks/config.json')); print(c.get('method','aes-256-gcm'))" 2>/dev/null)
+            echo -e "  ${NEON}◈${NC} ${W}Puerto:${NC} ${Y}${SS_PORT}${NC}"
+            echo -e "  ${NEON}◈${NC} ${W}Metodo:${NC} ${Y}${SS_METHOD}${NC}"
+        fi
+        echo ""; sep
+        printf " ${Y}❬1❭ Instalar Shadowsocks${NC}\n"
+        printf " ${Y}❬2❭ Iniciar    ❬3❭ Detener    ❬4❭ Reiniciar${NC}\n"
+        printf " ${Y}❬5❭ Agregar usuario${NC}\n"
+        printf " ${Y}❬6❭ Ver usuarios${NC}\n"
+        printf " ${Y}❬7❭ Ver config${NC}\n"
+        printf " ${R}❬8❭ Desinstalar${NC}\n"
+        sep; printf " ${R}❬0❭ Volver${NC}\n"; sep; echo ""
+        read -p " Opcion: " OPT
+        case $OPT in
+            1)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
+            0) break ;;
+        esac
+    done
+}
+
+menu_udp_hysteria_mod() {
+    while true; do
+        banner; sep
+        echo -e "  ${NEON}◆ UDP HYSTERIA MOD${NC}"; sep; echo ""
+        HM_ST=$(systemctl is-active hysteria-server 2>/dev/null)
+        [ "$HM_ST" = "active" ] && echo -e "  ${NEON}◈${NC} ${W}UDP Hysteria Mod${NC} ${NEON}◆ ON${NC}" || echo -e "  ${NEON}◈${NC} ${W}UDP Hysteria Mod${NC} ${R}◇ OFF${NC}"
+        HM_IP=$(hostname -I | awk '{print $1}')
+        echo -e "  ${NEON}◈${NC} ${W}IP:${NC}   ${Y}${HM_IP}${NC}"
+        HM_OBFS_NOW=$(python3 -c "import json; c=json.load(open('/etc/hysteria/config.json')); print(c.get('obfs','ltmudp'))" 2>/dev/null || echo "ltmudp")
+        echo -e "  ${NEON}◈${NC} ${W}Obfs:${NC} ${Y}${HM_OBFS_NOW}${NC}"
+        echo ""; sep
+        printf " ${Y}❬1❭ Instalar    ❬2❭ Iniciar    ❬3❭ Detener${NC}\n"
+        printf " ${Y}❬4❭ Reiniciar   ❬5❭ Agregar usuario${NC}\n"
+        printf " ${Y}❬6❭ Ver usuarios    ❬7❭ Cambiar obfs${NC}\n"
+        printf " ${R}❬8❭ Desinstalar${NC}\n"
+        sep; printf " ${R}❬0❭ Volver${NC}\n"; sep; echo ""
+        read -p " Opcion: " OPT
+        case $OPT in
+            1)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
+            0) break ;;
+        esac
+    done
+}
+
+
+
+menu_hysteria() {
+    while true; do
+        banner; sep
+        echo -e "  ${NEON}◆ HYSTERIA UDP${NC}"; sep; echo ""
+        H1_ST=$(systemctl is-active hysteria-server 2>/dev/null)
+        H2_ST=$(systemctl is-active hysteria2-server 2>/dev/null)
+        [ "$H1_ST" = "active" ] && echo -e "  ${NEON}◈${NC} ${W}Hysteria V1${NC} ${NEON}◆ ON${NC}" || echo -e "  ${NEON}◈${NC} ${W}Hysteria V1${NC} ${R}◇ OFF${NC}"
+        [ "$H2_ST" = "active" ] && echo -e "  ${NEON}◈${NC} ${W}Hysteria V2${NC} ${NEON}◆ ON${NC}" || echo -e "  ${NEON}◈${NC} ${W}Hysteria V2${NC} ${R}◇ OFF${NC}"
+        echo ""; sep
+        printf " ${Y}❬1❭ Instalar Hysteria V1    ❬2❭ Instalar Hysteria V2${NC}\n"
+        printf " ${Y}❬3❭ Iniciar V1              ❬4❭ Iniciar V2${NC}\n"
+        printf " ${Y}❬5❭ Detener V1              ❬6❭ Detener V2${NC}\n"
+        printf " ${Y}❬7❭ Ver config V1           ❬8❭ Ver config V2${NC}\n"
+        printf " ${R}❬9❭ Desinstalar V1          ❬10❭ Desinstalar V2${NC}\n"
+        sep
+        printf " ${R}❬0❭ Volver${NC}\n"; sep; echo ""
+        read -p " Opcion: " OPT
+        case $OPT in
+            1)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
+            0) break ;;
+        esac
+    done
+}
+
+menu_herramientas() {
+    while true; do
+        banner; sep
+        echo -e "  ${Y}  HERRAMIENTAS Y PROTOCOLOS${NC}"; sep; echo ""
+        printf " ${NEON}◈${NC} ${W}WebSocket${NC}  %-12b ${NEON}◈${NC} ${W}BadVPN 7200${NC} %b\n" "$(status_port 80)" "$(status_service badvpn-7200)"
+        printf " ${NEON}◈${NC} ${W}UDP Custom${NC} %-11b ${NEON}◈${NC} ${W}BadVPN 7300${NC} %b\n" "$(ps aux | grep -i UDP-Custom | grep -v grep | grep -q . && echo -e "${NEON}◆ ON${NC}" || echo -e "${R}◇ OFF${NC}")" "$(status_service badvpn-7300)"
+        printf " ${NEON}◈${NC} ${W}SSL/TLS${NC}    %-12b ${NEON}◈${NC} ${W}V2Ray${NC}       %b\n" "$(status_service stunnel4)" "$(status_service v2ray)"
+        printf " ${NEON}◈${NC} ${W}ZIV VPN${NC}   %-12b ${NEON}◈${NC} ${W}SlowDNS${NC}     %b\n" "$(status_service zivpn)" "$(status_service server-sldns)"
+        printf " ${NEON}◈${NC} ${W}Dropbear${NC}  %-12b ${NEON}◈${NC} ${W}LTMUDPv1${NC}    %b\n" "$(status_service dropbear)" "$(status_service hysteria-server)"
+        echo ""; sep
+        printf " \033[1;97m[1] %-22s [2] %s\033[0m\n" "WebSocket Python" "BadVPN UDP"
+        printf " \033[1;97m[3] %-22s [4] %s\033[0m\n" "UDP Custom" "SSL/TLS Stunnel"
+        printf " \033[1;97m[5] %-22s [6] %s\033[0m\n" "V2Ray VMess" "ZIV VPN"
+        printf " \033[1;97m[7] %-22s [8] %s\033[0m\n" "Banner SSH" "Mejorar Velocidad UDP"
+        printf " \033[1;97m[9] %-22s [10] %s\033[0m\n" "Anti-DDoS" "SlowDNS"
+        printf " \033[1;97m[11] %-21s [12] %s\033[0m\n" "Dropbear SSH" "UDP Hysteria Mod"
+        printf " \033[1;97m[13] %-21s [14] %s\033[0m\n" "Shadowsocks" "Limpieza/Auto-reinicio"
+        sep
+        printf " ${W}[0]${NC} Volver\n"; sep; echo ""
+        read -p " Opcion: " OPT
+        case $OPT in
+            1) menu_ws ;;
+            2) menu_badvpn ;;
+            3) menu_udp ;;
+            4) menu_ssl ;;
+            5) usuarios_ssh_online_count ;;
+            6) usuarios_v2ray_online_count ;;
+            7) usuarios_ziv_online_count ;;
+            8) menu_speed_udp ;;
+            9) menu_antiddos ;;
+            10) menu_slowdns ;;
+            11) menu_dropbear ;;
+
+            12) menu_udp_hysteria_mod ;;
+            13) menu_shadowsocks ;;
+            14) menu_limpieza ;;
+            9) menu_antiddos ;;
+            10) menu_slowdns ;;
+            11) menu_dropbear ;;
+
+            12) menu_udp_hysteria_mod ;;
+            13) menu_shadowsocks ;;
+            14) menu_limpieza ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe /etc/ssh/banner${NC}"
+                else
+                    /usr/local/bin/convert-banner-txt
+                    systemctl restart dropbear
+                    echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
+            0) break ;;
+            *) echo -e "  ${R}Opcion invalida${NC}"; sleep 1 ;;
+        esac
+    done
+}
+
+actualizar_script() {
+    banner; sep
+    echo -e "  ${Y}  ACTUALIZAR SCRIPT${NC}"; sep; echo ""
+    echo -e "  ${C}Descargando ultima version...${NC}"
+    echo -e "  ${C}Descargando ultima version...${NC}"
+    wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/DarkFull0726/SSHSCRIPT-LTM/main/sshscript-ltm.sh?$(date +%s)"
+    chmod +x /usr/local/bin/menu
+    mkdir -p /etc/sshfreeltm
+    touch /etc/sshfreeltm/.licensed
+    echo -e "  ${G}OK Script actualizado a v$(grep SCRIPT_VERSION /usr/local/bin/menu | head -1 | grep -o '[0-9.]*')${NC}"
+    sleep 2
+    exec /usr/local/bin/menu
+}
+
+actualizar_script() {
+    banner; sep
+    echo -e "  ${Y}  ACTUALIZAR SCRIPT${NC}"; sep; echo ""
+    echo -e "  ${C}Descargando ultima version...${NC}"
+    echo -e "  ${C}Descargando ultima version...${NC}"
+    wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/DarkFull0726/SSHSCRIPT-LTM/main/sshscript-ltm.sh?$(date +%s)"
+    chmod +x /usr/local/bin/menu
+    mkdir -p /etc/sshfreeltm
+    touch /etc/sshfreeltm/.licensed
+    echo -e "  ${G}OK Script actualizado a v$(grep SCRIPT_VERSION /usr/local/bin/menu | head -1 | grep -o '[0-9.]*')${NC}"
+    sleep 2
+    exec /usr/local/bin/menu
+}
+
+menu_atacantes() {
+    banner; sep
+    echo -e "  ${NEON}◆ IPs ATACANTES${NC}"; sep; echo ""
+    
+    # Ver IPs bloqueadas por fail2ban
+    if command -v fail2ban-client > /dev/null 2>&1; then
+        BANNED=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2 | tr ' ' '\n' | grep -v '^$')
+        if [ -n "$BANNED" ]; then
+            echo -e "  ${R}🚨 IPs bloqueadas por Fail2ban:${NC}"
+            echo "$BANNED" | while read ip; do
+                [ -n "$ip" ] && echo -e "  ${NEON}◈${NC} ${R}$ip${NC}"
+            done
+        else
+            echo -e "  ${G}✅ Sin IPs bloqueadas en Fail2ban${NC}"
+        fi
+    fi
+    
+    echo ""
+    
+    # Ver conexiones sospechosas activas
+    echo -e "  ${Y}🔍 Conexiones activas por IP:${NC}"
+    CONNS=$(ss -tn state established | awk 'NR>1{print $5}' | cut -d: -f1 | sort | uniq -c | sort -rn | head -10)
+    if [ -n "$CONNS" ]; then
+        echo "$CONNS" | while read count ip; do
+            [ -z "$ip" ] && continue
+            if [ "$count" -gt 10 ]; then
+                echo -e "  ${R}◈ $ip — $count conexiones ⚠️${NC}"
+            else
+                echo -e "  ${NEON}◈${NC} $ip — ${Y}$count${NC} conexiones"
+            fi
+        done
+    else
+        echo -e "  ${G}✅ Sin conexiones sospechosas${NC}"
+    fi
+    
+    echo ""
+    
+    # Ver logs de iptables DROP recientes
+    echo -e "  ${Y}🛡️ Paquetes bloqueados recientes:${NC}"
+    DROPS=$(dmesg 2>/dev/null | grep "IN=.*OUT=" | tail -5 | grep -oP 'SRC=\K[0-9.]+' | sort | uniq -c | sort -rn)
+    if [ -n "$DROPS" ]; then
+        echo "$DROPS" | while read count ip; do
+            echo -e "  ${NEON}◈${NC} ${R}$ip${NC} — $count paquetes bloqueados"
+        done
+    else
+        echo -e "  ${G}✅ Sin ataques detectados${NC}"
+    fi
+    
+    echo ""; sep
+    read -p "  ENTER..."
+}
+
+menu_antiddos() {
+    while true; do
+        banner; sep
+        echo -e "  ${Y}  ANTI-DDOS${NC}"; sep; echo ""
+        DDOS_ACTIVE=$(iptables -L INPUT -n 2>/dev/null | grep -q "limit" && echo 1 || echo 0)
+        if [ "$DDOS_ACTIVE" = "1" ]; then
+            echo -e "  Estado: ${G}[ACTIVO]${NC}"
+        else
+            echo -e "  Estado: ${R}[INACTIVO]${NC}"
+        fi
+        echo ""; sep
+        echo -e "  ${W}[1]${NC} Activar Anti-DDoS Agresivo"
+        echo -e "  ${W}[2]${NC} Desactivar Anti-DDoS"
+        echo -e "  ${W}[3]${NC} Ver reglas activas"
+        echo -e "  ${W}[4]${NC} Ver IPs atacantes"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
+        echo -e "  ${W}[0]${NC} Volver"; sep
+        read -p "  Opcion: " OPT
+        case $OPT in
+            1)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
+            0) break ;;
+        esac
+    done
+}
+
+actualizar_script() {
+    banner; sep
+    echo -e "  ${Y}  ACTUALIZAR SCRIPT${NC}"; sep; echo ""
+    echo -e "  ${C}Descargando ultima version...${NC}"
+    echo -e "  ${C}Descargando ultima version...${NC}"
+    wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/DarkFull0726/SSHSCRIPT-LTM/main/sshscript-ltm.sh?$(date +%s)"
+    chmod +x /usr/local/bin/menu
+    mkdir -p /etc/sshfreeltm
+    touch /etc/sshfreeltm/.licensed
+    echo -e "  ${G}OK Script actualizado a v$(grep SCRIPT_VERSION /usr/local/bin/menu | head -1 | grep -o '[0-9.]*')${NC}"
+    sleep 2
+    exec /usr/local/bin/menu
+}
+
+menu_atacantes() {
+    banner; sep
+    echo -e "  ${NEON}◆ IPs ATACANTES${NC}"; sep; echo ""
+    
+    # Ver IPs bloqueadas por fail2ban
+    if command -v fail2ban-client > /dev/null 2>&1; then
+        BANNED=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2 | tr ' ' '\n' | grep -v '^$')
+        if [ -n "$BANNED" ]; then
+            echo -e "  ${R}🚨 IPs bloqueadas por Fail2ban:${NC}"
+            echo "$BANNED" | while read ip; do
+                [ -n "$ip" ] && echo -e "  ${NEON}◈${NC} ${R}$ip${NC}"
+            done
+        else
+            echo -e "  ${G}✅ Sin IPs bloqueadas en Fail2ban${NC}"
+        fi
+    fi
+    
+    echo ""
+    
+    # Ver conexiones sospechosas activas
+    echo -e "  ${Y}🔍 Conexiones activas por IP:${NC}"
+    CONNS=$(ss -tn state established | awk 'NR>1{print $5}' | cut -d: -f1 | sort | uniq -c | sort -rn | head -10)
+    if [ -n "$CONNS" ]; then
+        echo "$CONNS" | while read count ip; do
+            [ -z "$ip" ] && continue
+            if [ "$count" -gt 10 ]; then
+                echo -e "  ${R}◈ $ip — $count conexiones ⚠️${NC}"
+            else
+                echo -e "  ${NEON}◈${NC} $ip — ${Y}$count${NC} conexiones"
+            fi
+        done
+    else
+        echo -e "  ${G}✅ Sin conexiones sospechosas${NC}"
+    fi
+    
+    echo ""
+    
+    # Ver logs de iptables DROP recientes
+    echo -e "  ${Y}🛡️ Paquetes bloqueados recientes:${NC}"
+    DROPS=$(dmesg 2>/dev/null | grep "IN=.*OUT=" | tail -5 | grep -oP 'SRC=\K[0-9.]+' | sort | uniq -c | sort -rn)
+    if [ -n "$DROPS" ]; then
+        echo "$DROPS" | while read count ip; do
+            echo -e "  ${NEON}◈${NC} ${R}$ip${NC} — $count paquetes bloqueados"
+        done
+    else
+        echo -e "  ${G}✅ Sin ataques detectados${NC}"
+    fi
+    
+    echo ""; sep
+    read -p "  ENTER..."
+}
+
+menu_antiddos() {
+    while true; do
+        banner; sep
+        echo -e "  ${Y}  ANTI-DDOS${NC}"; sep; echo ""
+        DDOS_ACTIVE=$(iptables -L INPUT -n 2>/dev/null | grep -q "limit" && echo 1 || echo 0)
+        if [ "$DDOS_ACTIVE" = "1" ]; then
+            echo -e "  Estado: ${G}[ACTIVO]${NC}"
+        else
+            echo -e "  Estado: ${R}[INACTIVO]${NC}"
+        fi
+        echo ""; sep
+        echo -e "  ${W}[1]${NC} Activar Anti-DDoS Agresivo"
+        echo -e "  ${W}[2]${NC} Desactivar Anti-DDoS"
+        echo -e "  ${W}[3]${NC} Ver reglas activas"
+        echo -e "  ${W}[4]${NC} Ver IPs atacantes"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
+        echo -e "  ${W}[0]${NC} Volver"; sep
+        read -p "  Opcion: " OPT
+        case $OPT in
+            1)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
+            0) break ;;
+        esac
+    done
+}
+
+menu_speed_udp() {
+    banner; sep
+    echo -e "  ${Y}  MEJORAR VELOCIDAD UDP${NC}"; sep; echo ""
+    echo -e "  ${C}Aplicando optimizaciones...${NC}"
+    echo ""
+
+    # BBR
+    modprobe tcp_bbr 2>/dev/null
+    echo "tcp_bbr" >> /etc/modules-load.d/modules.conf 2>/dev/null
+    echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
+    echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
+
+    # Buffers UDP
+    echo "net.core.rmem_max=134217728" >> /etc/sysctl.conf
+    echo "net.core.wmem_max=134217728" >> /etc/sysctl.conf
+    echo "net.core.rmem_default=25165824" >> /etc/sysctl.conf
+    echo "net.core.wmem_default=25165824" >> /etc/sysctl.conf
+    echo "net.core.netdev_max_backlog=65536" >> /etc/sysctl.conf
+    echo "net.ipv4.udp_rmem_min=8192" >> /etc/sysctl.conf
+    echo "net.ipv4.udp_wmem_min=8192" >> /etc/sysctl.conf
+
+    # Aplicar cambios
+    sysctl -p > /dev/null 2>&1
+
+    # Verificar BBR
+    BBR=$(sysctl net.ipv4.tcp_congestion_control 2>/dev/null | grep -o bbr)
+    if [ "$BBR" = "bbr" ]; then
+        echo -e "  ${G}✓ BBR activado${NC}"
+    else
+        echo -e "  ${Y}✓ Buffers optimizados (BBR no disponible en este kernel)${NC}"
+    fi
+    echo -e "  ${G}✓ Buffers UDP maximizados${NC}"
+    echo -e "  ${G}✓ Network backlog optimizado${NC}"
+    echo ""
+    sep
+    echo -e "  ${G}OK Optimizacion aplicada${NC}"
+    read -p "  ENTER..."
+}
+
+menu_slowdns() {
+    SLOWDNS_DIR="/etc/slowdns"
+    SERVER_SERVICE="server-sldns"
+    CLIENT_SERVICE="client-sldns"
+    PUBKEY_FILE="$SLOWDNS_DIR/server.pub"
+    while true; do
+        banner; sep
+        echo -e "  ${Y}  SLOWDNS${NC}"; sep; echo ""
+        SDNS_ST=$(systemctl is-active $SERVER_SERVICE 2>/dev/null)
+        [ "$SDNS_ST" = "active" ] && echo -e "  Estado: ${G}[ACTIVO]${NC}" || echo -e "  Estado: ${R}[INACTIVO]${NC}"
+        [ -f "$PUBKEY_FILE" ] && echo -e "  PubKey: ${W}$(cat $PUBKEY_FILE)${NC}"
+        echo ""; sep
+        echo -e "  ${W}[1]${NC} Instalar SlowDNS"
+        echo -e "  ${W}[2]${NC} Iniciar"
+        echo -e "  ${W}[3]${NC} Detener"
+        echo -e "  ${W}[4]${NC} Ver Public Key"
+        echo -e "  ${W}[5]${NC} Desinstalar"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
+        echo -e "  ${W}[0]${NC} Volver"; sep
+        read -p "  Opcion: " OPT
+        case $OPT in
+            1)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
+            0) break ;;
+        esac
+    done
+}
+
+
+
+menu_banner_ssh() {
+    while true; do
+        banner; sep
+        echo -e "  ${NEON}◆ BANNER SSH & HTTP CUSTOM${NC}"; sep; echo ""
+
+        # Estado SSH Banner
+        if grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null; then
+            echo -e "  ${NEON}◈${NC} ${W}Banner SSH:${NC}        ${NEON}◆ ACTIVO${NC}"
+        else
+            echo -e "  ${NEON}◈${NC} ${W}Banner SSH:${NC}        ${R}◇ INACTIVO${NC}"
+        fi
+
+        # Estado Banner HTTP Custom (WebSocket)
+        WS_FILES=$(ls /etc/sshfreeltm/proxy_ws_*.py 2>/dev/null | head -1)
+        if [ -n "$WS_FILES" ]; then
+            CURRENT_MSG=$(grep "^MSG = " "$WS_FILES" 2>/dev/null | sed "s/MSG = '\(.*\)'.encode.*/\1/")
+            echo -e "  ${NEON}◈${NC} ${W}Banner HTTP Custom:${NC} ${Y}${CURRENT_MSG:-No configurado}${NC}"
+        else
+            echo -e "  ${NEON}◈${NC} ${W}Banner HTTP Custom:${NC} ${R}Sin WebSocket activo${NC}"
+        fi
+
+        echo ""; sep
+        echo -e "  ${NEON}── SSH BANNER ──────────────────${NC}"
+        echo -e "  ${W}[1]${NC} Editar banner SSH (nano)"
+        echo -e "  ${W}[2]${NC} Activar banner SSH"
+        echo -e "  ${W}[3]${NC} Desactivar banner SSH"
+        echo -e "  ${W}[4]${NC} Ver banner SSH actual"
+        echo ""
+        echo -e "  ${NEON}── HTTP CUSTOM BANNER ──────────${NC}"
+        echo -e "  ${W}[5]${NC} Editar banner HTTP Custom"
+        echo -e "  ${W}[6]${NC} Ver banner HTTP Custom actual"
+        echo ""
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
+        echo -e "  ${W}[0]${NC} Volver"; sep
+        read -p "  Opcion: " OPT
+        case $OPT in
+            1)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
+            0) break ;;
+        esac
+    done
+}
+
+
+
+menu_hysteria() {
+    while true; do
+        banner; sep
+        echo -e "  ${NEON}◆ HYSTERIA UDP${NC}"; sep; echo ""
+        H1_ST=$(systemctl is-active hysteria-server 2>/dev/null)
+        H2_ST=$(systemctl is-active hysteria2-server 2>/dev/null)
+        [ "$H1_ST" = "active" ] && echo -e "  ${NEON}◈${NC} ${W}Hysteria V1${NC} ${NEON}◆ ON${NC}" || echo -e "  ${NEON}◈${NC} ${W}Hysteria V1${NC} ${R}◇ OFF${NC}"
+        [ "$H2_ST" = "active" ] && echo -e "  ${NEON}◈${NC} ${W}Hysteria V2${NC} ${NEON}◆ ON${NC}" || echo -e "  ${NEON}◈${NC} ${W}Hysteria V2${NC} ${R}◇ OFF${NC}"
+        echo ""; sep
+        printf " ${Y}❬1❭ Instalar Hysteria V1    ❬2❭ Instalar Hysteria V2${NC}\n"
+        printf " ${Y}❬3❭ Iniciar V1              ❬4❭ Iniciar V2${NC}\n"
+        printf " ${Y}❬5❭ Detener V1              ❬6❭ Detener V2${NC}\n"
+        printf " ${Y}❬7❭ Ver config V1           ❬8❭ Ver config V2${NC}\n"
+        printf " ${R}❬9❭ Desinstalar V1          ❬10❭ Desinstalar V2${NC}\n"
+        sep
+        printf " ${R}❬0❭ Volver${NC}\n"; sep; echo ""
+        read -p " Opcion: " OPT
+        case $OPT in
+            1)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                generar_banner_txt
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
+            0) break ;;
+        esac
+    done
+}
+
+
+menu_principal() {
+    while true; do
+        banner
+        SRV_IP=$(ip -4 addr show scope global | grep inet | awk '{print $2}' | cut -d/ -f1 | head -1)
+        SRV_OS=$(lsb_release -d 2>/dev/null | cut -f2 || echo "Ubuntu")
+        SRV_CPU=$(nproc)
+        SRV_DATE=$(date +%d/%m/%Y-%H:%M)
+        SRV_RAM=$(free -h | awk '/^Mem:/{print $4}')
+        SRV_UPTIME=$(uptime -p | sed 's/up //')
+        sep
+        printf " ${NEON}◈${NC} ${DIM}SO:${NC}  ${W}%-20s${NC} ${NEON}◈${NC} ${DIM}IP:${NC}  ${NEON}%s${NC}\n" "$SRV_OS" "$SRV_IP"
+        printf " ${NEON}◈${NC} ${DIM}CPU:${NC} ${W}%-19s${NC} ${NEON}◈${NC} ${DIM}Fecha:${NC} ${Y}%s${NC}\n" "$SRV_CPU cores" "$SRV_DATE"
+        printf " ${NEON}◈${NC} ${DIM}RAM:${NC} ${W}%-19s${NC} ${NEON}◈${NC} ${DIM}Uptime:${NC} ${W}%s${NC}\n" "$SRV_RAM" "$SRV_UPTIME"
+        sep
+        WS_PORT=$(cat /etc/sshfreeltm/ws_port 2>/dev/null || echo "80")
+        DB_PORT=$(cat /etc/sshfreeltm/dropbear_port 2>/dev/null || echo "444")
+        C1="" C2=""
+        systemctl is-active --quiet ws-proxy-${WS_PORT} 2>/dev/null && { [ -z "$C1" ] && C1="${NEON}◈${NC} ${W}WebSocket:${WS_PORT}${NC} ${NEON}◆ ON${NC}" || C2="${NEON}◈${NC} ${W}WebSocket:${WS_PORT}${NC} ${NEON}◆ ON${NC}"; }
+        systemctl is-active --quiet badvpn-7200 2>/dev/null && { [ -z "$C1" ] && C1="${NEON}◈${NC} ${W}BadVPN:7200${NC} ${NEON}◆ ON${NC}" || { [ -z "$C2" ] && C2="${NEON}◈${NC} ${W}BadVPN:7200${NC} ${NEON}◆ ON${NC}" || { echo -e " $C1    $C2"; C1="${NEON}◈${NC} ${W}BadVPN:7200${NC} ${NEON}◆ ON${NC}"; C2=""; }; }; }
+        systemctl is-active --quiet badvpn-7300 2>/dev/null && { [ -z "$C1" ] && C1="${NEON}◈${NC} ${W}BadVPN:7300${NC} ${NEON}◆ ON${NC}" || { [ -z "$C2" ] && C2="${NEON}◈${NC} ${W}BadVPN:7300${NC} ${NEON}◆ ON${NC}" || { echo -e " $C1    $C2"; C1="${NEON}◈${NC} ${W}BadVPN:7300${NC} ${NEON}◆ ON${NC}"; C2=""; }; }; }
+        ps aux | grep -i "UDP-Custom" | grep -v grep | grep -q . && { [ -z "$C1" ] && C1="${NEON}◈${NC} ${W}UDP:36712${NC} ${NEON}◆ ON${NC}" || { [ -z "$C2" ] && C2="${NEON}◈${NC} ${W}UDP:36712${NC} ${NEON}◆ ON${NC}" || { echo -e " $C1    $C2"; C1="${NEON}◈${NC} ${W}UDP:36712${NC} ${NEON}◆ ON${NC}"; C2=""; }; }; }
+        systemctl is-active --quiet stunnel4 2>/dev/null && { [ -z "$C1" ] && C1="${NEON}◈${NC} ${W}SSL/TLS:443${NC} ${NEON}◆ ON${NC}" || { [ -z "$C2" ] && C2="${NEON}◈${NC} ${W}SSL/TLS:443${NC} ${NEON}◆ ON${NC}" || { echo -e " $C1    $C2"; C1="${NEON}◈${NC} ${W}SSL/TLS:443${NC} ${NEON}◆ ON${NC}"; C2=""; }; }; }
+        if systemctl is-active --quiet v2ray 2>/dev/null; then
+            V2P=$(python3 -c "import json; c=json.load(open('/usr/local/etc/v2ray/config.json')); print(','.join([str(ib['port']) for ib in c.get('inbounds',[])]))" 2>/dev/null)
+            [ -n "$V2P" ] && { [ -z "$C1" ] && C1="${NEON}◈${NC} ${W}V2Ray:${V2P}${NC} ${NEON}◆ ON${NC}" || { [ -z "$C2" ] && C2="${NEON}◈${NC} ${W}V2Ray:${V2P}${NC} ${NEON}◆ ON${NC}" || { echo -e " $C1    $C2"; C1="${NEON}◈${NC} ${W}V2Ray:${V2P}${NC} ${NEON}◆ ON${NC}"; C2=""; }; }; }
+        fi
+        systemctl is-active --quiet zivpn 2>/dev/null && { [ -z "$C1" ] && C1="${NEON}◈${NC} ${W}ZIV VPN:5667${NC} ${NEON}◆ ON${NC}" || { [ -z "$C2" ] && C2="${NEON}◈${NC} ${W}ZIV VPN:5667${NC} ${NEON}◆ ON${NC}" || { echo -e " $C1    $C2"; C1="${NEON}◈${NC} ${W}ZIV VPN:5667${NC} ${NEON}◆ ON${NC}"; C2=""; }; }; }
+        systemctl is-active --quiet server-sldns 2>/dev/null && { [ -z "$C1" ] && C1="${NEON}◈${NC} ${W}SlowDNS:5300${NC} ${NEON}◆ ON${NC}" || { [ -z "$C2" ] && C2="${NEON}◈${NC} ${W}SlowDNS:5300${NC} ${NEON}◆ ON${NC}" || { echo -e " $C1    $C2"; C1="${NEON}◈${NC} ${W}SlowDNS:5300${NC} ${NEON}◆ ON${NC}"; C2=""; }; }; }
+        systemctl is-active --quiet dropbear 2>/dev/null && { [ -z "$C1" ] && C1="${NEON}◈${NC} ${W}Dropbear:${DB_PORT}${NC} ${NEON}◆ ON${NC}" || { [ -z "$C2" ] && C2="${NEON}◈${NC} ${W}Dropbear:${DB_PORT}${NC} ${NEON}◆ ON${NC}" || { echo -e " $C1    $C2"; C1="${NEON}◈${NC} ${W}Dropbear:${DB_PORT}${NC} ${NEON}◆ ON${NC}"; C2=""; }; }; }
+        systemctl is-active --quiet hysteria-server 2>/dev/null && { [ -z "$C1" ] && C1="${NEON}◈${NC} ${W}LTMUDPv1:36712${NC} ${NEON}◆ ON${NC}" || { [ -z "$C2" ] && C2="${NEON}◈${NC} ${W}LTMUDPv1:36712${NC} ${NEON}◆ ON${NC}" || { echo -e " $C1    $C2"; C1="${NEON}◈${NC} ${W}LTMUDPv1:36712${NC} ${NEON}◆ ON${NC}"; C2=""; }; }; }
+        [ -n "$C1" ] && [ -n "$C2" ] && echo -e " $C1    $C2" || { [ -n "$C1" ] && echo -e " $C1"; }
+        [ -z "$C1" ] && echo -e " ${DIM}  Sin servicios activos${NC}"
+        sep
+        printf " \033[1;97m❬1❭ ⚡  Usuarios SSH         ❬2❭ 📡 Usuarios VMess\033[0m\n"
+        printf " \033[1;97m❬3❭ 🔐 Usuarios ZIV VPN     ❬4❭ 🛠  Herramientas\033[0m\n"
+        printf " \033[1;97m❬5❭ 👤 SSH Online           ❬6❭ 📡 V2Ray Online\033[0m\n"
+        printf " \033[1;97m❬7❭ 🔒 ZIV Online\033[0m\n"
+        printf " ${NEON}❖ Version: ${Y}v%s ${NEON}❖${NC}\n" "$SCRIPT_VERSION"
+        sep
+        printf " ${Y}❬9❭ 🖥️  %-18s${NC} ${R}❬10❭ 🗑️  %s${NC}\n" "Configurar MOTD" "Desinstalar"
+        printf " ${Y}❬11❭ 🔄 Actualizar Script${NC}\n"
+        sep
+        printf " ${R}❬0❭ ✖  Salir${NC}\n"
+        sep
+        echo ""
+        read -p " Opcion: " OPT
+        case $OPT in
+            1) menu_usuarios ;;
+            2) menu_v2ray ;;
+            3) menu_users_ziv ;;
+            5) usuarios_ssh_online_count ;; 
+            6) usuarios_v2ray_online_count ;; 
+            7) usuarios_ziv_online_count ;; 
+            4) menu_herramientas ;;
+            9) instalar_motd ;;
+            10) desinstalar_script ;;
+            11) actualizar_script ;;
+            11) actualizar_script ;;
+            0) echo -e "\n  ${G}Hasta luego! — DarkZFull${NC}\n"; exit 0 ;;
+            *) echo -e "  ${R}Opcion invalida${NC}"; sleep 1 ;;
+        esac
+    done
+}
+
+# Generar versión de texto plano (sin HTML) para SSH y Dropbear
+# Generar versión de texto plano (sin HTML) para SSH y Dropbear
+
+menu_dropbear() {
+    while true; do
+        clear
+        echo -e "\033[1;34m"
+        figlet -f small "DROPBEAR" 2>/dev/null || echo "  DROPBEAR SSH"
+        echo -e "\033[0m"
+        echo -e "\033[1;34m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
+        echo -e "  \033[1;37m⚡ DROPBEAR SSH MANAGER\033[0m \033[2;37mby\033[0m \033[1;34m@DarkZFull\033[0m"
+        echo -e "\033[1;34m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
+        echo ""
+        DB_ST=$(systemctl is-active dropbear 2>/dev/null)
+        DB_PORT=$(cat /etc/sshfreeltm/dropbear_port 2>/dev/null || echo "444")
+        if [ "$DB_ST" = "active" ]; then
+            echo -e "  \033[1;34m◈\033[0m \033[1;37mEstado:\033[0m    \033[1;32m● ACTIVO\033[0m"
+        else
+            echo -e "  \033[1;34m◈\033[0m \033[1;37mEstado:\033[0m    \033[1;31m○ INACTIVO\033[0m"
+        fi
+        echo -e "  \033[1;34m◈\033[0m \033[1;37mPuerto:\033[0m    \033[1;33m$DB_PORT\033[0m"
+        if [ -f /etc/ssh/banner.txt ]; then
+            echo -e "  \033[1;34m◈\033[0m \033[1;37mBanner:\033[0m    \033[1;32m● ACTIVADO\033[0m"
+        else
+            echo -e "  \033[1;34m◈\033[0m \033[1;37mBanner:\033[0m    \033[1;31m○ DESACTIVADO\033[0m"
+        fi
+        echo ""
+        echo -e "\033[1;34m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
+        printf " \033[1;34m❬1❭\033[0m \033[1;37mInstalar\033[0m         \033[1;34m❬2❭\033[0m \033[1;37mIniciar\033[0m\n"
+        printf " \033[1;34m❬3❭\033[0m \033[1;37mDetener\033[0m          \033[1;34m❬4❭\033[0m \033[1;37mReiniciar\033[0m\n"
+        printf " \033[1;34m❬5❭\033[0m \033[1;37mCambiar puerto\033[0m   \033[1;34m❬6❭\033[0m \033[1;37mDesinstalar\033[0m\n"
+        echo ""
+        printf " \033[1;34m❬7❭\033[0m \033[1;37mActivar banner\033[0m    \033[1;34m❬8❭\033[0m \033[1;37mDesactivar banner\033[0m\n"
+        printf " \033[1;34m❬9❭\033[0m \033[1;37mEditar banner\033[0m     \033[1;34m❬10❭\033[0m \033[1;37mVer banner\033[0m\n"
+        echo ""
+        echo -e "\033[1;34m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
+        printf " \033[1;31m❬0❭\033[0m \033[1;37mVolver\033[0m\n"
+        echo -e "\033[1;34m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
+        echo ""
+        read -p "  \033[1;34m➤\033[0m Opcion: " OPT
+        case $OPT in
+            1)
+                echo -e "\n  \033[1;36mInstalando Dropbear...\033[0m"
+                apt install -y dropbear
+                read -p "  \033[1;37mPuerto Dropbear (default 444): \033[0m" DB_PORT
+                DB_PORT=${DB_PORT:-444}
+                mkdir -p /etc/sshfreeltm
+                echo "$DB_PORT" > /etc/sshfreeltm/dropbear_port
+                sed -i "s/NO_START=1/NO_START=0/" /etc/default/dropbear 2>/dev/null
+                sed -i "s/DROPBEAR_PORT=.*/DROPBEAR_PORT=$DB_PORT/" /etc/default/dropbear 2>/dev/null
+                grep -q "DROPBEAR_PORT" /etc/default/dropbear || echo "DROPBEAR_PORT=$DB_PORT" >> /etc/default/dropbear
+                cat > /etc/systemd/system/dropbear.service << EOF
+[Unit]
+Description=Dropbear SSH Server
+After=network.target
+[Service]
+Type=simple
+ExecStart=/usr/sbin/dropbear -F -p $DB_PORT
+Restart=always
+RestartSec=3
+[Install]
+WantedBy=multi-user.target
+EOF
+                systemctl daemon-reload
+                mkdir -p /etc/dropbear
+                [ ! -f /etc/dropbear/dropbear_dss_host_key ] && dropbearkey -t dss -f /etc/dropbear/dropbear_dss_host_key > /dev/null 2>&1
+                [ ! -f /etc/dropbear/dropbear_rsa_host_key ] && dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key > /dev/null 2>&1
+                [ ! -f /etc/dropbear/dropbear_ecdsa_host_key ] && dropbearkey -t ecdsa -f /etc/dropbear/dropbear_ecdsa_host_key > /dev/null 2>&1
+                grep -q "/bin/false" /etc/shells || echo "/bin/false" >> /etc/shells
+                systemctl enable dropbear
+                systemctl start dropbear
+                iptables -I INPUT -p tcp --dport $DB_PORT -j ACCEPT 2>/dev/null
+                echo -e "  \033[1;32m✓ Dropbear instalado en puerto $DB_PORT\033[0m"; sleep 2 ;;
+            2) systemctl start dropbear && echo -e "  \033[1;32m✓ Dropbear iniciado\033[0m"; sleep 1 ;;
+            3) systemctl stop dropbear && echo -e "  \033[1;33m⚠ Dropbear detenido\033[0m"; sleep 1 ;;
+            4) systemctl restart dropbear && echo -e "  \033[1;32m✓ Dropbear reiniciado\033[0m"; sleep 1 ;;
+            5)
+                read -p "  \033[1;37mNuevo puerto: \033[0m" NEW_PORT
+                echo "$NEW_PORT" > /etc/sshfreeltm/dropbear_port
+                sed -i "s/DROPBEAR_PORT=.*/DROPBEAR_PORT=$NEW_PORT/" /etc/default/dropbear 2>/dev/null
+                sed -i "s|-p [0-9]*|-p $NEW_PORT|" /etc/systemd/system/dropbear.service 2>/dev/null
+                systemctl daemon-reload
+                systemctl restart dropbear
+                echo -e "  \033[1;32m✓ Puerto cambiado a $NEW_PORT\033[0m"; sleep 2 ;;
+            6)
+                systemctl stop dropbear; systemctl disable dropbear
+                apt remove -y dropbear > /dev/null 2>&1
+                rm -f /etc/systemd/system/dropbear.service
+                systemctl daemon-reload
+                echo -e "  \033[1;32m✓ Dropbear desinstalado\033[0m"; sleep 2 ;;
+            7)
+                echo -e "  \033[1;36mActivando banner...\033[0m"
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  \033[1;33mCreando banner por defecto...\033[0m"
+                    cat > /etc/ssh/banner << BAN
+<h1 style="text-align:center"><span><big><big><span style="color: #00ff48">L</span><span style="color: #0dff5a">T</span><span style="color: #19fe6b">M</span><span style="color: #26fe7d"> </span><span style="color: #32fd8e">S</span><span style="color: #3ffda0">E</span><span style="color: #4cfcb1">R</span><span style="color: #58fcc3">V</span><span style="color: #65fbd4">I</span><span style="color: #71fbe6">D</span><span style="color: #7efaf7">OR</span><small></div><div><span style="color: #ff0000">NETFREE LTM VPS MIAMI 🇺🇲</span>
+<div><div><span style="color: #00ff83">🚫</span><span style="color: #00ff87"></span><span style="color: #00ff8b">P</span><span style="color: #00ff8f">R</span><span style="color: #00ff93">O</span><span style="color: #00ff97">H</span><span style="color: #00ff9b">I</span><span style="color: #00ff9f">B</span><span style="color: #00ffa3">I</span><span style="color: #00ffa7">D</span><span style="color: #00ffab">A</span><span style="color: #00ffb0"> L</span><span style="color: #00ffb4">A</span> <span style="color: #00ffb8">V</span><span style="color: #00ffbc"></span><span style="color: #00ffc0">E</span><span style="color: #00ffc4">N</span><span style="color: #00ffc8">T</span><span style="color: #00ffcc">A</span><span style="color: #00ffd0"></span><span style="color: #00ffd4"</span><span style="color: #00ffd8">🚫</span></div>
+<div><span style="color: #009aff">G</span><span style="color: #00cdc1">R</span><span style="color: #00ff83">U</span><span style="color: #80cc42">P</span><span style="color: #ff9900">O</span></div>https://t.me/+AzYZK49QGys4MDVh
+<div><span style="color: #009aff">C</span><span style="color: #00cdc1">A</span><span style="color: #00ff83">N</span><span style="color: #80cc42">A</span><span style="color: #ff9900">L</span></div>https://t.me/+g8bjM5B2izkyNzYx
+<big><big><big><big><big><big>🤑💥</big></big></big></big></big></big>
+<h2 style="text-align:center;"><small><small><small><small><small><small><span style="color: #faff00">∘₊✧ </span><span style="color:#ffbf00;">™✶▲▽DarkFull༻༒</span></small></small></small></small></small></small></h2>
+BAN
+                fi
+                sed 's/<[^>]*>//g; s/&[a-zA-Z0-9#]\{2,6\};//g; s/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d' /etc/ssh/banner > /etc/ssh/banner.txt
+                if ! grep -q "-b /etc/ssh/banner.txt" /etc/systemd/system/dropbear.service; then
+                    sed -i 's|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.txt|' /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                fi
+                systemctl restart dropbear
+                echo -e "  \033[1;32m✓ Banner activado\033[0m"; sleep 2 ;;
+            8)
+                sed -i 's| -b /etc/ssh/banner.txt||' /etc/systemd/system/dropbear.service
+                systemctl daemon-reload
+                systemctl restart dropbear
+                echo -e "  \033[1;33m⚠ Banner desactivado\033[0m"; sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                sed 's/<[^>]*>//g; s/&[a-zA-Z0-9#]\{2,6\};//g; s/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d' /etc/ssh/banner > /etc/ssh/banner.txt
+                echo -e "  \033[1;32m✓ Banner actualizado\033[0m"; sleep 2 ;;
+            10)
+                echo ""; echo -e "  \033[1;34m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
+                echo -e "  \033[1;37mBanner HTML original:\033[0m"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  \033[1;31mNo hay archivo de banner\033[0m"
+                echo ""; echo -e "  \033[1;34m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
+                echo -e "  \033[1;37mBanner texto plano (SSH/Dropbear):\033[0m"; echo ""
+                cat /etc/ssh/banner.txt 2>/dev/null || echo -e "  \033[1;31mNo hay archivo de texto\033[0m"
+                echo ""; echo -e "  \033[1;34m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
+                read -p "  \033[1;34m➤\033[0m ENTER..." ;;
+            0) break ;;
+        esac
+    done
+}
+[ "$EUID" -ne 0 ] && echo -e "${R}Ejecuta como root${NC}" && exit 1
+# ============================================================
+# FUNCIONES PARA VER USUARIOS CONECTADOS
+# ============================================================
+
+# Ver usuarios SSH conectados
+usuarios_ssh_online_count() {
+    banner
+    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+    echo -e "  ${W}📡 USUARIOS SSH CONECTADOS${NC}"
+    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+    echo ""
+    
+    # Obtener usuarios conectados por SSH
+    CONECTADOS=$(who | grep -E 'pts|tty' | awk '{print $1}' | sort | uniq)
+    
+    if [ -z "$CONECTADOS" ]; then
+        echo -e "  ${R}◇ No hay usuarios SSH conectados${NC}"
+    else
+        echo -e "  ${NEON}◈${NC} ${W}Usuarios activos:${NC}"
+        echo ""
+        echo "$CONECTADOS" | while read user; do
+            # Obtener IP de cada usuario
+            IP=$(who | grep "$user" | awk '{print $5}' | sed 's/(//;s/)//' | head -1)
+            # Obtener tiempo de conexión
+            TIEMPO=$(who | grep "$user" | awk '{print $3,$4}' | head -1)
+            echo -e "  ${NEON}◈${NC} ${G}${user}${NC}  →  ${Y}IP:${NC} ${W}${IP}${NC}  ${DIM}(${TIEMPO})${NC}"
+        done
+        echo ""
+        TOTAL=$(echo "$CONECTADOS" | wc -l)
+        echo -e "  ${NEON}◈${NC} ${W}Total conectados:${NC} ${G}${TOTAL}${NC}"
+    fi
+    echo ""
+    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+    read -p "  ENTER..."
+}
+
+# Ver usuarios V2Ray conectados
+usuarios_v2ray_online_count() {
+    banner
+    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+    echo -e "  ${W}📡 USUARIOS V2RAY CONECTADOS${NC}"
+    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+    echo ""
+    
+    if ! systemctl is-active --quiet v2ray; then
+        echo -e "  ${R}◇ V2Ray no está activo${NC}"
+        echo ""
+        echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+        read -p "  ENTER..."
+        return
+    fi
+    
+    # Intentar obtener logs de V2Ray para ver conexiones activas
+    # Esto depende de la configuración del log
+    if [ -f /var/log/v2ray/access.log ]; then
+        echo -e "  ${C}Analizando logs de conexiones...${NC}"
+        echo ""
+        
+        # Extraer usuarios activos de los logs (últimos 5 minutos)
+        TIEMPO_ACTUAL=$(date +%s)
+        USUARIOS=$(tail -100 /var/log/v2ray/access.log 2>/dev/null | grep -E "accepted|tcp" | grep -oP 'email: \K[^ ]+' | sort | uniq)
+        
+        if [ -z "$USUARIOS" ]; then
+            echo -e "  ${Y}⚠ No se detectaron usuarios conectados en este momento${NC}"
+        else
+            echo -e "  ${NEON}◈${NC} ${W}Usuarios activos (últimas conexiones):${NC}"
+            echo ""
+            echo "$USUARIOS" | while read user; do
+                # Contar conexiones recientes
+                CONEXIONES=$(tail -200 /var/log/v2ray/access.log 2>/dev/null | grep "$user" | wc -l)
+                echo -e "  ${NEON}◈${NC} ${G}${user}${NC}  →  ${Y}Conexiones recientes:${NC} ${W}${CONEXIONES}${NC}"
+            done
+            echo ""
+            TOTAL=$(echo "$USUARIOS" | wc -l)
+            echo -e "  ${NEON}◈${NC} ${W}Total usuarios activos:${NC} ${G}${TOTAL}${NC}"
+        fi
+    else
+        echo -e "  ${Y}⚠ No se encontró log de V2Ray${NC}"
+        echo -e "  ${DIM}Para ver conexiones activas, asegúrate de tener logging habilitado${NC}"
+    fi
+    
+    echo ""
+    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+    read -p "  ENTER..."
+}
+
+# Ver usuarios ZIV VPN conectados
+usuarios_ziv_online_count() {
+    banner
+    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+    echo -e "  ${W}🔒 USUARIOS ZIV VPN CONECTADOS${NC}"
+    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+    echo ""
+    
+    if ! systemctl is-active --quiet zivpn; then
+        echo -e "  ${R}◇ ZIV VPN no está activo${NC}"
+        echo ""
+        echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+        read -p "  ENTER..."
+        return
+    fi
+    
+    # Ver logs de ZIV VPN
+    if [ -f /var/log/zivpn.log ]; then
+        echo -e "  ${C}Analizando conexiones activas...${NC}"
+        echo ""
+        
+        # Extraer IPs conectadas (últimos 5 minutos)
+        TIEMPO_LIMITE=$(date -d '5 minutes ago' +%s 2>/dev/null || echo "0")
+        CONECTADOS=$(tail -200 /var/log/zivpn.log 2>/dev/null | grep -E "connected|auth" | grep -oP 'from \K[0-9.]+' | sort | uniq)
+        
+        if [ -z "$CONECTADOS" ]; then
+            echo -e "  ${Y}⚠ No hay usuarios conectados en este momento${NC}"
+        else
+            echo -e "  ${NEON}◈${NC} ${W}IPs conectadas recientemente:${NC}"
+            echo ""
+            echo "$CONECTADOS" | while read ip; do
+                # Contar conexiones
+                CONEXIONES=$(tail -200 /var/log/zivpn.log 2>/dev/null | grep "$ip" | wc -l)
+                echo -e "  ${NEON}◈${NC} ${R}IP:${NC} ${W}${ip}${NC}  →  ${Y}Peticiones:${NC} ${G}${CONEXIONES}${NC}"
+            done
+            echo ""
+            TOTAL=$(echo "$CONECTADOS" | wc -l)
+            echo -e "  ${NEON}◈${NC} ${W}Total IPs activas:${NC} ${G}${TOTAL}${NC}"
+        fi
+    else
+        echo -e "  ${Y}⚠ No se encontró log de ZIV VPN${NC}"
+        echo -e "  ${DIM}Para ver conexiones, habilita el logging en /etc/zivpn/config.json${NC}"
+    fi
+    
+    echo ""
+    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+    read -p "  ENTER..."
+}
+
+
+menu_principal
+
+# Auto-instalar comando menu
+wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/DarkFull0726/SSHSCRIPT-LTM/main/sshscript-ltm.sh"
+chmod +x /usr/local/bin/menu
+echo -e "\033[0;32mComando menu instalado\033[0m"
+
+
+
+
+
+# Convertir HTML a texto plano (eliminar etiquetas)
+
+# Generar versión de texto plano (sin HTML) para SSH y Dropbear
+
+
+# Función que llama al conversor externo (usada desde el menú)
+_convert_banner() {
+    /usr/local/bin/convert-banner-txt
+}
+
