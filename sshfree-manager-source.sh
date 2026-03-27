@@ -5217,7 +5217,10 @@ PYSCRIPT
     rm -f "$tmp_py"
 }
 
-# Convertir HTML a texto con colores ANSI
+
+
+
+# Convertir HTML a texto con colores ANSI (con saltos de línea)
 convertir_banner_html() {
     local archivo="$1"
     local tmp_py="/tmp/convert_banner_$$.py"
@@ -5235,6 +5238,11 @@ def process(html_text):
     result = []
     i = 0
     color_stack = []
+    block_tags = {"div", "h1", "h2", "h3", "h4", "h5", "h6", "p", "br", "big", "small"}
+    # Para etiquetas que deben terminar con salto de línea
+    def add_newline():
+        if result and result[-1] != "\n":
+            result.append("\n")
     while i < len(html_text):
         if html_text[i] == "<":
             tag_end = html_text.find(">", i)
@@ -5242,7 +5250,11 @@ def process(html_text):
                 break
             tag_content = html_text[i+1:tag_end]
             tag_name = tag_content.split()[0].lower() if tag_content else ""
+            # Cierre de etiqueta
             if tag_name.startswith("/"):
+                real_tag = tag_name[1:]
+                if real_tag in block_tags:
+                    add_newline()
                 if color_stack:
                     color_stack.pop()
                     if color_stack:
@@ -5251,6 +5263,10 @@ def process(html_text):
                         result.append("\033[0m")
                 i = tag_end + 1
                 continue
+            # Etiqueta de apertura
+            if tag_name in block_tags:
+                add_newline()
+            # Buscar color en estilo
             style_match = re.search(r'style="([^"]*)"', tag_content)
             if style_match:
                 style = style_match.group(1)
@@ -5262,6 +5278,9 @@ def process(html_text):
                     else:
                         color_stack.append(ansi)
                     result.append(ansi)
+            # Etiqueta especial <br>
+            if tag_name == "br":
+                add_newline()
             i = tag_end + 1
         elif html_text[i] == "&":
             semicolon = html_text.find(";", i)
@@ -5276,8 +5295,14 @@ def process(html_text):
                 result.append(html_text[i])
                 i += 1
         else:
-            result.append(html_text[i])
+            # Texto normal: puede contener saltos de línea reales
+            if html_text[i] == "\n":
+                result.append("\n")
+            else:
+                result.append(html_text[i])
             i += 1
+    # Asegurar reset de color y un salto final
+    result.append("\033[0m")
     return "".join(result)
 
 if len(sys.argv) != 2:
@@ -5291,8 +5316,8 @@ with open(file_path, "r", encoding="utf-8") as f:
     content = f.read()
 
 cleaned = process(content)
-cleaned = re.sub(r"\s+", " ", cleaned)
-cleaned += "\033[0m"
+# Eliminar múltiples saltos de línea consecutivos (más de 2)
+cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
 
 with open(file_path, "w", encoding="utf-8") as f:
     f.write(cleaned)
