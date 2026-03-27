@@ -1278,28 +1278,32 @@ menu_antiddos() {
                 echo -e "  ${C}  Configurando Fail2ban...${NC}"
                 python3 - << PYEOF2
 import os
+jail = [
+    "[DEFAULT]",
+    "bantime = 3600",
+    "findtime = 600",
+    "maxretry = 3",
+    "ignoreip = 127.0.0.1/8",
+    "",
+    "[sshd]",
+    "enabled = true",
+    "port = ssh",
+    "maxretry = 3",
+    "bantime = 86400",
+    "",
+    "[http-get-dos]",
+    "enabled = true",
+    "port = http,https",
+    "filter = http-get-dos",
+    "logpath = /var/log/nginx/access.log",
+    "maxretry = 100",
+    "findtime = 60",
+    "bantime = 3600",
+]
 os.makedirs("/etc/fail2ban", exist_ok=True)
 with open("/etc/fail2ban/jail.local", "w") as f:
-    f.write("[DEFAULT]
-bantime = 3600
-findtime = 600
-maxretry = 3
-ignoreip = 127.0.0.1/8
-
-[sshd]
-enabled = true
-port = ssh
-maxretry = 3
-bantime = 86400
-
-[http-get-dos]
-enabled = true
-port = http,https
-filter = http-get-dos
-logpath = /var/log/nginx/access.log
-maxretry = 100
-findtime = 60
-bantime = 3600
+    f.write("
+".join(jail) + "
 ")
 print("  [0;32m  ✓ Fail2ban configurado[0m")
 PYEOF2
@@ -1322,7 +1326,8 @@ try:
     banned = lines[0].split(":")[1].strip() if lines else "Ninguna aun"
 except Exception:
     banned = "No disponible"
-msg = "🚨 *ANTI-DDoS ACTIVADO*
+emoji = chr(0x1F6A8)
+msg = emoji + " *ANTI-DDoS ACTIVADO*
 " + banned
 url = "https://api.telegram.org/bot" + TOKEN + "/sendMessage"
 data = json.dumps({"chat_id": ADMIN, "text": msg, "parse_mode": "Markdown"}).encode()
@@ -1493,28 +1498,32 @@ menu_antiddos() {
                 echo -e "  ${C}  Configurando Fail2ban...${NC}"
                 python3 - << PYEOF2
 import os
+jail = [
+    "[DEFAULT]",
+    "bantime = 3600",
+    "findtime = 600",
+    "maxretry = 3",
+    "ignoreip = 127.0.0.1/8",
+    "",
+    "[sshd]",
+    "enabled = true",
+    "port = ssh",
+    "maxretry = 3",
+    "bantime = 86400",
+    "",
+    "[http-get-dos]",
+    "enabled = true",
+    "port = http,https",
+    "filter = http-get-dos",
+    "logpath = /var/log/nginx/access.log",
+    "maxretry = 100",
+    "findtime = 60",
+    "bantime = 3600",
+]
 os.makedirs("/etc/fail2ban", exist_ok=True)
 with open("/etc/fail2ban/jail.local", "w") as f:
-    f.write("[DEFAULT]
-bantime = 3600
-findtime = 600
-maxretry = 3
-ignoreip = 127.0.0.1/8
-
-[sshd]
-enabled = true
-port = ssh
-maxretry = 3
-bantime = 86400
-
-[http-get-dos]
-enabled = true
-port = http,https
-filter = http-get-dos
-logpath = /var/log/nginx/access.log
-maxretry = 100
-findtime = 60
-bantime = 3600
+    f.write("
+".join(jail) + "
 ")
 print("  [0;32m  ✓ Fail2ban configurado[0m")
 PYEOF2
@@ -1537,7 +1546,8 @@ try:
     banned = lines[0].split(":")[1].strip() if lines else "Ninguna aun"
 except Exception:
     banned = "No disponible"
-msg = "🚨 *ANTI-DDoS ACTIVADO*
+emoji = chr(0x1F6A8)
+msg = emoji + " *ANTI-DDoS ACTIVADO*
 " + banned
 url = "https://api.telegram.org/bot" + TOKEN + "/sendMessage"
 data = json.dumps({"chat_id": ADMIN, "text": msg, "parse_mode": "Markdown"}).encode()
@@ -2456,28 +2466,32 @@ menu_antiddos() {
                 echo -e "  ${C}  Configurando Fail2ban...${NC}"
                 python3 - << PYEOF2
 import os
+jail = [
+    "[DEFAULT]",
+    "bantime = 3600",
+    "findtime = 600",
+    "maxretry = 3",
+    "ignoreip = 127.0.0.1/8",
+    "",
+    "[sshd]",
+    "enabled = true",
+    "port = ssh",
+    "maxretry = 3",
+    "bantime = 86400",
+    "",
+    "[http-get-dos]",
+    "enabled = true",
+    "port = http,https",
+    "filter = http-get-dos",
+    "logpath = /var/log/nginx/access.log",
+    "maxretry = 100",
+    "findtime = 60",
+    "bantime = 3600",
+]
 os.makedirs("/etc/fail2ban", exist_ok=True)
 with open("/etc/fail2ban/jail.local", "w") as f:
-    f.write("[DEFAULT]
-bantime = 3600
-findtime = 600
-maxretry = 3
-ignoreip = 127.0.0.1/8
-
-[sshd]
-enabled = true
-port = ssh
-maxretry = 3
-bantime = 86400
-
-[http-get-dos]
-enabled = true
-port = http,https
-filter = http-get-dos
-logpath = /var/log/nginx/access.log
-maxretry = 100
-findtime = 60
-bantime = 3600
+    f.write("
+".join(jail) + "
 ")
 print("  [0;32m  ✓ Fail2ban configurado[0m")
 PYEOF2
@@ -2500,7 +2514,8 @@ try:
     banned = lines[0].split(":")[1].strip() if lines else "Ninguna aun"
 except Exception:
     banned = "No disponible"
-msg = "🚨 *ANTI-DDoS ACTIVADO*
+emoji = chr(0x1F6A8)
+msg = emoji + " *ANTI-DDoS ACTIVADO*
 " + banned
 url = "https://api.telegram.org/bot" + TOKEN + "/sendMessage"
 data = json.dumps({"chat_id": ADMIN, "text": msg, "parse_mode": "Markdown"}).encode()
@@ -2671,28 +2686,32 @@ menu_antiddos() {
                 echo -e "  ${C}  Configurando Fail2ban...${NC}"
                 python3 - << PYEOF2
 import os
+jail = [
+    "[DEFAULT]",
+    "bantime = 3600",
+    "findtime = 600",
+    "maxretry = 3",
+    "ignoreip = 127.0.0.1/8",
+    "",
+    "[sshd]",
+    "enabled = true",
+    "port = ssh",
+    "maxretry = 3",
+    "bantime = 86400",
+    "",
+    "[http-get-dos]",
+    "enabled = true",
+    "port = http,https",
+    "filter = http-get-dos",
+    "logpath = /var/log/nginx/access.log",
+    "maxretry = 100",
+    "findtime = 60",
+    "bantime = 3600",
+]
 os.makedirs("/etc/fail2ban", exist_ok=True)
 with open("/etc/fail2ban/jail.local", "w") as f:
-    f.write("[DEFAULT]
-bantime = 3600
-findtime = 600
-maxretry = 3
-ignoreip = 127.0.0.1/8
-
-[sshd]
-enabled = true
-port = ssh
-maxretry = 3
-bantime = 86400
-
-[http-get-dos]
-enabled = true
-port = http,https
-filter = http-get-dos
-logpath = /var/log/nginx/access.log
-maxretry = 100
-findtime = 60
-bantime = 3600
+    f.write("
+".join(jail) + "
 ")
 print("  [0;32m  ✓ Fail2ban configurado[0m")
 PYEOF2
@@ -2715,7 +2734,8 @@ try:
     banned = lines[0].split(":")[1].strip() if lines else "Ninguna aun"
 except Exception:
     banned = "No disponible"
-msg = "🚨 *ANTI-DDoS ACTIVADO*
+emoji = chr(0x1F6A8)
+msg = emoji + " *ANTI-DDoS ACTIVADO*
 " + banned
 url = "https://api.telegram.org/bot" + TOKEN + "/sendMessage"
 data = json.dumps({"chat_id": ADMIN, "text": msg, "parse_mode": "Markdown"}).encode()
