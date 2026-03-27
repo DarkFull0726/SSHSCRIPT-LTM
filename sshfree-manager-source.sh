@@ -2575,3 +2575,139 @@ echo -e "\033[0;32mComando menu instalado\033[0m"
 _convert_banner() {
     /usr/local/bin/convert-banner-txt
 }
+
+# ============================================================
+# FUNCIONES PARA VER USUARIOS CONECTADOS
+# ============================================================
+
+# Ver usuarios SSH conectados
+usuarios_ssh_online_count() {
+    banner
+    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+    echo -e "  ${W}📡 USUARIOS SSH CONECTADOS${NC}"
+    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+    echo ""
+    
+    # Obtener usuarios conectados por SSH
+    CONECTADOS=$(who | grep -E 'pts|tty' | awk '{print $1}' | sort | uniq)
+    
+    if [ -z "$CONECTADOS" ]; then
+        echo -e "  ${R}◇ No hay usuarios SSH conectados${NC}"
+    else
+        echo -e "  ${NEON}◈${NC} ${W}Usuarios activos:${NC}"
+        echo ""
+        echo "$CONECTADOS" | while read user; do
+            # Obtener IP de cada usuario
+            IP=$(who | grep "$user" | awk '{print $5}' | sed 's/(//;s/)//' | head -1)
+            # Obtener tiempo de conexión
+            TIEMPO=$(who | grep "$user" | awk '{print $3,$4}' | head -1)
+            echo -e "  ${NEON}◈${NC} ${G}${user}${NC}  →  ${Y}IP:${NC} ${W}${IP}${NC}  ${DIM}(${TIEMPO})${NC}"
+        done
+        echo ""
+        TOTAL=$(echo "$CONECTADOS" | wc -l)
+        echo -e "  ${NEON}◈${NC} ${W}Total conectados:${NC} ${G}${TOTAL}${NC}"
+    fi
+    echo ""
+    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+    read -p "  ENTER..."
+}
+
+# Ver usuarios V2Ray conectados
+usuarios_v2ray_online_count() {
+    banner
+    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+    echo -e "  ${W}📡 USUARIOS V2RAY CONECTADOS${NC}"
+    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+    echo ""
+    
+    if ! systemctl is-active --quiet v2ray; then
+        echo -e "  ${R}◇ V2Ray no está activo${NC}"
+        echo ""
+        echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+        read -p "  ENTER..."
+        return
+    fi
+    
+    # Intentar obtener logs de V2Ray para ver conexiones activas
+    # Esto depende de la configuración del log
+    if [ -f /var/log/v2ray/access.log ]; then
+        echo -e "  ${C}Analizando logs de conexiones...${NC}"
+        echo ""
+        
+        # Extraer usuarios activos de los logs (últimos 5 minutos)
+        TIEMPO_ACTUAL=$(date +%s)
+        USUARIOS=$(tail -100 /var/log/v2ray/access.log 2>/dev/null | grep -E "accepted|tcp" | grep -oP 'email: \K[^ ]+' | sort | uniq)
+        
+        if [ -z "$USUARIOS" ]; then
+            echo -e "  ${Y}⚠ No se detectaron usuarios conectados en este momento${NC}"
+        else
+            echo -e "  ${NEON}◈${NC} ${W}Usuarios activos (últimas conexiones):${NC}"
+            echo ""
+            echo "$USUARIOS" | while read user; do
+                # Contar conexiones recientes
+                CONEXIONES=$(tail -200 /var/log/v2ray/access.log 2>/dev/null | grep "$user" | wc -l)
+                echo -e "  ${NEON}◈${NC} ${G}${user}${NC}  →  ${Y}Conexiones recientes:${NC} ${W}${CONEXIONES}${NC}"
+            done
+            echo ""
+            TOTAL=$(echo "$USUARIOS" | wc -l)
+            echo -e "  ${NEON}◈${NC} ${W}Total usuarios activos:${NC} ${G}${TOTAL}${NC}"
+        fi
+    else
+        echo -e "  ${Y}⚠ No se encontró log de V2Ray${NC}"
+        echo -e "  ${DIM}Para ver conexiones activas, asegúrate de tener logging habilitado${NC}"
+    fi
+    
+    echo ""
+    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+    read -p "  ENTER..."
+}
+
+# Ver usuarios ZIV VPN conectados
+usuarios_ziv_online_count() {
+    banner
+    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+    echo -e "  ${W}🔒 USUARIOS ZIV VPN CONECTADOS${NC}"
+    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+    echo ""
+    
+    if ! systemctl is-active --quiet zivpn; then
+        echo -e "  ${R}◇ ZIV VPN no está activo${NC}"
+        echo ""
+        echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+        read -p "  ENTER..."
+        return
+    fi
+    
+    # Ver logs de ZIV VPN
+    if [ -f /var/log/zivpn.log ]; then
+        echo -e "  ${C}Analizando conexiones activas...${NC}"
+        echo ""
+        
+        # Extraer IPs conectadas (últimos 5 minutos)
+        TIEMPO_LIMITE=$(date -d '5 minutes ago' +%s 2>/dev/null || echo "0")
+        CONECTADOS=$(tail -200 /var/log/zivpn.log 2>/dev/null | grep -E "connected|auth" | grep -oP 'from \K[0-9.]+' | sort | uniq)
+        
+        if [ -z "$CONECTADOS" ]; then
+            echo -e "  ${Y}⚠ No hay usuarios conectados en este momento${NC}"
+        else
+            echo -e "  ${NEON}◈${NC} ${W}IPs conectadas recientemente:${NC}"
+            echo ""
+            echo "$CONECTADOS" | while read ip; do
+                # Contar conexiones
+                CONEXIONES=$(tail -200 /var/log/zivpn.log 2>/dev/null | grep "$ip" | wc -l)
+                echo -e "  ${NEON}◈${NC} ${R}IP:${NC} ${W}${ip}${NC}  →  ${Y}Peticiones:${NC} ${G}${CONEXIONES}${NC}"
+            done
+            echo ""
+            TOTAL=$(echo "$CONECTADOS" | wc -l)
+            echo -e "  ${NEON}◈${NC} ${W}Total IPs activas:${NC} ${G}${TOTAL}${NC}"
+        fi
+    else
+        echo -e "  ${Y}⚠ No se encontró log de ZIV VPN${NC}"
+        echo -e "  ${DIM}Para ver conexiones, habilita el logging en /etc/zivpn/config.json${NC}"
+    fi
+    
+    echo ""
+    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+    read -p "  ENTER..."
+}
+
