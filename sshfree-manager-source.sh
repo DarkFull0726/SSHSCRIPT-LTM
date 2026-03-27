@@ -215,12 +215,12 @@ sep2() { echo -e "${DIM}${LINE2}${NC}"; }
 
 # Sanitizar banner eliminando etiquetas HTML
 sanitizar_banner() {
-    [ ! -f /etc/ssh/banner.html ] && return
-    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-    sed -i "s/<[^>]*>//g" /etc/ssh/banner.html
-    sed -i "s/&[a-zA-Z0-9#]{2,6};//g" /etc/ssh/banner.html
+    [ ! -f /etc/ssh/banner ] && return
+    cp /etc/ssh/banner /etc/ssh/banner.original
+    sed -i "s/<[^>]*>//g" /etc/ssh/banner
+    sed -i "s/&[a-zA-Z0-9#]{2,6};//g" /etc/ssh/banner
     # Eliminar caracteres no imprimibles excepto los ANSI (opcional)
-    sed -i "s/\x1b\[[0-9;]*[a-zA-Z]//g" /etc/ssh/banner.html
+    sed -i "s/\x1b\[[0-9;]*[a-zA-Z]//g" /etc/ssh/banner
 }
 
 status_service() {
@@ -428,14 +428,15 @@ menu_ws() {
                 fi
                 systemctl daemon-reload; echo -e "  ${G}Eliminado${NC}"; sleep 1 ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -445,8 +446,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -455,8 +456,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -465,8 +466,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -475,19 +476,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -497,7 +502,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -587,14 +592,15 @@ EOF
                 systemctl daemon-reload; systemctl enable badvpn-${BPORT}; systemctl start badvpn-${BPORT}
                 echo -e "  ${G}OK BadVPN puerto ${BPORT}${NC}"; sleep 2 ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -604,8 +610,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -614,8 +620,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -624,8 +630,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -634,19 +640,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -656,7 +666,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -696,14 +706,15 @@ menu_udp() {
             4) pkill -f udp-custom 2>/dev/null; sleep 1; systemctl start udp-custom 2>/dev/null || (/root/udp/udp-custom server -exclude 5300 &); echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
             5) ss -ulnp | grep udp; echo ""; read -p "  ENTER..." ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -713,8 +724,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -723,8 +734,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -733,8 +744,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -743,19 +754,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -765,7 +780,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -814,14 +829,15 @@ EOF
             3) systemctl stop stunnel4 && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
             4) systemctl restart stunnel4 && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -831,8 +847,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -841,8 +857,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -851,8 +867,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -861,19 +877,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -883,7 +903,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -946,6 +966,12 @@ EOF
                 systemctl enable v2ray; systemctl start v2ray
                 echo -e "  ${G}OK V2Ray instalado — Usa ❬2❭ para agregar puertos${NC}"; sleep 2 ;;
             2)
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
                 banner; sep
                 echo -e "  ${Y}  AGREGAR INBOUND${NC}"; sep; echo ""
                 read -p "  Puerto: " V2_PORT
@@ -1003,6 +1029,12 @@ PYEOF
             5) systemctl stop v2ray && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
             6) systemctl restart v2ray && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
             7)
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
                 banner; sep; echo -e "  ${Y}  CREAR USUARIO VMESS${NC}"; sep; echo ""
                 python3 -c "
 import json
@@ -1074,14 +1106,15 @@ except Exception as e: print(f'Error: {e}')
                     echo -e "  ${G}OK V2Ray desinstalado${NC}"; sleep 2
                 fi ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -1091,8 +1124,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -1101,8 +1134,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -1111,8 +1144,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -1121,19 +1154,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -1143,7 +1180,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -1186,14 +1223,15 @@ menu_ziv() {
             6) cat /etc/zivpn/config.json 2>/dev/null; echo ""; read -p "  ENTER..." ;;
             7) bash <(curl -fsSL https://raw.githubusercontent.com/powermx/zivpn/main/uninstall.sh) 2>/dev/null; echo -e "  ${G}Desinstalado${NC}"; sleep 1 ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -1203,8 +1241,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -1213,8 +1251,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -1223,8 +1261,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -1233,19 +1271,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -1255,7 +1297,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -1382,14 +1424,15 @@ menu_users_ziv() {
             3) eliminar_user_ziv ;;
             4) limpiar_expirados_ziv; aplicar_passwords_ziv; echo -e "  ${G}Limpiado${NC}"; sleep 1 ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -1399,8 +1442,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -1409,8 +1452,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -1419,8 +1462,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -1429,19 +1472,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -1451,7 +1498,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -1563,14 +1610,15 @@ menu_usuarios() {
             3) eliminar_usuario ;;
             4) renovar_usuario ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -1580,8 +1628,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -1590,8 +1638,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -1600,8 +1648,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -1610,19 +1658,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -1632,7 +1684,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -1945,6 +1997,12 @@ EOF_JAIL
                 echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"; sep
                 read -p "  ENTER..." ;;
             2)
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
                 iptables -F; iptables -X
                 iptables -P INPUT ACCEPT; iptables -P FORWARD ACCEPT; iptables -P OUTPUT ACCEPT
                 systemctl stop fail2ban 2>/dev/null
@@ -1954,14 +2012,15 @@ EOF_JAIL
                 read -p "  ENTER..." ;;
             4) menu_atacantes ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -1971,8 +2030,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -1981,8 +2040,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -1991,8 +2050,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -2001,19 +2060,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -2023,7 +2086,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -2220,6 +2283,12 @@ EOF_JAIL
                 echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"; sep
                 read -p "  ENTER..." ;;
             2)
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
                 iptables -F; iptables -X
                 iptables -P INPUT ACCEPT; iptables -P FORWARD ACCEPT; iptables -P OUTPUT ACCEPT
                 systemctl stop fail2ban 2>/dev/null
@@ -2229,14 +2298,15 @@ EOF_JAIL
                 read -p "  ENTER..." ;;
             4) menu_atacantes ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -2246,8 +2316,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -2256,8 +2326,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -2266,8 +2336,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -2276,19 +2346,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -2298,7 +2372,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -2426,14 +2500,15 @@ EOF
                 systemctl daemon-reload
                 echo -e "  ${G}SlowDNS desinstalado${NC}"; sleep 2 ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -2443,8 +2518,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -2453,8 +2528,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -2463,8 +2538,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -2473,19 +2548,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -2495,7 +2574,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -2511,7 +2590,7 @@ menu_dropbear() {
         [ "$DB_ST" = "active" ] && echo -e "  Estado: ${G}[ACTIVO]${NC}" || echo -e "  Estado: ${R}[INACTIVO]${NC}"
         DB_PORT=$(cat /etc/sshfreeltm/dropbear_port 2>/dev/null || echo "444")
         echo -e "  Puerto: ${W}${DB_PORT}${NC}"
-        if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service 2>/dev/null; then
+        if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service 2>/dev/null; then
             echo -e "  Banner: ${G}[ACTIVO]${NC}"
         else
             echo -e "  Banner: ${R}[INACTIVO]${NC}"
@@ -2585,14 +2664,15 @@ EOF
                 systemctl daemon-reload
                 echo -e "  ${G}Dropbear desinstalado${NC}"; sleep 2 ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -2602,8 +2682,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -2612,8 +2692,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -2622,8 +2702,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -2632,19 +2712,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -2654,7 +2738,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -2703,8 +2787,8 @@ menu_banner_ssh() {
         case $OPT in
             1)
                 # Crear archivo banner SSH si no existe
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << 'BANNEREOF'
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << 'BANNEREOF'
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -2713,28 +2797,34 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 # Activar automaticamente al editar
-                grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null &&                     sed -i "s|^Banner.*|Banner /etc/ssh/banner.html|" /etc/ssh/sshd_config ||                     echo "Banner /etc/ssh/banner.html" >> /etc/ssh/sshd_config
+                grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null &&                     sed -i "s|^Banner.*|Banner /etc/ssh/banner|" /etc/ssh/sshd_config ||                     echo "Banner /etc/ssh/banner" >> /etc/ssh/sshd_config
                 systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null
                 echo -e "  ${G}OK Banner SSH guardado y activado${NC}"; sleep 2 ;;
             2)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No hay banner creado. Usa [1] para crear uno.${NC}"; sleep 2
                 else
-                    grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null &&                         sed -i "s|^Banner.*|Banner /etc/ssh/banner.html|" /etc/ssh/sshd_config ||                         echo "Banner /etc/ssh/banner.html" >> /etc/ssh/sshd_config
+                    grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null &&                         sed -i "s|^Banner.*|Banner /etc/ssh/banner|" /etc/ssh/sshd_config ||                         echo "Banner /etc/ssh/banner" >> /etc/ssh/sshd_config
                     systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null
                     echo -e "  ${G}OK Banner SSH activado${NC}"; sleep 2
                 fi ;;
@@ -2745,7 +2835,7 @@ BANNEREOF
             4)
                 echo ""; sep
                 echo -e "  ${Y}Banner SSH actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}Sin archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}Sin archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
             5)
                 # Editar banner de todos los WebSocket activos
@@ -2794,14 +2884,15 @@ BANNEREOF
                 done
                 echo ""; read -p "  ENTER..." ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -2811,8 +2902,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -2821,8 +2912,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -2831,8 +2922,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -2841,19 +2932,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -2863,7 +2958,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -2900,6 +2995,12 @@ menu_limpieza() {
                 echo -e "  ${NEON}◈${NC} ${W}RAM Libre ahora:${NC} ${Y}${RAM_FREE_NEW}${NC}"
                 sleep 2 ;;
             2)
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
                 echo -e "\n  ${C}Limpiando archivos temporales...${NC}"
                 apt autoremove -y > /dev/null 2>&1
                 apt clean > /dev/null 2>&1
@@ -2940,14 +3041,15 @@ REBOOTEOF
                     sleep 3
                     /sbin/reboot; } ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -2957,8 +3059,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -2967,8 +3069,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -2977,8 +3079,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -2987,19 +3089,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -3009,7 +3115,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -3134,14 +3240,15 @@ print(f'  Metodo:   {c.get(\"method\")}')
                     systemctl daemon-reload
                     echo -e "  ${G}Desinstalado${NC}"; sleep 2; } ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -3151,8 +3258,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -3161,8 +3268,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -3171,8 +3278,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -3181,19 +3288,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -3203,7 +3314,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -3284,6 +3395,12 @@ for u in users: print('  ' + u)
 " 2>/dev/null || echo "  No instalado"
                 echo ""; read -p "  ENTER..." ;;
             7)
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
                 banner; sep; echo -e "  ${Y}CAMBIAR OBFS${NC}"; sep; echo ""
                 CURRENT_OBFS=$(grep -o '"obfs":"[^"]*"' /etc/hysteria/config.json 2>/dev/null | cut -d'"' -f4 || echo "ltmudp")
                 echo -e "  ${NEON}◈${NC} ${W}Obfs actual:${NC} ${Y}$CURRENT_OBFS${NC}"; echo ""
@@ -3309,14 +3426,15 @@ print('OK')
                     systemctl daemon-reload
                     echo -e "  ${G}Desinstalado${NC}"; sleep 2; } ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -3326,8 +3444,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -3336,8 +3454,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -3346,8 +3464,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -3356,19 +3474,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -3378,7 +3500,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -3463,6 +3585,12 @@ EOF
                 echo -e "  ${NEON}◈${NC} Obfs: ${Y}ltmssh${NC}"
                 read -p "  ENTER..." ;;
             2)
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
                 echo -e "\n  ${C}Instalando Hysteria V2...${NC}"
                 apt install -y wget > /dev/null 2>&1
                 wget -q -O /usr/local/bin/hysteria2 https://github.com/apernet/hysteria/releases/latest/download/hysteria-linux-amd64
@@ -3535,14 +3663,15 @@ EOF
                 rm -rf /etc/hysteria2; systemctl daemon-reload
                 echo -e "  ${G}Hysteria V2 desinstalado${NC}"; sleep 2 ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -3552,8 +3681,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -3562,8 +3691,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -3572,8 +3701,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -3582,19 +3711,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -3604,7 +3737,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -3656,14 +3789,15 @@ menu_herramientas() {
             13) menu_shadowsocks ;;
             14) menu_limpieza ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -3673,8 +3807,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -3683,8 +3817,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -3693,8 +3827,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -3703,19 +3837,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -3725,7 +3863,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -3937,6 +4075,12 @@ EOF_JAIL
                 echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"; sep
                 read -p "  ENTER..." ;;
             2)
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
                 iptables -F; iptables -X
                 iptables -P INPUT ACCEPT; iptables -P FORWARD ACCEPT; iptables -P OUTPUT ACCEPT
                 systemctl stop fail2ban 2>/dev/null
@@ -3946,14 +4090,15 @@ EOF_JAIL
                 read -p "  ENTER..." ;;
             4) menu_atacantes ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -3963,8 +4108,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -3973,8 +4118,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -3983,8 +4128,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -3993,19 +4138,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -4015,7 +4164,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -4212,6 +4361,12 @@ EOF_JAIL
                 echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"; sep
                 read -p "  ENTER..." ;;
             2)
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
                 iptables -F; iptables -X
                 iptables -P INPUT ACCEPT; iptables -P FORWARD ACCEPT; iptables -P OUTPUT ACCEPT
                 systemctl stop fail2ban 2>/dev/null
@@ -4221,14 +4376,15 @@ EOF_JAIL
                 read -p "  ENTER..." ;;
             4) menu_atacantes ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -4238,8 +4394,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -4248,8 +4404,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -4258,8 +4414,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -4268,19 +4424,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -4290,7 +4450,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -4418,14 +4578,15 @@ EOF
                 systemctl daemon-reload
                 echo -e "  ${G}SlowDNS desinstalado${NC}"; sleep 2 ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -4435,8 +4596,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -4445,8 +4606,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -4455,8 +4616,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -4465,19 +4626,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -4487,7 +4652,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -4503,7 +4668,7 @@ menu_dropbear() {
         [ "$DB_ST" = "active" ] && echo -e "  Estado: ${G}[ACTIVO]${NC}" || echo -e "  Estado: ${R}[INACTIVO]${NC}"
         DB_PORT=$(cat /etc/sshfreeltm/dropbear_port 2>/dev/null || echo "444")
         echo -e "  Puerto: ${W}${DB_PORT}${NC}"
-        if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service 2>/dev/null; then
+        if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service 2>/dev/null; then
             echo -e "  Banner: ${G}[ACTIVO]${NC}"
         else
             echo -e "  Banner: ${R}[INACTIVO]${NC}"
@@ -4577,14 +4742,15 @@ EOF
                 systemctl daemon-reload
                 echo -e "  ${G}Dropbear desinstalado${NC}"; sleep 2 ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -4594,8 +4760,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -4604,8 +4770,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -4614,8 +4780,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -4624,19 +4790,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -4646,7 +4816,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -4695,8 +4865,8 @@ menu_banner_ssh() {
         case $OPT in
             1)
                 # Crear archivo banner SSH si no existe
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << 'BANNEREOF'
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << 'BANNEREOF'
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -4705,28 +4875,34 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 # Activar automaticamente al editar
-                grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null &&                     sed -i "s|^Banner.*|Banner /etc/ssh/banner.html|" /etc/ssh/sshd_config ||                     echo "Banner /etc/ssh/banner.html" >> /etc/ssh/sshd_config
+                grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null &&                     sed -i "s|^Banner.*|Banner /etc/ssh/banner|" /etc/ssh/sshd_config ||                     echo "Banner /etc/ssh/banner" >> /etc/ssh/sshd_config
                 systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null
                 echo -e "  ${G}OK Banner SSH guardado y activado${NC}"; sleep 2 ;;
             2)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No hay banner creado. Usa [1] para crear uno.${NC}"; sleep 2
                 else
-                    grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null &&                         sed -i "s|^Banner.*|Banner /etc/ssh/banner.html|" /etc/ssh/sshd_config ||                         echo "Banner /etc/ssh/banner.html" >> /etc/ssh/sshd_config
+                    grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null &&                         sed -i "s|^Banner.*|Banner /etc/ssh/banner|" /etc/ssh/sshd_config ||                         echo "Banner /etc/ssh/banner" >> /etc/ssh/sshd_config
                     systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null
                     echo -e "  ${G}OK Banner SSH activado${NC}"; sleep 2
                 fi ;;
@@ -4737,7 +4913,7 @@ BANNEREOF
             4)
                 echo ""; sep
                 echo -e "  ${Y}Banner SSH actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}Sin archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}Sin archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
             5)
                 # Editar banner de todos los WebSocket activos
@@ -4786,14 +4962,15 @@ BANNEREOF
                 done
                 echo ""; read -p "  ENTER..." ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -4803,8 +4980,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -4813,8 +4990,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -4823,8 +5000,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -4833,19 +5010,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -4855,7 +5036,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -4940,6 +5121,12 @@ EOF
                 echo -e "  ${NEON}◈${NC} Obfs: ${Y}ltmssh${NC}"
                 read -p "  ENTER..." ;;
             2)
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
                 echo -e "\n  ${C}Instalando Hysteria V2...${NC}"
                 apt install -y wget > /dev/null 2>&1
                 wget -q -O /usr/local/bin/hysteria2 https://github.com/apernet/hysteria/releases/latest/download/hysteria-linux-amd64
@@ -5012,14 +5199,15 @@ EOF
                 rm -rf /etc/hysteria2; systemctl daemon-reload
                 echo -e "  ${G}Hysteria V2 desinstalado${NC}"; sleep 2 ;;
             7)
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    cp /etc/ssh/banner.html /etc/ssh/banner.html.original
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                if [ ! -f /etc/ssh/banner.html ]; then
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                # Convertir HTML a ANSI
+                convertir_banner_html
+                if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -5029,8 +5217,8 @@ BANNEREOF
                 
                 # Sanitizar banner antes de activar
                 sanitizar_banner
-                if ! grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.html|" /etc/systemd/system/dropbear.service
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${G}Banner activado en Dropbear${NC}"
@@ -5039,8 +5227,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             8)
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner.html||" /etc/systemd/system/dropbear.service
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
                     systemctl restart dropbear
                     echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
@@ -5049,8 +5237,8 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner.html ]; then
-                    cat > /etc/ssh/banner.html << BANNEREOF
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
 ╔══════════════════════════════════════╗
 ║   SERVIDOR PRIVADO - SSHFREE LTM    ║
 ║        by @DarkZFull ❴LTM❵          ║
@@ -5059,19 +5247,23 @@ BANNEREOF
                 fi
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
-                nano /etc/ssh/banner.html
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
-                # Convertir banner HTML a ANSI
-                if [ -f /etc/ssh/banner.html ]; then
-                    convertir_banner_html /etc/ssh/banner.html
-                fi
+                nano /etc/ssh/banner
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
+                # Convertir HTML a ANSI después de editar
+                convertir_banner_html
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
-                if grep -q "\-b /etc/ssh/banner.html" /etc/systemd/system/dropbear.service; then
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
                 else
@@ -5081,7 +5273,7 @@ BANNEREOF
             10)
                 echo ""; sep
                 echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner.html 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
                 echo ""; read -p "  ENTER..." ;;
 
             0) break ;;
@@ -5154,154 +5346,60 @@ menu_principal() {
     done
 }
 
-
-# Convertir banner HTML a ANSI
+# Convertir HTML a texto con colores ANSI (guardar en /etc/ssh/banner-ansi)
+# Convertir HTML a texto con colores ANSI (guardar en /etc/ssh/banner-ansi)
+# Convertir HTML a texto con colores ANSI (guardar en /etc/ssh/banner-ansi)
 convertir_banner_html() {
-    local archivo="$1"
-    local tmp_py="/tmp/convert_banner_$$.py"
-    cat > "$tmp_py" << "PYSCRIPT"
-import sys, re, html, os
-def hex_to_ansi(hex_color):
-    hex_color = hex_color.lstrip("#")
-    r = int(hex_color[0:2], 16)
-    g = int(hex_color[2:4], 16)
-    b = int(hex_color[4:6], 16)
-    return f"\033[38;2;{r};{g};{b}m"
-def process(text):
-    result = []
-    i = 0
-    while i < len(text):
-        if text[i] == "<":
-            tag_end = text.find(">", i)
-            if tag_end == -1: break
-            tag = text[i+1:tag_end].split()[0].lower()
-            if tag == "span":
-                style_match = re.search(r"style="([^"]*)"", text[i:tag_end])
-                if style_match:
-                    style = style_match.group(1)
-                    color_match = re.search(r"color:\s*#([0-9a-fA-F]{6})", style)
-                    if color_match:
-                        ansi = hex_to_ansi("#" + color_match.group(1))
-                        result.append(ansi)
-            i = tag_end + 1
-        elif text[i] == "&":
-            semicolon = text.find(";", i)
-            if semicolon != -1:
-                ent = text[i+1:semicolon]
-                if ent == "lt": result.append("<")
-                elif ent == "gt": result.append(">")
-                elif ent == "amp": result.append("&")
-                else: result.append(html.unescape(text[i:semicolon+1]))
-                i = semicolon + 1
-            else:
-                result.append(text[i])
-                i += 1
-        else:
-            result.append(text[i])
-            i += 1
-    return "".join(result)
-if len(sys.argv) != 2:
-    sys.exit(1)
-file_path = sys.argv[1]
-if not os.path.exists(file_path):
-    sys.exit(0)
-with open(file_path, "r", encoding="utf-8") as f:
-    content = f.read()
-cleaned = process(content)
-cleaned = re.sub(r"\s+", " ", cleaned)
-cleaned += "\033[0m"
-with open(file_path, "w", encoding="utf-8") as f:
-    f.write(cleaned)
-PYSCRIPT
-    python3 "$tmp_py" "$archivo"
-    rm -f "$tmp_py"
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Convertir HTML a texto con colores ANSI (guardar en /etc/ssh/banner.html)
-# Si no existe /etc/ssh/banner.html.html, lo crea con un banner por defecto
-convertir_banner_html() {
-    local origen="/etc/ssh/banner.html.html"
-    local destino="/etc/ssh/banner.html"
+    local origen="/etc/ssh/banner"
+    local destino="/etc/ssh/banner-ansi"
     if [ ! -f "$origen" ]; then
-        echo -e "${Y}No existe $origen, creando uno por defecto...${NC}"
-        cat > "$origen" << 'HTMLDEFAULT'
-<h1 style="text-align:center"><span><big><big><span style="color: #00ff48">L</span><span style="color: #0dff5a">T</span><span style="color: #19fe6b">M</span><span style="color: #26fe7d"> </span><span style="color: #32fd8e">S</span><span style="color: #3ffda0">E</span><span style="color: #4cfcb1">R</span><span style="color: #58fcc3">V</span><span style="color: #65fbd4">I</span><span style="color: #71fbe6">D</span><span style="color: #7efaf7">OR</span><small></div><div><span style="color: #ff0000">NETFREE LTM VPS MIAMI 🇺🇲</span>
-<div><div><span style="color: #00ff83">🚫</span><span style="color: #00ff87"></span><span style="color: #00ff8b">P</span><span style="color: #00ff8f">R</span><span style="color: #00ff93">O</span><span style="color: #00ff97">H</span><span style="color: #00ff9b">I</span><span style="color: #00ff9f">B</span><span style="color: #00ffa3">I</span><span style="color: #00ffa7">D</span><span style="color: #00ffab">A</span><span style="color: #00ffb0"> L</span><span style="color: #00ffb4">A</span> <span style="color: #00ffb8">V</span><span style="color: #00ffbc"></span><span style="color: #00ffc0">E</span><span style="color: #00ffc4">N</span><span style="color: #00ffc8">T</span><span style="color: #00ffcc">A</span><span style="color: #00ffd0"></span><span style="color: #00ffd4"</span><span style="color: #00ffd8">🚫</span></div>
-<div><span style="color: #009aff">G</span><span style="color: #00cdc1">R</span><span style="color: #00ff83">U</span><span style="color: #80cc42">P</span><span style="color: #ff9900">O</span></div>https://t.me/+AzYZK49QGys4MDVh
-<div><span style="color: #009aff">C</span><span style="color: #00cdc1">A</span><span style="color: #00ff83">N</span><span style="color: #80cc42">A</span><span style="color: #ff9900">L</span></div>https://t.me/+g8bjM5B2izkyNzYx
-<big><big><big><big><big><big>🤑💥</big></big></big></big></big></big>
-<h2 style="text-align:center;"><small><small><small><small><small><small><span style="color: #faff00">∘₊✧ </span><span style="color:#ffbf00;">™✶▲▽DarkFull༻༒</span></small></small></small></small></small></small></h2>
-HTMLDEFAULT
-        echo -e "${G}Banner por defecto creado en $origen${NC}"
+        echo -e "${R}No existe $origen${NC}" >&2
+        return 1
     fi
     local tmp_py="/tmp/convert_banner_$$.py"
     cat > "$tmp_py" << "PYSCRIPT"
 import sys, re, html, os
-
 def hex_to_ansi(hex_color):
     hex_color = hex_color.lstrip("#")
     r = int(hex_color[0:2], 16)
     g = int(hex_color[2:4], 16)
     b = int(hex_color[4:6], 16)
     return f"\033[38;2;{r};{g};{b}m"
-
 def process(html_text):
     result = []
     i = 0
     color_stack = []
     block_tags = {"div", "h1", "h2", "h3", "h4", "h5", "h6", "p", "big", "small"}
     inline_break = {"br"}
-
     def add_newline():
         if not result or result[-1] != "\n":
             result.append("\n")
-
     while i < len(html_text):
         if html_text[i] == "<":
             tag_end = html_text.find(">", i)
-            if tag_end == -1:
-                break
+            if tag_end == -1: break
             tag_content = html_text[i+1:tag_end]
             tag_name = tag_content.split()[0].lower() if tag_content else ""
             if tag_name.startswith("/"):
                 real_tag = tag_name[1:]
-                if real_tag in block_tags:
-                    add_newline()
+                if real_tag in block_tags: add_newline()
                 if color_stack:
                     color_stack.pop()
-                    if color_stack:
-                        result.append(color_stack[-1])
-                    else:
-                        result.append("\033[0m")
+                    if color_stack: result.append(color_stack[-1])
+                    else: result.append("\033[0m")
                 i = tag_end + 1
                 continue
-            if tag_name in block_tags:
-                add_newline()
-            style_match = re.search(r'style="([^"]*)"', tag_content)
+            if tag_name in block_tags: add_newline()
+            style_match = re.search(r"style="([^"]*)"", tag_content)
             if style_match:
                 style = style_match.group(1)
-                color_match = re.search(r'color:\s*#([0-9a-fA-F]{6})', style)
+                color_match = re.search(r"color:\s*#([0-9a-fA-F]{6})", style)
                 if color_match:
                     ansi = hex_to_ansi("#" + color_match.group(1))
-                    if color_stack:
-                        color_stack[-1] = ansi
-                    else:
-                        color_stack.append(ansi)
+                    if color_stack: color_stack[-1] = ansi
+                    else: color_stack.append(ansi)
                     result.append(ansi)
-            if tag_name in inline_break:
-                add_newline()
+            if tag_name in inline_break: add_newline()
             i = tag_end + 1
         elif html_text[i] == "&":
             semicolon = html_text.find(";", i)
@@ -5320,34 +5418,23 @@ def process(html_text):
             i += 1
     result.append("\033[0m")
     return "".join(result)
-
-if len(sys.argv) != 2:
-    sys.exit(1)
-
 file_path = sys.argv[1]
-if not os.path.exists(file_path):
-    sys.exit(0)
-
-with open(file_path, "r", encoding="utf-8") as f:
-    content = f.read()
-
+if not os.path.exists(file_path): sys.exit(0)
+with open(file_path, "r", encoding="utf-8") as f: content = f.read()
 cleaned = process(content)
 cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
 cleaned = cleaned.strip()
-with open(file_path, "w", encoding="utf-8") as f:
-    f.write(cleaned)
+with open(sys.argv[2], "w", encoding="utf-8") as f: f.write(cleaned)
 PYSCRIPT
-    python3 "$tmp_py" "$origen"
+    python3 "$tmp_py" "$origen" "$destino"
     rm -f "$tmp_py"
-    cp "$origen" "$destino" 2>/dev/null
-    if [ $? -eq 0 ]; then
-        echo -e "${G}Banner convertido correctamente${NC}"
+    if [ -f "$destino" ]; then
+        echo -e "${G}Banner convertido correctamente a ANSI en $destino${NC}"
     else
         echo -e "${R}Error en la conversión${NC}"
         return 1
     fi
 }
-
 [ "$EUID" -ne 0 ] && echo -e "${R}Ejecuta como root${NC}" && exit 1
 menu_principal
 
