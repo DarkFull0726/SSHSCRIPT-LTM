@@ -213,6 +213,16 @@ banner() {
 sep() { echo -e "${NEON}${LINE}${NC}"; }
 sep2() { echo -e "${DIM}${LINE2}${NC}"; }
 
+# Sanitizar banner eliminando etiquetas HTML
+sanitizar_banner() {
+    [ ! -f /etc/ssh/banner ] && return
+    cp /etc/ssh/banner /etc/ssh/banner.original
+    sed -i "s/<[^>]*>//g" /etc/ssh/banner
+    sed -i "s/&[a-zA-Z0-9#]{2,6};//g" /etc/ssh/banner
+    # Eliminar caracteres no imprimibles excepto los ANSI (opcional)
+    sed -i "s/\x1b\[[0-9;]*[a-zA-Z]//g" /etc/ssh/banner
+}
+
 status_service() {
     systemctl is-active --quiet "$1" 2>/dev/null && echo -e "${NEON}◆ ON ${NC}" || echo -e "${R}◇ OFF${NC}"
 }
@@ -427,6 +437,9 @@ menu_ws() {
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -458,6 +471,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -567,6 +583,9 @@ EOF
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -598,6 +617,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -657,6 +679,9 @@ menu_udp() {
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -688,6 +713,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -756,6 +784,9 @@ EOF
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -787,6 +818,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -997,6 +1031,9 @@ except Exception as e: print(f'Error: {e}')
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -1028,6 +1065,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -1090,6 +1130,9 @@ menu_ziv() {
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -1121,6 +1164,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -1267,6 +1313,9 @@ menu_users_ziv() {
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -1298,6 +1347,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -1429,6 +1481,9 @@ menu_usuarios() {
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -1460,6 +1515,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -1801,6 +1859,9 @@ EOF_JAIL
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -1832,6 +1893,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -2057,6 +2121,9 @@ EOF_JAIL
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -2088,6 +2155,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -2235,6 +2305,9 @@ EOF
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -2266,6 +2339,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -2375,6 +2451,9 @@ EOF
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -2406,6 +2485,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -2553,6 +2635,9 @@ BANNEREOF
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -2584,6 +2669,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -2680,6 +2768,9 @@ REBOOTEOF
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -2711,6 +2802,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -2855,6 +2949,9 @@ print(f'  Metodo:   {c.get(\"method\")}')
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -2886,6 +2983,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -3011,6 +3111,9 @@ print('OK')
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -3042,6 +3145,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -3218,6 +3324,9 @@ EOF
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -3249,6 +3358,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -3320,6 +3432,9 @@ menu_herramientas() {
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -3351,6 +3466,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -3591,6 +3709,9 @@ EOF_JAIL
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -3622,6 +3743,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -3847,6 +3971,9 @@ EOF_JAIL
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -3878,6 +4005,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -4025,6 +4155,9 @@ EOF
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -4056,6 +4189,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -4165,6 +4301,9 @@ EOF
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -4196,6 +4335,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -4343,6 +4485,9 @@ BANNEREOF
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -4374,6 +4519,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
@@ -4550,6 +4698,9 @@ EOF
 ╚══════════════════════════════════════╝
 BANNEREOF
                 fi
+                
+                # Sanitizar banner antes de activar
+                sanitizar_banner
                 if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
                     systemctl daemon-reload
@@ -4581,6 +4732,9 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                
+                # Sanitizar banner después de editar
+                sanitizar_banner
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     systemctl restart dropbear
                     echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
