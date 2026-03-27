@@ -428,6 +428,11 @@ menu_ws() {
                 fi
                 systemctl daemon-reload; echo -e "  ${G}Eliminado${NC}"; sleep 1 ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -471,6 +476,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -574,6 +587,11 @@ EOF
                 systemctl daemon-reload; systemctl enable badvpn-${BPORT}; systemctl start badvpn-${BPORT}
                 echo -e "  ${G}OK BadVPN puerto ${BPORT}${NC}"; sleep 2 ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -617,6 +635,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -670,6 +696,11 @@ menu_udp() {
             4) pkill -f udp-custom 2>/dev/null; sleep 1; systemctl start udp-custom 2>/dev/null || (/root/udp/udp-custom server -exclude 5300 &); echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
             5) ss -ulnp | grep udp; echo ""; read -p "  ENTER..." ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -713,6 +744,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -775,6 +814,11 @@ EOF
             3) systemctl stop stunnel4 && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
             4) systemctl restart stunnel4 && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -818,6 +862,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -1022,6 +1074,11 @@ except Exception as e: print(f'Error: {e}')
                     echo -e "  ${G}OK V2Ray desinstalado${NC}"; sleep 2
                 fi ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -1065,6 +1122,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -1121,6 +1186,11 @@ menu_ziv() {
             6) cat /etc/zivpn/config.json 2>/dev/null; echo ""; read -p "  ENTER..." ;;
             7) bash <(curl -fsSL https://raw.githubusercontent.com/powermx/zivpn/main/uninstall.sh) 2>/dev/null; echo -e "  ${G}Desinstalado${NC}"; sleep 1 ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -1164,6 +1234,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -1304,6 +1382,11 @@ menu_users_ziv() {
             3) eliminar_user_ziv ;;
             4) limpiar_expirados_ziv; aplicar_passwords_ziv; echo -e "  ${G}Limpiado${NC}"; sleep 1 ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -1347,6 +1430,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -1472,6 +1563,11 @@ menu_usuarios() {
             3) eliminar_usuario ;;
             4) renovar_usuario ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -1515,6 +1611,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -1850,6 +1954,11 @@ EOF_JAIL
                 read -p "  ENTER..." ;;
             4) menu_atacantes ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -1893,6 +2002,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -2112,6 +2229,11 @@ EOF_JAIL
                 read -p "  ENTER..." ;;
             4) menu_atacantes ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -2155,6 +2277,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -2296,6 +2426,11 @@ EOF
                 systemctl daemon-reload
                 echo -e "  ${G}SlowDNS desinstalado${NC}"; sleep 2 ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -2339,6 +2474,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -2442,6 +2585,11 @@ EOF
                 systemctl daemon-reload
                 echo -e "  ${G}Dropbear desinstalado${NC}"; sleep 2 ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -2485,6 +2633,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -2558,11 +2714,23 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 # Activar automaticamente al editar
                 grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null &&                     sed -i "s|^Banner.*|Banner /etc/ssh/banner|" /etc/ssh/sshd_config ||                     echo "Banner /etc/ssh/banner" >> /etc/ssh/sshd_config
                 systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null
                 echo -e "  ${G}OK Banner SSH guardado y activado${NC}"; sleep 2 ;;
             2)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No hay banner creado. Usa [1] para crear uno.${NC}"; sleep 2
                 else
@@ -2626,6 +2794,11 @@ BANNEREOF
                 done
                 echo ""; read -p "  ENTER..." ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -2669,6 +2842,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -2759,6 +2940,11 @@ REBOOTEOF
                     sleep 3
                     /sbin/reboot; } ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -2802,6 +2988,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -2940,6 +3134,11 @@ print(f'  Metodo:   {c.get(\"method\")}')
                     systemctl daemon-reload
                     echo -e "  ${G}Desinstalado${NC}"; sleep 2; } ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -2983,6 +3182,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -3102,6 +3309,11 @@ print('OK')
                     systemctl daemon-reload
                     echo -e "  ${G}Desinstalado${NC}"; sleep 2; } ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -3145,6 +3357,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -3315,6 +3535,11 @@ EOF
                 rm -rf /etc/hysteria2; systemctl daemon-reload
                 echo -e "  ${G}Hysteria V2 desinstalado${NC}"; sleep 2 ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -3358,6 +3583,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -3423,6 +3656,11 @@ menu_herramientas() {
             13) menu_shadowsocks ;;
             14) menu_limpieza ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -3466,6 +3704,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -3700,6 +3946,11 @@ EOF_JAIL
                 read -p "  ENTER..." ;;
             4) menu_atacantes ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -3743,6 +3994,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -3962,6 +4221,11 @@ EOF_JAIL
                 read -p "  ENTER..." ;;
             4) menu_atacantes ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -4005,6 +4269,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -4146,6 +4418,11 @@ EOF
                 systemctl daemon-reload
                 echo -e "  ${G}SlowDNS desinstalado${NC}"; sleep 2 ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -4189,6 +4466,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -4292,6 +4577,11 @@ EOF
                 systemctl daemon-reload
                 echo -e "  ${G}Dropbear desinstalado${NC}"; sleep 2 ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -4335,6 +4625,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -4408,11 +4706,23 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 # Activar automaticamente al editar
                 grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null &&                     sed -i "s|^Banner.*|Banner /etc/ssh/banner|" /etc/ssh/sshd_config ||                     echo "Banner /etc/ssh/banner" >> /etc/ssh/sshd_config
                 systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null
                 echo -e "  ${G}OK Banner SSH guardado y activado${NC}"; sleep 2 ;;
             2)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No hay banner creado. Usa [1] para crear uno.${NC}"; sleep 2
                 else
@@ -4476,6 +4786,11 @@ BANNEREOF
                 done
                 echo ""; read -p "  ENTER..." ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -4519,6 +4834,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -4689,6 +5012,11 @@ EOF
                 rm -rf /etc/hysteria2; systemctl daemon-reload
                 echo -e "  ${G}Hysteria V2 desinstalado${NC}"; sleep 2 ;;
             7)
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    cp /etc/ssh/banner /etc/ssh/banner.original
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
                     cat > /etc/ssh/banner << BANNEREOF
@@ -4732,6 +5060,14 @@ BANNEREOF
                 echo -e "  ${C}Abriendo editor nano...${NC}"
                 sleep 1
                 nano /etc/ssh/banner
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
+                # Convertir banner HTML a ANSI
+                if [ -f /etc/ssh/banner ]; then
+                    convertir_banner_html /etc/ssh/banner
+                fi
                 
                 # Sanitizar banner después de editar
                 sanitizar_banner
@@ -4818,6 +5154,68 @@ menu_principal() {
     done
 }
 
+
+# Convertir banner HTML a ANSI
+convertir_banner_html() {
+    local archivo="$1"
+    local tmp_py="/tmp/convert_banner_$$.py"
+    cat > "$tmp_py" << "PYSCRIPT"
+import sys, re, html, os
+def hex_to_ansi(hex_color):
+    hex_color = hex_color.lstrip("#")
+    r = int(hex_color[0:2], 16)
+    g = int(hex_color[2:4], 16)
+    b = int(hex_color[4:6], 16)
+    return f"\033[38;2;{r};{g};{b}m"
+def process(text):
+    result = []
+    i = 0
+    while i < len(text):
+        if text[i] == "<":
+            tag_end = text.find(">", i)
+            if tag_end == -1: break
+            tag = text[i+1:tag_end].split()[0].lower()
+            if tag == "span":
+                style_match = re.search(r"style="([^"]*)"", text[i:tag_end])
+                if style_match:
+                    style = style_match.group(1)
+                    color_match = re.search(r"color:\s*#([0-9a-fA-F]{6})", style)
+                    if color_match:
+                        ansi = hex_to_ansi("#" + color_match.group(1))
+                        result.append(ansi)
+            i = tag_end + 1
+        elif text[i] == "&":
+            semicolon = text.find(";", i)
+            if semicolon != -1:
+                ent = text[i+1:semicolon]
+                if ent == "lt": result.append("<")
+                elif ent == "gt": result.append(">")
+                elif ent == "amp": result.append("&")
+                else: result.append(html.unescape(text[i:semicolon+1]))
+                i = semicolon + 1
+            else:
+                result.append(text[i])
+                i += 1
+        else:
+            result.append(text[i])
+            i += 1
+    return "".join(result)
+if len(sys.argv) != 2:
+    sys.exit(1)
+file_path = sys.argv[1]
+if not os.path.exists(file_path):
+    sys.exit(0)
+with open(file_path, "r", encoding="utf-8") as f:
+    content = f.read()
+cleaned = process(content)
+cleaned = re.sub(r"\s+", " ", cleaned)
+cleaned += "\033[0m"
+with open(file_path, "w", encoding="utf-8") as f:
+    f.write(cleaned)
+PYSCRIPT
+    python3 "$tmp_py" "$archivo"
+    rm -f "$tmp_py"
+}
 [ "$EUID" -ne 0 ] && echo -e "${R}Ejecuta como root${NC}" && exit 1
 menu_principal
 
