@@ -738,9 +738,9 @@ menu_ziv() {
             2) bash <(curl -fsSL https://raw.githubusercontent.com/powermx/zivpn/main/ziv1.sh) ;;
             3) systemctl start zivpn && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
             4) systemctl stop zivpn && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            5) systemctl restart zivpn && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
-            6) cat /etc/zivpn/config.json 2>/dev/null; echo ""; read -p "  ENTER..." ;;
-            7) bash <(curl -fsSL https://raw.githubusercontent.com/powermx/zivpn/main/uninstall.sh) 2>/dev/null; echo -e "  ${G}Desinstalado${NC}"; sleep 1 ;;
+            5) usuarios_ssh_online_count ;;
+            6) usuarios_v2ray_online_count ;;
+            7) usuarios_ziv_online_count ;;
             7)
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe /etc/ssh/banner${NC}"
@@ -1845,9 +1845,9 @@ menu_herramientas() {
             2) menu_badvpn ;;
             3) menu_udp ;;
             4) menu_ssl ;;
-            5) menu_v2ray ;;
-            6) menu_ziv ;;
-            7) menu_banner_ssh ;;
+            5) usuarios_ssh_online_count ;;
+            6) usuarios_v2ray_online_count ;;
+            7) usuarios_ziv_online_count ;;
             8) menu_speed_udp ;;
             9) menu_antiddos ;;
             10) menu_slowdns ;;
