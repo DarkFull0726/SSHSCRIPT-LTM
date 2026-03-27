@@ -1730,37 +1730,118 @@ EOF
 menu_banner_ssh() {
     while true; do
         banner; sep
-        echo -e "  ${Y}  BANNER SSH${NC}"; sep; echo ""
-        echo -e "  Banner actual:"
-        echo ""
-        cat /etc/ssh/sshd_config | grep -i "^Banner" || echo "  Sin banner configurado"
-        [ -f /etc/ssh/banner ] && cat /etc/ssh/banner || echo ""
+        echo -e "  ${NEON}◆ BANNER SSH & HTTP CUSTOM${NC}"; sep; echo ""
+
+        # Estado SSH Banner
+        if grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null; then
+            echo -e "  ${NEON}◈${NC} ${W}Banner SSH:${NC}        ${NEON}◆ ACTIVO${NC}"
+        else
+            echo -e "  ${NEON}◈${NC} ${W}Banner SSH:${NC}        ${R}◇ INACTIVO${NC}"
+        fi
+
+        # Estado Banner HTTP Custom (WebSocket)
+        WS_FILES=$(ls /etc/sshfreeltm/proxy_ws_*.py 2>/dev/null | head -1)
+        if [ -n "$WS_FILES" ]; then
+            CURRENT_MSG=$(grep "^MSG = " "$WS_FILES" 2>/dev/null | sed "s/MSG = '\(.*\)'.encode.*/\1/")
+            echo -e "  ${NEON}◈${NC} ${W}Banner HTTP Custom:${NC} ${Y}${CURRENT_MSG:-No configurado}${NC}"
+        else
+            echo -e "  ${NEON}◈${NC} ${W}Banner HTTP Custom:${NC} ${R}Sin WebSocket activo${NC}"
+        fi
+
         echo ""; sep
-        echo -e "  ${W}[1]${NC} Crear/Editar banner"
-        echo -e "  ${W}[2]${NC} Quitar banner"
+        echo -e "  ${NEON}── SSH BANNER ──────────────────${NC}"
+        echo -e "  ${W}[1]${NC} Editar banner SSH (nano)"
+        echo -e "  ${W}[2]${NC} Activar banner SSH"
+        echo -e "  ${W}[3]${NC} Desactivar banner SSH"
+        echo -e "  ${W}[4]${NC} Ver banner SSH actual"
+        echo ""
+        echo -e "  ${NEON}── HTTP CUSTOM BANNER ──────────${NC}"
+        echo -e "  ${W}[5]${NC} Editar banner HTTP Custom"
+        echo -e "  ${W}[6]${NC} Ver banner HTTP Custom actual"
+        echo ""
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
             1)
-                banner; sep
-                echo -e "  ${Y}Escribe el banner SSH${NC}"
-                echo -e "  ${C}(Texto que aparece al conectar por SSH)${NC}"; sep; echo ""
-                echo -e "  Ejemplo:"
-                echo -e "  ╔══════════════════════════════════╗"
-                echo -e "  ║   SERVIDOR PRIVADO - SSHFREE LTM ║"
-                echo -e "  ╚══════════════════════════════════╝"
-                echo ""; sep
-                read -p "  Texto del banner: " BANNER_TXT
-                echo "$BANNER_TXT" > /etc/ssh/banner
-                # Configurar sshd para mostrar banner
-                grep -q "^Banner" /etc/ssh/sshd_config && sed -i "s|^Banner.*|Banner /etc/ssh/banner|" /etc/ssh/sshd_config || echo "Banner /etc/ssh/banner" >> /etc/ssh/sshd_config
+                # Crear archivo banner SSH si no existe
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << 'BANNEREOF'
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                # Activar automaticamente al editar
+                grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null &&                     sed -i "s|^Banner.*|Banner /etc/ssh/banner|" /etc/ssh/sshd_config ||                     echo "Banner /etc/ssh/banner" >> /etc/ssh/sshd_config
                 systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null
-                echo -e "  ${G}OK Banner SSH configurado${NC}"; sleep 2 ;;
+                echo -e "  ${G}OK Banner SSH guardado y activado${NC}"; sleep 2 ;;
             2)
-                sed -i '/^Banner/d' /etc/ssh/sshd_config
-                rm -f /etc/ssh/banner
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No hay banner creado. Usa [1] para crear uno.${NC}"; sleep 2
+                else
+                    grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null &&                         sed -i "s|^Banner.*|Banner /etc/ssh/banner|" /etc/ssh/sshd_config ||                         echo "Banner /etc/ssh/banner" >> /etc/ssh/sshd_config
+                    systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null
+                    echo -e "  ${G}OK Banner SSH activado${NC}"; sleep 2
+                fi ;;
+            3)
+                sed -i '/^Banner/d' /etc/ssh/sshd_config 2>/dev/null
                 systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null
-                echo -e "  ${G}OK Banner eliminado${NC}"; sleep 1 ;;
+                echo -e "  ${Y}Banner SSH desactivado (archivo conservado)${NC}"; sleep 2 ;;
+            4)
+                echo ""; sep
+                echo -e "  ${Y}Banner SSH actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}Sin archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+            5)
+                # Editar banner de todos los WebSocket activos
+                WS_LIST=$(ls /etc/sshfreeltm/proxy_ws_*.py 2>/dev/null)
+                if [ -z "$WS_LIST" ]; then
+                    echo -e "  ${R}No hay WebSocket instalado. Instala uno primero.${NC}"; sleep 2
+                else
+                    echo ""; sep
+                    echo -e "  ${Y}WebSockets activos:${NC}"; echo ""
+                    for f in $WS_LIST; do
+                        PORT=$(echo $f | grep -o '[0-9]*\.py$' | tr -d '.py')
+                        CMSG=$(grep "^MSG = " "$f" 2>/dev/null | sed "s/MSG = '\(.*\)'.encode.*/\1/")
+                        echo -e "  ${NEON}◈${NC} Puerto ${Y}${PORT}${NC} — Banner: ${W}${CMSG}${NC}"
+                    done
+                    echo ""; sep
+                    read -p "  Puerto WebSocket a editar (0=todos): " WS_EDIT_PORT
+                    read -p "  Nuevo banner: " NEW_WS_BANNER
+                    [ -z "$NEW_WS_BANNER" ] && echo -e "  ${R}Cancelado${NC}" && sleep 1 && continue
+
+                    if [ "$WS_EDIT_PORT" = "0" ]; then
+                        TARGETS="$WS_LIST"
+                    else
+                        TARGETS="/etc/sshfreeltm/proxy_ws_${WS_EDIT_PORT}.py"
+                    fi
+
+                    for f in $TARGETS; do
+                        if [ -f "$f" ]; then
+                            sed -i "s|^MSG = '.*'\.encode|MSG = '${NEW_WS_BANNER}'.encode|" "$f"
+                            PORT=$(echo $f | grep -o '[0-9]*\.py$' | tr -d '.py')
+                            systemctl restart ws-proxy-${PORT} 2>/dev/null
+                            echo -e "  ${G}✓ Banner actualizado en puerto ${PORT}${NC}"
+                        fi
+                    done
+                    sleep 2
+                fi ;;
+            6)
+                echo ""; sep
+                echo -e "  ${Y}Banners HTTP Custom actuales:${NC}"; echo ""
+                for f in $(ls /etc/sshfreeltm/proxy_ws_*.py 2>/dev/null); do
+                    PORT=$(echo $f | grep -o '[0-9]*\.py$' | tr -d '.py')
+                    CMSG=$(grep "^MSG = " "$f" 2>/dev/null | sed "s/MSG = '\(.*\)'.encode.*/\1/")
+                    CRESP=$(grep "^STATUS_RESP = " "$f" 2>/dev/null | sed "s/STATUS_RESP = b'\(.*\)'/\1/")
+                    echo -e "  ${NEON}◈${NC} Puerto ${Y}${PORT}${NC}"
+                    echo -e "    Banner : ${W}${CMSG}${NC}"
+                    echo -e "    Status : ${W}${CRESP}${NC}"
+                done
+                echo ""; read -p "  ENTER..." ;;
             0) break ;;
         esac
     done
@@ -2874,37 +2955,118 @@ EOF
 menu_banner_ssh() {
     while true; do
         banner; sep
-        echo -e "  ${Y}  BANNER SSH${NC}"; sep; echo ""
-        echo -e "  Banner actual:"
-        echo ""
-        cat /etc/ssh/sshd_config | grep -i "^Banner" || echo "  Sin banner configurado"
-        [ -f /etc/ssh/banner ] && cat /etc/ssh/banner || echo ""
+        echo -e "  ${NEON}◆ BANNER SSH & HTTP CUSTOM${NC}"; sep; echo ""
+
+        # Estado SSH Banner
+        if grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null; then
+            echo -e "  ${NEON}◈${NC} ${W}Banner SSH:${NC}        ${NEON}◆ ACTIVO${NC}"
+        else
+            echo -e "  ${NEON}◈${NC} ${W}Banner SSH:${NC}        ${R}◇ INACTIVO${NC}"
+        fi
+
+        # Estado Banner HTTP Custom (WebSocket)
+        WS_FILES=$(ls /etc/sshfreeltm/proxy_ws_*.py 2>/dev/null | head -1)
+        if [ -n "$WS_FILES" ]; then
+            CURRENT_MSG=$(grep "^MSG = " "$WS_FILES" 2>/dev/null | sed "s/MSG = '\(.*\)'.encode.*/\1/")
+            echo -e "  ${NEON}◈${NC} ${W}Banner HTTP Custom:${NC} ${Y}${CURRENT_MSG:-No configurado}${NC}"
+        else
+            echo -e "  ${NEON}◈${NC} ${W}Banner HTTP Custom:${NC} ${R}Sin WebSocket activo${NC}"
+        fi
+
         echo ""; sep
-        echo -e "  ${W}[1]${NC} Crear/Editar banner"
-        echo -e "  ${W}[2]${NC} Quitar banner"
+        echo -e "  ${NEON}── SSH BANNER ──────────────────${NC}"
+        echo -e "  ${W}[1]${NC} Editar banner SSH (nano)"
+        echo -e "  ${W}[2]${NC} Activar banner SSH"
+        echo -e "  ${W}[3]${NC} Desactivar banner SSH"
+        echo -e "  ${W}[4]${NC} Ver banner SSH actual"
+        echo ""
+        echo -e "  ${NEON}── HTTP CUSTOM BANNER ──────────${NC}"
+        echo -e "  ${W}[5]${NC} Editar banner HTTP Custom"
+        echo -e "  ${W}[6]${NC} Ver banner HTTP Custom actual"
+        echo ""
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
             1)
-                banner; sep
-                echo -e "  ${Y}Escribe el banner SSH${NC}"
-                echo -e "  ${C}(Texto que aparece al conectar por SSH)${NC}"; sep; echo ""
-                echo -e "  Ejemplo:"
-                echo -e "  ╔══════════════════════════════════╗"
-                echo -e "  ║   SERVIDOR PRIVADO - SSHFREE LTM ║"
-                echo -e "  ╚══════════════════════════════════╝"
-                echo ""; sep
-                read -p "  Texto del banner: " BANNER_TXT
-                echo "$BANNER_TXT" > /etc/ssh/banner
-                # Configurar sshd para mostrar banner
-                grep -q "^Banner" /etc/ssh/sshd_config && sed -i "s|^Banner.*|Banner /etc/ssh/banner|" /etc/ssh/sshd_config || echo "Banner /etc/ssh/banner" >> /etc/ssh/sshd_config
+                # Crear archivo banner SSH si no existe
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << 'BANNEREOF'
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                # Activar automaticamente al editar
+                grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null &&                     sed -i "s|^Banner.*|Banner /etc/ssh/banner|" /etc/ssh/sshd_config ||                     echo "Banner /etc/ssh/banner" >> /etc/ssh/sshd_config
                 systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null
-                echo -e "  ${G}OK Banner SSH configurado${NC}"; sleep 2 ;;
+                echo -e "  ${G}OK Banner SSH guardado y activado${NC}"; sleep 2 ;;
             2)
-                sed -i '/^Banner/d' /etc/ssh/sshd_config
-                rm -f /etc/ssh/banner
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No hay banner creado. Usa [1] para crear uno.${NC}"; sleep 2
+                else
+                    grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null &&                         sed -i "s|^Banner.*|Banner /etc/ssh/banner|" /etc/ssh/sshd_config ||                         echo "Banner /etc/ssh/banner" >> /etc/ssh/sshd_config
+                    systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null
+                    echo -e "  ${G}OK Banner SSH activado${NC}"; sleep 2
+                fi ;;
+            3)
+                sed -i '/^Banner/d' /etc/ssh/sshd_config 2>/dev/null
                 systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null
-                echo -e "  ${G}OK Banner eliminado${NC}"; sleep 1 ;;
+                echo -e "  ${Y}Banner SSH desactivado (archivo conservado)${NC}"; sleep 2 ;;
+            4)
+                echo ""; sep
+                echo -e "  ${Y}Banner SSH actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}Sin archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+            5)
+                # Editar banner de todos los WebSocket activos
+                WS_LIST=$(ls /etc/sshfreeltm/proxy_ws_*.py 2>/dev/null)
+                if [ -z "$WS_LIST" ]; then
+                    echo -e "  ${R}No hay WebSocket instalado. Instala uno primero.${NC}"; sleep 2
+                else
+                    echo ""; sep
+                    echo -e "  ${Y}WebSockets activos:${NC}"; echo ""
+                    for f in $WS_LIST; do
+                        PORT=$(echo $f | grep -o '[0-9]*\.py$' | tr -d '.py')
+                        CMSG=$(grep "^MSG = " "$f" 2>/dev/null | sed "s/MSG = '\(.*\)'.encode.*/\1/")
+                        echo -e "  ${NEON}◈${NC} Puerto ${Y}${PORT}${NC} — Banner: ${W}${CMSG}${NC}"
+                    done
+                    echo ""; sep
+                    read -p "  Puerto WebSocket a editar (0=todos): " WS_EDIT_PORT
+                    read -p "  Nuevo banner: " NEW_WS_BANNER
+                    [ -z "$NEW_WS_BANNER" ] && echo -e "  ${R}Cancelado${NC}" && sleep 1 && continue
+
+                    if [ "$WS_EDIT_PORT" = "0" ]; then
+                        TARGETS="$WS_LIST"
+                    else
+                        TARGETS="/etc/sshfreeltm/proxy_ws_${WS_EDIT_PORT}.py"
+                    fi
+
+                    for f in $TARGETS; do
+                        if [ -f "$f" ]; then
+                            sed -i "s|^MSG = '.*'\.encode|MSG = '${NEW_WS_BANNER}'.encode|" "$f"
+                            PORT=$(echo $f | grep -o '[0-9]*\.py$' | tr -d '.py')
+                            systemctl restart ws-proxy-${PORT} 2>/dev/null
+                            echo -e "  ${G}✓ Banner actualizado en puerto ${PORT}${NC}"
+                        fi
+                    done
+                    sleep 2
+                fi ;;
+            6)
+                echo ""; sep
+                echo -e "  ${Y}Banners HTTP Custom actuales:${NC}"; echo ""
+                for f in $(ls /etc/sshfreeltm/proxy_ws_*.py 2>/dev/null); do
+                    PORT=$(echo $f | grep -o '[0-9]*\.py$' | tr -d '.py')
+                    CMSG=$(grep "^MSG = " "$f" 2>/dev/null | sed "s/MSG = '\(.*\)'.encode.*/\1/")
+                    CRESP=$(grep "^STATUS_RESP = " "$f" 2>/dev/null | sed "s/STATUS_RESP = b'\(.*\)'/\1/")
+                    echo -e "  ${NEON}◈${NC} Puerto ${Y}${PORT}${NC}"
+                    echo -e "    Banner : ${W}${CMSG}${NC}"
+                    echo -e "    Status : ${W}${CRESP}${NC}"
+                done
+                echo ""; read -p "  ENTER..." ;;
             0) break ;;
         esac
     done
