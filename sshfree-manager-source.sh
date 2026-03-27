@@ -436,10 +436,6 @@ menu_ws() {
         echo -e "  ${W}[3]${NC} Detener"
         echo -e "  ${W}[4]${NC} Reiniciar"
         echo -e "  ${W}[5]${NC} Eliminar"
-        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
-        echo -e "  ${W}[8]${NC} Desactivar banner"
-        echo -e "  ${W}[9]${NC} Editar banner"
-        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -462,7 +458,7 @@ menu_ws() {
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe /etc/ssh/banner${NC}"
                 else
-                    /usr/local/bin/convert-banner-txt
+                    echo "banner edit deshabilitado" >/dev/null
                     systemctl restart dropbear
                     echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
                 fi
@@ -478,14 +474,11 @@ menu_ws() {
                 fi
                 sleep 2 ;;
             9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
+                echo -e "  ${Y}Edición de banner deshabilitada${NC}"
+                sleep 1 ;;
             10)
-                echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
+                echo -e "  ${Y}Vista de banner deshabilitada${NC}"
+                sleep 1 ;;
 
             0) break ;;
         esac
@@ -507,37 +500,13 @@ menu_badvpn() {
         echo -e "  ${W}[3]${NC} Detener"
         echo -e "  ${W}[4]${NC} Reiniciar"
         echo -e "  ${W}[5]${NC} Puerto personalizado"
-        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
-        echo -e "  ${W}[8]${NC} Desactivar banner"
-        echo -e "  ${W}[9]${NC} Editar banner"
-        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
-            1)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
-                sleep 2 ;;
-            9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            10)
-                echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
-
+            1) activar_antiddos_agresivo ;;
+            2) desactivar_antiddos_agresivo ;;
+            3) ver_reglas_antiddos ;;
+            4) menu_atacantes ;;
             0) break ;;
         esac
     done
@@ -557,37 +526,13 @@ menu_udp() {
         echo -e "  ${W}[3]${NC} Detener"
         echo -e "  ${W}[4]${NC} Reiniciar"
         echo -e "  ${W}[5]${NC} Ver estado"
-        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
-        echo -e "  ${W}[8]${NC} Desactivar banner"
-        echo -e "  ${W}[9]${NC} Editar banner"
-        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
-            1)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
-                sleep 2 ;;
-            9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            10)
-                echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
-
+            1) activar_antiddos_agresivo ;;
+            2) desactivar_antiddos_agresivo ;;
+            3) ver_reglas_antiddos ;;
+            4) menu_atacantes ;;
             0) break ;;
         esac
     done
@@ -607,37 +552,13 @@ menu_ssl() {
         echo -e "  ${W}[2]${NC} Iniciar"
         echo -e "  ${W}[3]${NC} Detener"
         echo -e "  ${W}[4]${NC} Reiniciar"
-        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
-        echo -e "  ${W}[8]${NC} Desactivar banner"
-        echo -e "  ${W}[9]${NC} Editar banner"
-        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
-            1)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
-                sleep 2 ;;
-            9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            10)
-                echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
-
+            1) activar_antiddos_agresivo ;;
+            2) desactivar_antiddos_agresivo ;;
+            3) ver_reglas_antiddos ;;
+            4) menu_atacantes ;;
             0) break ;;
         esac
     done
@@ -678,30 +599,10 @@ except: pass
         printf " ${R}❬0❭ Volver${NC}\n"; sep; echo ""
         read -p " Opcion: " OPT
         case $OPT in
-            1)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
-                sleep 2 ;;
-            9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            10)
-                echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
-
+            1) activar_antiddos_agresivo ;;
+            2) desactivar_antiddos_agresivo ;;
+            3) ver_reglas_antiddos ;;
+            4) menu_atacantes ;;
             0) break ;;
             *) echo -e "  ${R}Opcion invalida${NC}"; sleep 1 ;;
         esac
@@ -727,10 +628,6 @@ menu_ziv() {
         echo -e "  ${W}[5]${NC} Reiniciar"
         echo -e "  ${W}[6]${NC} Ver configuracion"
         echo -e "  ${W}[7]${NC} Desinstalar"
-        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
-        echo -e "  ${W}[8]${NC} Desactivar banner"
-        echo -e "  ${W}[9]${NC} Editar banner"
-        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -738,18 +635,9 @@ menu_ziv() {
             2) bash <(curl -fsSL https://raw.githubusercontent.com/powermx/zivpn/main/ziv1.sh) ;;
             3) systemctl start zivpn && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
             4) systemctl stop zivpn && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            5) usuarios_ssh_online_count ;;
-            6) usuarios_v2ray_online_count ;;
-            7) usuarios_ziv_online_count ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe /etc/ssh/banner${NC}"
-                else
-                    /usr/local/bin/convert-banner-txt
-                    systemctl restart dropbear
-                    echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
-                fi
-                sleep 2 ;;
+            5) systemctl restart zivpn && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
+            6) cat /etc/zivpn/config.json 2>/dev/null || echo -e "  ${R}No hay configuracion${NC}"; sleep 2 ;;
+            7) echo -e "  ${Y}Desinstalación no implementada en esta copia${NC}"; sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
                     sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
@@ -761,14 +649,11 @@ menu_ziv() {
                 fi
                 sleep 2 ;;
             9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
+                echo -e "  ${Y}Edición de banner deshabilitada${NC}"
+                sleep 1 ;;
             10)
-                echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
+                echo -e "  ${Y}Vista de banner deshabilitada${NC}"
+                sleep 1 ;;
 
             0) break ;;
         esac
@@ -882,10 +767,6 @@ menu_users_ziv() {
         echo -e "  ${W}[2]${NC} Listar usuarios"
         echo -e "  ${W}[3]${NC} Eliminar usuario"
         echo -e "  ${W}[4]${NC} Limpiar expirados"
-        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
-        echo -e "  ${W}[8]${NC} Desactivar banner"
-        echo -e "  ${W}[9]${NC} Editar banner"
-        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -897,7 +778,7 @@ menu_users_ziv() {
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe /etc/ssh/banner${NC}"
                 else
-                    /usr/local/bin/convert-banner-txt
+                    echo "banner edit deshabilitado" >/dev/null
                     systemctl restart dropbear
                     echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
                 fi
@@ -913,14 +794,11 @@ menu_users_ziv() {
                 fi
                 sleep 2 ;;
             9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
+                echo -e "  ${Y}Edición de banner deshabilitada${NC}"
+                sleep 1 ;;
             10)
-                echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
+                echo -e "  ${Y}Vista de banner deshabilitada${NC}"
+                sleep 1 ;;
 
             0) break ;;
         esac
@@ -1019,10 +897,6 @@ menu_usuarios() {
         echo -e "  ${W}[2]${NC} Listar usuarios"
         echo -e "  ${W}[3]${NC} Eliminar usuario"
         echo -e "  ${W}[4]${NC} Renovar usuario"
-        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
-        echo -e "  ${W}[8]${NC} Desactivar banner"
-        echo -e "  ${W}[9]${NC} Editar banner"
-        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -1034,7 +908,7 @@ menu_usuarios() {
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe /etc/ssh/banner${NC}"
                 else
-                    /usr/local/bin/convert-banner-txt
+                    echo "banner edit deshabilitado" >/dev/null
                     systemctl restart dropbear
                     echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
                 fi
@@ -1050,14 +924,11 @@ menu_usuarios() {
                 fi
                 sleep 2 ;;
             9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
+                echo -e "  ${Y}Edición de banner deshabilitada${NC}"
+                sleep 1 ;;
             10)
-                echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
+                echo -e "  ${Y}Vista de banner deshabilitada${NC}"
+                sleep 1 ;;
 
             0) break ;;
         esac
@@ -1194,6 +1065,30 @@ actualizar_script() {
     exec /usr/local/bin/menu
 }
 
+activar_antiddos_agresivo() {
+    iptables -C INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null ||         iptables -I INPUT 1 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+    iptables -C INPUT -m conntrack --ctstate INVALID -j DROP 2>/dev/null ||         iptables -I INPUT 2 -m conntrack --ctstate INVALID -j DROP
+    iptables -C INPUT -p tcp --syn -m limit --limit 25/s --limit-burst 100 -j ACCEPT 2>/dev/null ||         iptables -I INPUT 3 -p tcp --syn -m limit --limit 25/s --limit-burst 100 -j ACCEPT
+    iptables -C INPUT -p tcp --syn -j DROP 2>/dev/null ||         iptables -I INPUT 4 -p tcp --syn -j DROP
+    echo -e "  ${G}Anti-DDoS activado${NC}"
+}
+
+desactivar_antiddos_agresivo() {
+    iptables -D INPUT -p tcp --syn -j DROP 2>/dev/null || true
+    iptables -D INPUT -p tcp --syn -m limit --limit 25/s --limit-burst 100 -j ACCEPT 2>/dev/null || true
+    iptables -D INPUT -m conntrack --ctstate INVALID -j DROP 2>/dev/null || true
+    iptables -D INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || true
+    echo -e "  ${Y}Anti-DDoS desactivado${NC}"
+}
+
+ver_reglas_antiddos() {
+    echo ""
+    echo -e "  ${W}Reglas INPUT relacionadas:${NC}"
+    iptables -S INPUT | grep -E 'ctstate ESTABLISHED|ctstate INVALID|--syn' || echo -e "  ${R}No hay reglas Anti-DDoS visibles${NC}"
+    echo ""
+    read -p "  ENTER..."
+}
+
 menu_atacantes() {
     banner; sep
     echo -e "  ${NEON}◆ IPs ATACANTES${NC}"; sep; echo ""
@@ -1261,37 +1156,13 @@ menu_antiddos() {
         echo -e "  ${W}[2]${NC} Desactivar Anti-DDoS"
         echo -e "  ${W}[3]${NC} Ver reglas activas"
         echo -e "  ${W}[4]${NC} Ver IPs atacantes"
-        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
-        echo -e "  ${W}[8]${NC} Desactivar banner"
-        echo -e "  ${W}[9]${NC} Editar banner"
-        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
-            1)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
-                sleep 2 ;;
-            9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            10)
-                echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
-
+            1) activar_antiddos_agresivo ;;
+            2) desactivar_antiddos_agresivo ;;
+            3) ver_reglas_antiddos ;;
+            4) menu_atacantes ;;
             0) break ;;
         esac
     done
@@ -1378,37 +1249,13 @@ menu_antiddos() {
         echo -e "  ${W}[2]${NC} Desactivar Anti-DDoS"
         echo -e "  ${W}[3]${NC} Ver reglas activas"
         echo -e "  ${W}[4]${NC} Ver IPs atacantes"
-        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
-        echo -e "  ${W}[8]${NC} Desactivar banner"
-        echo -e "  ${W}[9]${NC} Editar banner"
-        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
-            1)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
-                sleep 2 ;;
-            9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            10)
-                echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
-
+            1) activar_antiddos_agresivo ;;
+            2) desactivar_antiddos_agresivo ;;
+            3) ver_reglas_antiddos ;;
+            4) menu_atacantes ;;
             0) break ;;
         esac
     done
@@ -1470,37 +1317,13 @@ menu_slowdns() {
         echo -e "  ${W}[3]${NC} Detener"
         echo -e "  ${W}[4]${NC} Ver Public Key"
         echo -e "  ${W}[5]${NC} Desinstalar"
-        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
-        echo -e "  ${W}[8]${NC} Desactivar banner"
-        echo -e "  ${W}[9]${NC} Editar banner"
-        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
-            1)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
-                sleep 2 ;;
-            9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            10)
-                echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
-
+            1) activar_antiddos_agresivo ;;
+            2) desactivar_antiddos_agresivo ;;
+            3) ver_reglas_antiddos ;;
+            4) menu_atacantes ;;
             0) break ;;
         esac
     done
@@ -1531,46 +1354,16 @@ menu_banner_ssh() {
 
         echo ""; sep
         echo -e "  ${NEON}── SSH BANNER ──────────────────${NC}"
-        echo -e "  ${W}[1]${NC} Editar banner SSH (nano)"
-        echo -e "  ${W}[2]${NC} Activar banner SSH"
-        echo -e "  ${W}[3]${NC} Desactivar banner SSH"
-        echo -e "  ${W}[4]${NC} Ver banner SSH actual"
         echo ""
         echo -e "  ${NEON}── HTTP CUSTOM BANNER ──────────${NC}"
-        echo -e "  ${W}[5]${NC} Editar banner HTTP Custom"
-        echo -e "  ${W}[6]${NC} Ver banner HTTP Custom actual"
         echo ""
-        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
-        echo -e "  ${W}[8]${NC} Desactivar banner"
-        echo -e "  ${W}[9]${NC} Editar banner"
-        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
-            1)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
-                sleep 2 ;;
-            9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            10)
-                echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
-
+            1) activar_antiddos_agresivo ;;
+            2) desactivar_antiddos_agresivo ;;
+            3) ver_reglas_antiddos ;;
+            4) menu_atacantes ;;
             0) break ;;
         esac
     done
@@ -1597,17 +1390,13 @@ menu_limpieza() {
         read -p " Opcion: " OPT
         case $OPT in
             1)
-                nano /etc/ssh/banner
-                generar_banner_txt
+                sync
+                echo 3 > /proc/sys/vm/drop_caches 2>/dev/null
+                echo -e "  ${G}Cache RAM limpiada${NC}"
                 sleep 2 ;;
             2)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe /etc/ssh/banner${NC}"
-                else
-                    generar_banner_txt
-                    systemctl restart sshd
-                    echo -e "  ${G}SSH reiniciado con el banner en texto plano${NC}"
-                fi
+                rm -rf /tmp/* /var/tmp/* 2>/dev/null
+                echo -e "  ${G}Archivos temporales limpiados${NC}"
                 sleep 2 ;;
             3)
                 banner; sep
@@ -1643,7 +1432,7 @@ REBOOTEOF
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe /etc/ssh/banner${NC}"
                 else
-                    /usr/local/bin/convert-banner-txt
+                    echo "banner edit deshabilitado" >/dev/null
                     systemctl restart dropbear
                     echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
                 fi
@@ -1659,14 +1448,11 @@ REBOOTEOF
                 fi
                 sleep 2 ;;
             9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
+                echo -e "  ${Y}Edición de banner deshabilitada${NC}"
+                sleep 1 ;;
             10)
-                echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
+                echo -e "  ${Y}Vista de banner deshabilitada${NC}"
+                sleep 1 ;;
 
             0) break ;;
         esac
@@ -1695,30 +1481,10 @@ menu_shadowsocks() {
         sep; printf " ${R}❬0❭ Volver${NC}\n"; sep; echo ""
         read -p " Opcion: " OPT
         case $OPT in
-            1)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
-                sleep 2 ;;
-            9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            10)
-                echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
-
+            1) activar_antiddos_agresivo ;;
+            2) desactivar_antiddos_agresivo ;;
+            3) ver_reglas_antiddos ;;
+            4) menu_atacantes ;;
             0) break ;;
         esac
     done
@@ -1742,30 +1508,10 @@ menu_udp_hysteria_mod() {
         sep; printf " ${R}❬0❭ Volver${NC}\n"; sep; echo ""
         read -p " Opcion: " OPT
         case $OPT in
-            1)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
-                sleep 2 ;;
-            9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            10)
-                echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
-
+            1) activar_antiddos_agresivo ;;
+            2) desactivar_antiddos_agresivo ;;
+            3) ver_reglas_antiddos ;;
+            4) menu_atacantes ;;
             0) break ;;
         esac
     done
@@ -1791,30 +1537,10 @@ menu_hysteria() {
         printf " ${R}❬0❭ Volver${NC}\n"; sep; echo ""
         read -p " Opcion: " OPT
         case $OPT in
-            1)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
-                sleep 2 ;;
-            9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            10)
-                echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
-
+            1) activar_antiddos_agresivo ;;
+            2) desactivar_antiddos_agresivo ;;
+            3) ver_reglas_antiddos ;;
+            4) menu_atacantes ;;
             0) break ;;
         esac
     done
@@ -1852,14 +1578,6 @@ menu_herramientas() {
             9) menu_antiddos ;;
             10) menu_slowdns ;;
             11) menu_dropbear ;;
-
-            12) menu_udp_hysteria_mod ;;
-            13) menu_shadowsocks ;;
-            14) menu_limpieza ;;
-            9) menu_antiddos ;;
-            10) menu_slowdns ;;
-            11) menu_dropbear ;;
-
             12) menu_udp_hysteria_mod ;;
             13) menu_shadowsocks ;;
             14) menu_limpieza ;;
@@ -1867,7 +1585,7 @@ menu_herramientas() {
                 if [ ! -f /etc/ssh/banner ]; then
                     echo -e "  ${R}No existe /etc/ssh/banner${NC}"
                 else
-                    /usr/local/bin/convert-banner-txt
+                    echo "banner edit deshabilitado" >/dev/null
                     systemctl restart dropbear
                     echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
                 fi
@@ -1883,14 +1601,11 @@ menu_herramientas() {
                 fi
                 sleep 2 ;;
             9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
+                echo -e "  ${Y}Edición de banner deshabilitada${NC}"
+                sleep 1 ;;
             10)
-                echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
+                echo -e "  ${Y}Vista de banner deshabilitada${NC}"
+                sleep 1 ;;
 
             0) break ;;
             *) echo -e "  ${R}Opcion invalida${NC}"; sleep 1 ;;
@@ -1993,37 +1708,13 @@ menu_antiddos() {
         echo -e "  ${W}[2]${NC} Desactivar Anti-DDoS"
         echo -e "  ${W}[3]${NC} Ver reglas activas"
         echo -e "  ${W}[4]${NC} Ver IPs atacantes"
-        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
-        echo -e "  ${W}[8]${NC} Desactivar banner"
-        echo -e "  ${W}[9]${NC} Editar banner"
-        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
-            1)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
-                sleep 2 ;;
-            9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            10)
-                echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
-
+            1) activar_antiddos_agresivo ;;
+            2) desactivar_antiddos_agresivo ;;
+            3) ver_reglas_antiddos ;;
+            4) menu_atacantes ;;
             0) break ;;
         esac
     done
@@ -2096,72 +1787,28 @@ menu_atacantes() {
 }
 
 menu_antiddos() {
-    local CHAIN="LTM_ANTIDDOS"
-
-    antiddos_estado() {
-        if iptables -S 2>/dev/null | grep -q -- "-j ${CHAIN}"; then
+    while true; do
+        banner; sep
+        echo -e "  ${Y}  ANTI-DDOS${NC}"; sep; echo ""
+        DDOS_ACTIVE=$(iptables -L INPUT -n 2>/dev/null | grep -q "limit" && echo 1 || echo 0)
+        if [ "$DDOS_ACTIVE" = "1" ]; then
             echo -e "  Estado: ${G}[ACTIVO]${NC}"
         else
             echo -e "  Estado: ${R}[INACTIVO]${NC}"
         fi
-    }
-
-    antiddos_activar() {
-        iptables -N "${CHAIN}" 2>/dev/null
-        iptables -F "${CHAIN}" 2>/dev/null
-
-        iptables -C INPUT -j "${CHAIN}" 2>/dev/null || iptables -I INPUT 1 -j "${CHAIN}"
-
-        iptables -A "${CHAIN}" -i lo -j ACCEPT
-        iptables -A "${CHAIN}" -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-        iptables -A "${CHAIN}" -m conntrack --ctstate INVALID -j DROP
-        iptables -A "${CHAIN}" -p tcp --syn -m connlimit --connlimit-above 30 --connlimit-mask 32 -j DROP
-        iptables -A "${CHAIN}" -p tcp --syn -m limit --limit 50/second --limit-burst 100 -j RETURN
-        iptables -A "${CHAIN}" -p tcp --syn -j DROP
-        iptables -A "${CHAIN}" -p udp -m limit --limit 100/second --limit-burst 200 -j RETURN
-        iptables -A "${CHAIN}" -p udp -j DROP
-        iptables -A "${CHAIN}" -j RETURN
-
-        mkdir -p /etc/sshfreeltm
-        echo "enabled" > /etc/sshfreeltm/antiddos.status
-    }
-
-    antiddos_desactivar() {
-        iptables -D INPUT -j "${CHAIN}" 2>/dev/null
-        iptables -F "${CHAIN}" 2>/dev/null
-        iptables -X "${CHAIN}" 2>/dev/null
-        rm -f /etc/sshfreeltm/antiddos.status
-    }
-
-    while true; do
-        banner; sep
-        echo -e "  ${Y}  ANTI-DDOS${NC}"; sep; echo ""
-        antiddos_estado
         echo ""; sep
-        echo -e "  ${W}[1]${NC} Activar Anti-DDoS"
+        echo -e "  ${W}[1]${NC} Activar Anti-DDoS Agresivo"
         echo -e "  ${W}[2]${NC} Desactivar Anti-DDoS"
         echo -e "  ${W}[3]${NC} Ver reglas activas"
         echo -e "  ${W}[4]${NC} Ver IPs atacantes"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
-            1)
-                antiddos_activar
-                echo -e "  ${G}Anti-DDoS activado${NC}"
-                sleep 2 ;;
-            2)
-                antiddos_desactivar
-                echo -e "  ${Y}Anti-DDoS desactivado${NC}"
-                sleep 2 ;;
-            3)
-                echo ""; sep
-                echo -e "  ${Y}Reglas de Anti-DDoS:${NC}"; echo ""
-                iptables -S 2>/dev/null | grep -E "${CHAIN}|INPUT" || echo -e "  ${R}No hay reglas activas${NC}"
-                echo ""; read -p "  ENTER..." ;;
-            4)
-                menu_atacantes ;;
+            1) activar_antiddos_agresivo ;;
+            2) desactivar_antiddos_agresivo ;;
+            3) ver_reglas_antiddos ;;
+            4) menu_atacantes ;;
             0) break ;;
-            *) echo -e "  ${R}Opcion invalida${NC}"; sleep 1 ;;
         esac
     done
 }
@@ -2222,37 +1869,13 @@ menu_slowdns() {
         echo -e "  ${W}[3]${NC} Detener"
         echo -e "  ${W}[4]${NC} Ver Public Key"
         echo -e "  ${W}[5]${NC} Desinstalar"
-        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
-        echo -e "  ${W}[8]${NC} Desactivar banner"
-        echo -e "  ${W}[9]${NC} Editar banner"
-        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
-            1)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
-                sleep 2 ;;
-            9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            10)
-                echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
-
+            1) activar_antiddos_agresivo ;;
+            2) desactivar_antiddos_agresivo ;;
+            3) ver_reglas_antiddos ;;
+            4) menu_atacantes ;;
             0) break ;;
         esac
     done
@@ -2283,46 +1906,16 @@ menu_banner_ssh() {
 
         echo ""; sep
         echo -e "  ${NEON}── SSH BANNER ──────────────────${NC}"
-        echo -e "  ${W}[1]${NC} Editar banner SSH (nano)"
-        echo -e "  ${W}[2]${NC} Activar banner SSH"
-        echo -e "  ${W}[3]${NC} Desactivar banner SSH"
-        echo -e "  ${W}[4]${NC} Ver banner SSH actual"
         echo ""
         echo -e "  ${NEON}── HTTP CUSTOM BANNER ──────────${NC}"
-        echo -e "  ${W}[5]${NC} Editar banner HTTP Custom"
-        echo -e "  ${W}[6]${NC} Ver banner HTTP Custom actual"
         echo ""
-        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
-        echo -e "  ${W}[8]${NC} Desactivar banner"
-        echo -e "  ${W}[9]${NC} Editar banner"
-        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
-            1)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
-                sleep 2 ;;
-            9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            10)
-                echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
-
+            1) activar_antiddos_agresivo ;;
+            2) desactivar_antiddos_agresivo ;;
+            3) ver_reglas_antiddos ;;
+            4) menu_atacantes ;;
             0) break ;;
         esac
     done
@@ -2348,30 +1941,10 @@ menu_hysteria() {
         printf " ${R}❬0❭ Volver${NC}\n"; sep; echo ""
         read -p " Opcion: " OPT
         case $OPT in
-            1)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
-                sleep 2 ;;
-            9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            10)
-                echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
-
+            1) activar_antiddos_agresivo ;;
+            2) desactivar_antiddos_agresivo ;;
+            3) ver_reglas_antiddos ;;
+            4) menu_atacantes ;;
             0) break ;;
         esac
     done
@@ -2435,7 +2008,6 @@ menu_principal() {
             9) instalar_motd ;;
             10) desinstalar_script ;;
             11) actualizar_script ;;
-            11) actualizar_script ;;
             0) echo -e "\n  ${G}Hasta luego! — DarkZFull${NC}\n"; exit 0 ;;
             *) echo -e "  ${R}Opcion invalida${NC}"; sleep 1 ;;
         esac
@@ -2474,8 +2046,6 @@ menu_dropbear() {
         printf " \033[1;34m❬3❭\033[0m \033[1;37mDetener\033[0m          \033[1;34m❬4❭\033[0m \033[1;37mReiniciar\033[0m\n"
         printf " \033[1;34m❬5❭\033[0m \033[1;37mCambiar puerto\033[0m   \033[1;34m❬6❭\033[0m \033[1;37mDesinstalar\033[0m\n"
         echo ""
-        printf " \033[1;34m❬7❭\033[0m \033[1;37mActivar banner\033[0m    \033[1;34m❬8❭\033[0m \033[1;37mDesactivar banner\033[0m\n"
-        printf " \033[1;34m❬9❭\033[0m \033[1;37mEditar banner\033[0m     \033[1;34m❬10❭\033[0m \033[1;37mVer banner\033[0m\n"
         echo ""
         echo -e "\033[1;34m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
         printf " \033[1;31m❬0❭\033[0m \033[1;37mVolver\033[0m\n"
@@ -2558,7 +2128,7 @@ BAN
                 systemctl restart dropbear
                 echo -e "  \033[1;33m⚠ Banner desactivado\033[0m"; sleep 2 ;;
             9)
-                nano /etc/ssh/banner
+                echo "banner edit deshabilitado" >/dev/null
                 sed 's/<[^>]*>//g; s/&[a-zA-Z0-9#]\{2,6\};//g; s/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d' /etc/ssh/banner > /etc/ssh/banner.txt
                 echo -e "  \033[1;32m✓ Banner actualizado\033[0m"; sleep 2 ;;
             10)
@@ -2729,6 +2299,6 @@ echo -e "\033[0;32mComando menu instalado\033[0m"
 
 # Función que llama al conversor externo (usada desde el menú)
 _convert_banner() {
-    /usr/local/bin/convert-banner-txt
+    echo "banner edit deshabilitado" >/dev/null
 }
 
