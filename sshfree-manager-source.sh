@@ -395,6 +395,10 @@ menu_ws() {
         echo -e "  ${W}[3]${NC} Detener"
         echo -e "  ${W}[4]${NC} Reiniciar"
         echo -e "  ${W}[5]${NC} Eliminar"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -413,6 +417,60 @@ menu_ws() {
                     rm -f $DIR_SERVICES/ws-proxy-${DEL_PORT}.service $DIR_SCRIPTS/proxy_ws_${DEL_PORT}.py
                 fi
                 systemctl daemon-reload; echo -e "  ${G}Eliminado${NC}"; sleep 1 ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
         esac
     done
@@ -433,6 +491,10 @@ menu_badvpn() {
         echo -e "  ${W}[3]${NC} Detener"
         echo -e "  ${W}[4]${NC} Reiniciar"
         echo -e "  ${W}[5]${NC} Puerto personalizado"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -495,6 +557,60 @@ WantedBy=multi-user.target
 EOF
                 systemctl daemon-reload; systemctl enable badvpn-${BPORT}; systemctl start badvpn-${BPORT}
                 echo -e "  ${G}OK BadVPN puerto ${BPORT}${NC}"; sleep 2 ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
         esac
     done
@@ -514,6 +630,10 @@ menu_udp() {
         echo -e "  ${W}[3]${NC} Detener"
         echo -e "  ${W}[4]${NC} Reiniciar"
         echo -e "  ${W}[5]${NC} Ver estado"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -527,6 +647,60 @@ menu_udp() {
             3) systemctl stop udp-custom 2>/dev/null; pkill -f udp-custom 2>/dev/null; echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
             4) pkill -f udp-custom 2>/dev/null; sleep 1; systemctl start udp-custom 2>/dev/null || (/root/udp/udp-custom server -exclude 5300 &); echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
             5) ss -ulnp | grep udp; echo ""; read -p "  ENTER..." ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
         esac
     done
@@ -546,6 +720,10 @@ menu_ssl() {
         echo -e "  ${W}[2]${NC} Iniciar"
         echo -e "  ${W}[3]${NC} Detener"
         echo -e "  ${W}[4]${NC} Reiniciar"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -568,6 +746,60 @@ EOF
             2) systemctl start stunnel4 && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
             3) systemctl stop stunnel4 && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
             4) systemctl restart stunnel4 && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
         esac
     done
@@ -755,6 +987,60 @@ except Exception as e: print(f'Error: {e}')
                     rm -f /etc/sshfreeltm/v2ray_domain
                     echo -e "  ${G}OK V2Ray desinstalado${NC}"; sleep 2
                 fi ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
             *) echo -e "  ${R}Opcion invalida${NC}"; sleep 1 ;;
         esac
@@ -780,6 +1066,10 @@ menu_ziv() {
         echo -e "  ${W}[5]${NC} Reiniciar"
         echo -e "  ${W}[6]${NC} Ver configuracion"
         echo -e "  ${W}[7]${NC} Desinstalar"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -790,6 +1080,60 @@ menu_ziv() {
             5) systemctl restart zivpn && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
             6) cat /etc/zivpn/config.json 2>/dev/null; echo ""; read -p "  ENTER..." ;;
             7) bash <(curl -fsSL https://raw.githubusercontent.com/powermx/zivpn/main/uninstall.sh) 2>/dev/null; echo -e "  ${G}Desinstalado${NC}"; sleep 1 ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
         esac
     done
@@ -902,6 +1246,10 @@ menu_users_ziv() {
         echo -e "  ${W}[2]${NC} Listar usuarios"
         echo -e "  ${W}[3]${NC} Eliminar usuario"
         echo -e "  ${W}[4]${NC} Limpiar expirados"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -909,6 +1257,60 @@ menu_users_ziv() {
             2) listar_users_ziv ;;
             3) eliminar_user_ziv ;;
             4) limpiar_expirados_ziv; aplicar_passwords_ziv; echo -e "  ${G}Limpiado${NC}"; sleep 1 ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
         esac
     done
@@ -1006,6 +1408,10 @@ menu_usuarios() {
         echo -e "  ${W}[2]${NC} Listar usuarios"
         echo -e "  ${W}[3]${NC} Eliminar usuario"
         echo -e "  ${W}[4]${NC} Renovar usuario"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -1013,6 +1419,60 @@ menu_usuarios() {
             2) listar_usuarios ;;
             3) eliminar_usuario ;;
             4) renovar_usuario ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
         esac
     done
@@ -1215,6 +1675,10 @@ menu_antiddos() {
         echo -e "  ${W}[2]${NC} Desactivar Anti-DDoS"
         echo -e "  ${W}[3]${NC} Ver reglas activas"
         echo -e "  ${W}[4]${NC} Ver IPs atacantes"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -1327,6 +1791,60 @@ EOF_JAIL
                 echo ""; iptables -L INPUT -n --line-numbers | head -30; echo ""
                 read -p "  ENTER..." ;;
             4) menu_atacantes ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
         esac
     done
@@ -1413,6 +1931,10 @@ menu_antiddos() {
         echo -e "  ${W}[2]${NC} Desactivar Anti-DDoS"
         echo -e "  ${W}[3]${NC} Ver reglas activas"
         echo -e "  ${W}[4]${NC} Ver IPs atacantes"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -1525,6 +2047,60 @@ EOF_JAIL
                 echo ""; iptables -L INPUT -n --line-numbers | head -30; echo ""
                 read -p "  ENTER..." ;;
             4) menu_atacantes ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
         esac
     done
@@ -1586,6 +2162,10 @@ menu_slowdns() {
         echo -e "  ${W}[3]${NC} Detener"
         echo -e "  ${W}[4]${NC} Ver Public Key"
         echo -e "  ${W}[5]${NC} Desinstalar"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -1645,6 +2225,60 @@ EOF
                 rm -f /etc/systemd/system/$CLIENT_SERVICE.service /etc/systemd/system/$SERVER_SERVICE.service
                 systemctl daemon-reload
                 echo -e "  ${G}SlowDNS desinstalado${NC}"; sleep 2 ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
         esac
     done
@@ -1658,6 +2292,11 @@ menu_dropbear() {
         [ "$DB_ST" = "active" ] && echo -e "  Estado: ${G}[ACTIVO]${NC}" || echo -e "  Estado: ${R}[INACTIVO]${NC}"
         DB_PORT=$(cat /etc/sshfreeltm/dropbear_port 2>/dev/null || echo "444")
         echo -e "  Puerto: ${W}${DB_PORT}${NC}"
+        if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service 2>/dev/null; then
+            echo -e "  Banner: ${G}[ACTIVO]${NC}"
+        else
+            echo -e "  Banner: ${R}[INACTIVO]${NC}"
+        fi
         echo ""; sep
         echo -e "  ${W}[1]${NC} Instalar Dropbear"
         echo -e "  ${W}[2]${NC} Iniciar"
@@ -1665,6 +2304,10 @@ menu_dropbear() {
         echo -e "  ${W}[4]${NC} Reiniciar"
         echo -e "  ${W}[5]${NC} Cambiar puerto"
         echo -e "  ${W}[6]${NC} Desinstalar"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -1722,6 +2365,60 @@ EOF
                 rm -f /etc/systemd/system/dropbear.service
                 systemctl daemon-reload
                 echo -e "  ${G}Dropbear desinstalado${NC}"; sleep 2 ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
         esac
     done
@@ -1759,6 +2456,10 @@ menu_banner_ssh() {
         echo -e "  ${W}[5]${NC} Editar banner HTTP Custom"
         echo -e "  ${W}[6]${NC} Ver banner HTTP Custom actual"
         echo ""
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -1842,6 +2543,60 @@ BANNEREOF
                     echo -e "    Status : ${W}${CRESP}${NC}"
                 done
                 echo ""; read -p "  ENTER..." ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
         esac
     done
@@ -1915,6 +2670,60 @@ REBOOTEOF
                     echo -e "  ${Y}Reiniciando en 3 segundos...${NC}"
                     sleep 3
                     /sbin/reboot; } ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
         esac
     done
@@ -2036,6 +2845,60 @@ print(f'  Metodo:   {c.get(\"method\")}')
                     rm -rf /etc/shadowsocks
                     systemctl daemon-reload
                     echo -e "  ${G}Desinstalado${NC}"; sleep 2; } ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
         esac
     done
@@ -2138,6 +3001,60 @@ print('OK')
                     rm -rf /etc/hysteria
                     systemctl daemon-reload
                     echo -e "  ${G}Desinstalado${NC}"; sleep 2; } ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
         esac
     done
@@ -2291,6 +3208,60 @@ EOF
                 rm -f /usr/local/bin/hysteria2 /etc/systemd/system/hysteria2-server.service
                 rm -rf /etc/hysteria2; systemctl daemon-reload
                 echo -e "  ${G}Hysteria V2 desinstalado${NC}"; sleep 2 ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
         esac
     done
@@ -2339,6 +3310,60 @@ menu_herramientas() {
             12) menu_udp_hysteria_mod ;;
             13) menu_shadowsocks ;;
             14) menu_limpieza ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
             *) echo -e "  ${R}Opcion invalida${NC}"; sleep 1 ;;
         esac
@@ -2440,6 +3465,10 @@ menu_antiddos() {
         echo -e "  ${W}[2]${NC} Desactivar Anti-DDoS"
         echo -e "  ${W}[3]${NC} Ver reglas activas"
         echo -e "  ${W}[4]${NC} Ver IPs atacantes"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -2552,6 +3581,60 @@ EOF_JAIL
                 echo ""; iptables -L INPUT -n --line-numbers | head -30; echo ""
                 read -p "  ENTER..." ;;
             4) menu_atacantes ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
         esac
     done
@@ -2638,6 +3721,10 @@ menu_antiddos() {
         echo -e "  ${W}[2]${NC} Desactivar Anti-DDoS"
         echo -e "  ${W}[3]${NC} Ver reglas activas"
         echo -e "  ${W}[4]${NC} Ver IPs atacantes"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -2750,6 +3837,60 @@ EOF_JAIL
                 echo ""; iptables -L INPUT -n --line-numbers | head -30; echo ""
                 read -p "  ENTER..." ;;
             4) menu_atacantes ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
         esac
     done
@@ -2811,6 +3952,10 @@ menu_slowdns() {
         echo -e "  ${W}[3]${NC} Detener"
         echo -e "  ${W}[4]${NC} Ver Public Key"
         echo -e "  ${W}[5]${NC} Desinstalar"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -2870,6 +4015,60 @@ EOF
                 rm -f /etc/systemd/system/$CLIENT_SERVICE.service /etc/systemd/system/$SERVER_SERVICE.service
                 systemctl daemon-reload
                 echo -e "  ${G}SlowDNS desinstalado${NC}"; sleep 2 ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
         esac
     done
@@ -2883,6 +4082,11 @@ menu_dropbear() {
         [ "$DB_ST" = "active" ] && echo -e "  Estado: ${G}[ACTIVO]${NC}" || echo -e "  Estado: ${R}[INACTIVO]${NC}"
         DB_PORT=$(cat /etc/sshfreeltm/dropbear_port 2>/dev/null || echo "444")
         echo -e "  Puerto: ${W}${DB_PORT}${NC}"
+        if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service 2>/dev/null; then
+            echo -e "  Banner: ${G}[ACTIVO]${NC}"
+        else
+            echo -e "  Banner: ${R}[INACTIVO]${NC}"
+        fi
         echo ""; sep
         echo -e "  ${W}[1]${NC} Instalar Dropbear"
         echo -e "  ${W}[2]${NC} Iniciar"
@@ -2890,6 +4094,10 @@ menu_dropbear() {
         echo -e "  ${W}[4]${NC} Reiniciar"
         echo -e "  ${W}[5]${NC} Cambiar puerto"
         echo -e "  ${W}[6]${NC} Desinstalar"
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -2947,6 +4155,60 @@ EOF
                 rm -f /etc/systemd/system/dropbear.service
                 systemctl daemon-reload
                 echo -e "  ${G}Dropbear desinstalado${NC}"; sleep 2 ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
         esac
     done
@@ -2984,6 +4246,10 @@ menu_banner_ssh() {
         echo -e "  ${W}[5]${NC} Editar banner HTTP Custom"
         echo -e "  ${W}[6]${NC} Ver banner HTTP Custom actual"
         echo ""
+        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
@@ -3067,6 +4333,60 @@ BANNEREOF
                     echo -e "    Status : ${W}${CRESP}${NC}"
                 done
                 echo ""; read -p "  ENTER..." ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
         esac
     done
@@ -3220,6 +4540,60 @@ EOF
                 rm -f /usr/local/bin/hysteria2 /etc/systemd/system/hysteria2-server.service
                 rm -rf /etc/hysteria2; systemctl daemon-reload
                 echo -e "  ${G}Hysteria V2 desinstalado${NC}"; sleep 2 ;;
+            7)
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                else
+                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            8)
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                    systemctl restart dropbear
+                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
+                else
+                    echo -e "  ${R}El banner no estaba activo${NC}"
+                fi
+                sleep 2 ;;
+            9)
+                if [ ! -f /etc/ssh/banner ]; then
+                    cat > /etc/ssh/banner << BANNEREOF
+╔══════════════════════════════════════╗
+║   SERVIDOR PRIVADO - SSHFREE LTM    ║
+║        by @DarkZFull ❴LTM❵          ║
+╚══════════════════════════════════════╝
+BANNEREOF
+                fi
+                echo -e "  ${C}Abriendo editor nano...${NC}"
+                sleep 1
+                nano /etc/ssh/banner
+                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
+                    systemctl restart dropbear
+                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
+                else
+                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
+                fi
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""; read -p "  ENTER..." ;;
+
             0) break ;;
         esac
     done
