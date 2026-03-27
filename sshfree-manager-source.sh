@@ -14,6 +14,40 @@ W='\033[1;97m'
 B='\033[0;34m'
 P='\033[0;35m'
 NC='\033[0m'
+
+# Generar versión de texto plano (sin HTML) para SSH y Dropbear
+generar_banner_txt() {
+    local origen="/etc/ssh/banner"
+    local destino="/etc/ssh/banner.txt"
+    if [ ! -f "$origen" ]; then
+        echo -e "${R}No existe $origen${NC}" >&2
+        return 1
+    fi
+    sed 's/<[^>]*>//g; s/&[a-zA-Z0-9#]\{2,6\};//g; s/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d' "$origen" > "$destino"
+    echo -e "${G}Banner de texto generado en $destino${NC}"
+}
+
+# Generar versión de texto plano (sin HTML) para SSH y Dropbear
+generar_banner_txt() {
+    local origen="/etc/ssh/banner"
+    local destino="/etc/ssh/banner.txt"
+    if [ ! -f "$origen" ]; then
+        echo -e "${R}No existe $origen${NC}" >&2
+        return 1
+    fi
+    # Eliminar etiquetas HTML y entidades
+    sed 's/<[^>]*>//g; s/&[a-zA-Z0-9#]\{2,6\};//g; s/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d' "$origen" > "$destino"
+    echo -e "${G}Banner de texto generado en $destino${NC}"
+}
+
+# Generar versión de texto plano (sin HTML) para SSH y Dropbear
+
+
+# Generar versión de texto plano (sin HTML) para SSH y Dropbear
+
+
+# Generar versión de texto plano (sin HTML) para SSH y Dropbear
+
 BOLD='\033[1m'
 NEON='\033[1;96m'
 DIM='\033[2;37m'
@@ -221,17 +255,6 @@ status_port() {
     ss -${2:-t}lnp 2>/dev/null | grep -q ":${1} " && echo -e "${NEON}◆ ON ${NC}" || echo -e "${R}◇ OFF${NC}"
 }
 # Generar versión de texto plano (sin HTML) para SSH y Dropbear
-generar_banner_txt() {
-    local origen="/etc/ssh/banner"
-    local destino="/etc/ssh/banner.txt"
-    if [ ! -f "$origen" ]; then
-        echo -e "${R}No existe $origen${NC}" >&2
-        return 1
-    fi
-    # Eliminar etiquetas HTML, entidades y espacios sobrantes
-    sed 's/<[^>]*>//g; s/&[a-zA-Z0-9#]\{2,6\};//g; s/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d' "$origen" > "$destino"
-    echo -e "${G}Banner de texto generado en $destino${NC}"
-}
 
 
 # Generar versión de texto plano (sin HTML) para SSH y Dropbear
@@ -2508,27 +2531,7 @@ menu_principal() {
 }
 
 # Generar versión de texto plano (sin HTML) para SSH y Dropbear
-generar_banner_txt() {
-    local origen="/etc/ssh/banner"
-    local destino="/etc/ssh/banner.txt"
-    if [ ! -f "$origen" ]; then
-        echo -e "${R}No existe $origen${NC}" >&2
-        return 1
-    fi
-    sed 's/<[^>]*>//g; s/&[a-zA-Z0-9#]{2,6};//g; s/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d' "$origen" > "$destino"
-    echo -e "${G}Banner de texto generado en $destino${NC}"
-}
 # Generar versión de texto plano (sin HTML) para SSH y Dropbear
-generar_banner_txt() {
-    local origen="/etc/ssh/banner"
-    local destino="/etc/ssh/banner.txt"
-    if [ ! -f "$origen" ]; then
-        echo -e "${R}No existe $origen${NC}" >&2
-        return 1
-    fi
-    sed 's/<[^>]*>//g; s/&[a-zA-Z0-9#]{2,6};//g; s/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d' "$origen" > "$destino"
-    echo -e "${G}Banner de texto generado en $destino${NC}"
-}
 [ "$EUID" -ne 0 ] && echo -e "${R}Ejecuta como root${NC}" && exit 1
 menu_principal
 
@@ -2545,3 +2548,8 @@ echo -e "\033[0;32mComando menu instalado\033[0m"
 
 # Generar versión de texto plano (sin HTML) para SSH y Dropbear
 
+
+# Función que llama al conversor externo (usada desde el menú)
+_convert_banner() {
+    /usr/local/bin/convert-banner-txt
+}
