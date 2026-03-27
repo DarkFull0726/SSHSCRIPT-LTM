@@ -1506,61 +1506,7 @@ menu_slowdns() {
     done
 }
 
-menu_dropbear() {
-    while true; do
-        banner; sep
-        echo -e "  ${Y}  DROPBEAR SSH${NC}"; sep; echo ""
-        DB_ST=$(systemctl is-active dropbear 2>/dev/null)
-        [ "$DB_ST" = "active" ] && echo -e "  Estado: ${G}[ACTIVO]${NC}" || echo -e "  Estado: ${R}[INACTIVO]${NC}"
-        DB_PORT=$(cat /etc/sshfreeltm/dropbear_port 2>/dev/null || echo "444")
-        echo -e "  Puerto: ${W}${DB_PORT}${NC}"
-        if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service 2>/dev/null; then
-            echo -e "  Banner: ${G}[ACTIVO]${NC}"
-        else
-            echo -e "  Banner: ${R}[INACTIVO]${NC}"
-        fi
-        echo ""; sep
-        echo -e "  ${W}[1]${NC} Instalar Dropbear"
-        echo -e "  ${W}[2]${NC} Iniciar"
-        echo -e "  ${W}[3]${NC} Detener"
-        echo -e "  ${W}[4]${NC} Reiniciar"
-        echo -e "  ${W}[5]${NC} Cambiar puerto"
-        echo -e "  ${W}[6]${NC} Desinstalar"
-        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
-        echo -e "  ${W}[8]${NC} Desactivar banner"
-        echo -e "  ${W}[9]${NC} Editar banner"
-        echo -e "  ${W}[10]${NC} Ver banner"
-        echo -e "  ${W}[0]${NC} Volver"; sep
-        read -p "  Opcion: " OPT
-        case $OPT in
-            1)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
-                sleep 2 ;;
-            9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            10)
-                echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
 
-            0) break ;;
-        esac
-    done
-}
 
 menu_banner_ssh() {
     while true; do
@@ -2478,6 +2424,130 @@ menu_principal() {
 
 # Generar versión de texto plano (sin HTML) para SSH y Dropbear
 # Generar versión de texto plano (sin HTML) para SSH y Dropbear
+menu_dropbear() {
+    while true; do
+        banner; sep
+        echo -e "  ${Y}  DROPBEAR SSH${NC}"; sep; echo ""
+        DB_ST=$(systemctl is-active dropbear 2>/dev/null)
+        [ "$DB_ST" = "active" ] && echo -e "  Estado: ${G}[ACTIVO]${NC}" || echo -e "  Estado: ${R}[INACTIVO]${NC}"
+        DB_PORT=$(cat /etc/sshfreeltm/dropbear_port 2>/dev/null || echo "444")
+        echo -e "  Puerto: ${W}${DB_PORT}${NC}"
+        if [ -f /etc/ssh/banner.txt ]; then
+            echo -e "  Banner: ${G}[ACTIVO]${NC}"
+        else
+            echo -e "  Banner: ${R}[INACTIVO]${NC}"
+        fi
+        echo ""; sep
+        echo -e "  ${W}[1]${NC} Instalar Dropbear"
+        echo -e "  ${W}[2]${NC} Iniciar"
+        echo -e "  ${W}[3]${NC} Detener"
+        echo -e "  ${W}[4]${NC} Reiniciar"
+        echo -e "  ${W}[5]${NC} Cambiar puerto"
+        echo -e "  ${W}[6]${NC} Desinstalar"
+        echo -e "  ${W}[7]${NC} Activar banner"
+        echo -e "  ${W}[8]${NC} Desactivar banner"
+        echo -e "  ${W}[9]${NC} Editar banner"
+        echo -e "  ${W}[10]${NC} Ver banner"
+        echo -e "  ${W}[0]${NC} Volver"; sep
+        read -p "  Opcion: " OPT
+        case $OPT in
+            1)
+                echo -e "
+  ${C}Instalando Dropbear...${NC}"
+                apt install -y dropbear
+                read -p "  Puerto Dropbear (default 444): " DB_PORT
+                DB_PORT=${DB_PORT:-444}
+                mkdir -p /etc/sshfreeltm
+                echo "$DB_PORT" > /etc/sshfreeltm/dropbear_port
+                sed -i "s/NO_START=1/NO_START=0/" /etc/default/dropbear 2>/dev/null
+                sed -i "s/DROPBEAR_PORT=.*/DROPBEAR_PORT=$DB_PORT/" /etc/default/dropbear 2>/dev/null
+                grep -q "DROPBEAR_PORT" /etc/default/dropbear || echo "DROPBEAR_PORT=$DB_PORT" >> /etc/default/dropbear
+                cat > /etc/systemd/system/dropbear.service << EOF
+[Unit]
+Description=Dropbear SSH Server
+After=network.target
+[Service]
+Type=simple
+ExecStart=/usr/sbin/dropbear -F -p $DB_PORT -b /etc/ssh/banner.txt
+Restart=always
+RestartSec=3
+[Install]
+WantedBy=multi-user.target
+EOF
+                systemctl daemon-reload
+                mkdir -p /etc/dropbear
+                [ ! -f /etc/dropbear/dropbear_dss_host_key ] && dropbearkey -t dss -f /etc/dropbear/dropbear_dss_host_key > /dev/null 2>&1
+                [ ! -f /etc/dropbear/dropbear_rsa_host_key ] && dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key > /dev/null 2>&1
+                [ ! -f /etc/dropbear/dropbear_ecdsa_host_key ] && dropbearkey -t ecdsa -f /etc/dropbear/dropbear_ecdsa_host_key > /dev/null 2>&1
+                grep -q "/bin/false" /etc/shells || echo "/bin/false" >> /etc/shells
+                systemctl enable dropbear
+                systemctl start dropbear
+                iptables -I INPUT -p tcp --dport $DB_PORT -j ACCEPT 2>/dev/null
+                echo -e "  ${G}OK Dropbear instalado en puerto ${DB_PORT}${NC}"; sleep 2 ;;
+            2) systemctl start dropbear && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
+            3) systemctl stop dropbear && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
+            4) systemctl restart dropbear && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
+            5)
+                read -p "  Nuevo puerto: " NEW_PORT
+                echo "$NEW_PORT" > /etc/sshfreeltm/dropbear_port
+                sed -i "s/DROPBEAR_PORT=.*/DROPBEAR_PORT=$NEW_PORT/" /etc/default/dropbear 2>/dev/null
+                sed -i "s|-p [0-9]*|-p $NEW_PORT|" /etc/systemd/system/dropbear.service 2>/dev/null
+                systemctl daemon-reload
+                systemctl restart dropbear
+                echo -e "  ${G}Puerto cambiado a ${NEW_PORT}${NC}"; sleep 2 ;;
+            6)
+                systemctl stop dropbear; systemctl disable dropbear
+                apt remove -y dropbear > /dev/null 2>&1
+                rm -f /etc/systemd/system/dropbear.service
+                systemctl daemon-reload
+                echo -e "  ${G}Dropbear desinstalado${NC}"; sleep 2 ;;
+            7)
+                echo -e "  ${C}Activando banner...${NC}"
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe /etc/ssh/banner, creando uno por defecto...${NC}"
+                    cat > /etc/ssh/banner << 'BAN'
+<h1 style="text-align:center"><span><big><big><span style="color: #00ff48">L</span><span style="color: #0dff5a">T</span><span style="color: #19fe6b">M</span><span style="color: #26fe7d"> </span><span style="color: #32fd8e">S</span><span style="color: #3ffda0">E</span><span style="color: #4cfcb1">R</span><span style="color: #58fcc3">V</span><span style="color: #65fbd4">I</span><span style="color: #71fbe6">D</span><span style="color: #7efaf7">OR</span><small></div><div><span style="color: #ff0000">NETFREE LTM VPS MIAMI 🇺🇲</span>
+<div><div><span style="color: #00ff83">🚫</span><span style="color: #00ff87"></span><span style="color: #00ff8b">P</span><span style="color: #00ff8f">R</span><span style="color: #00ff93">O</span><span style="color: #00ff97">H</span><span style="color: #00ff9b">I</span><span style="color: #00ff9f">B</span><span style="color: #00ffa3">I</span><span style="color: #00ffa7">D</span><span style="color: #00ffab">A</span><span style="color: #00ffb0"> L</span><span style="color: #00ffb4">A</span> <span style="color: #00ffb8">V</span><span style="color: #00ffbc"></span><span style="color: #00ffc0">E</span><span style="color: #00ffc4">N</span><span style="color: #00ffc8">T</span><span style="color: #00ffcc">A</span><span style="color: #00ffd0"></span><span style="color: #00ffd4"</span><span style="color: #00ffd8">🚫</span></div>
+<div><span style="color: #009aff">G</span><span style="color: #00cdc1">R</span><span style="color: #00ff83">U</span><span style="color: #80cc42">P</span><span style="color: #ff9900">O</span></div>https://t.me/+AzYZK49QGys4MDVh
+<div><span style="color: #009aff">C</span><span style="color: #00cdc1">A</span><span style="color: #00ff83">N</span><span style="color: #80cc42">A</span><span style="color: #ff9900">L</span></div>https://t.me/+g8bjM5B2izkyNzYx
+<big><big><big><big><big><big>🤑💥</big></big></big></big></big></big>
+<h2 style="text-align:center;"><small><small><small><small><small><small><span style="color: #faff00">∘₊✧ </span><span style="color:#ffbf00;">™✶▲▽DarkFull༻༒</span></small></small></small></small></small></small></h2>
+BAN
+                fi
+                # Convertir HTML a texto plano
+                sed 's/<[^>]*>//g; s/&[a-zA-Z0-9#]\{2,6\};//g; s/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d' /etc/ssh/banner > /etc/ssh/banner.txt
+                # Asegurar que Dropbear use el archivo de texto
+                if ! grep -q "\-b /etc/ssh/banner.txt" /etc/systemd/system/dropbear.service; then
+                    sed -i 's|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.txt|' /etc/systemd/system/dropbear.service
+                    systemctl daemon-reload
+                fi
+                systemctl restart dropbear
+                echo -e "  ${G}Banner activado correctamente${NC}"
+                sleep 2 ;;
+            8)
+                sed -i 's| -b /etc/ssh/banner.txt||' /etc/systemd/system/dropbear.service
+                systemctl daemon-reload
+                systemctl restart dropbear
+                echo -e "  ${Y}Banner desactivado${NC}"
+                sleep 2 ;;
+            9)
+                nano /etc/ssh/banner
+                # Al guardar, convertir a texto plano automáticamente
+                sed 's/<[^>]*>//g; s/&[a-zA-Z0-9#]\{2,6\};//g; s/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d' /etc/ssh/banner > /etc/ssh/banner.txt
+                echo -e "  ${G}Banner actualizado${NC}"
+                sleep 2 ;;
+            10)
+                echo ""; sep
+                echo -e "  ${Y}Banner actual:${NC}"; echo ""
+                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo ""
+                echo -e "  ${Y}Banner texto plano:${NC}"; echo ""
+                cat /etc/ssh/banner.txt 2>/dev/null || echo -e "  ${R}No hay archivo de texto${NC}"
+                echo ""; read -p "  ENTER..." ;;
+            0) break ;;
+        esac
+    done
+}
 [ "$EUID" -ne 0 ] && echo -e "${R}Ejecuta como root${NC}" && exit 1
 menu_principal
 
