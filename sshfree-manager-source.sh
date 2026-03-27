@@ -5453,6 +5453,7 @@ menu_principal() {
 # Convertir HTML a texto con colores ANSI (guardar en /etc/ssh/banner-ansi)
 # Convertir HTML a texto con colores ANSI (guardar en /etc/ssh/banner-ansi)
 # Convertir HTML a texto con colores ANSI (guardar en /etc/ssh/banner-ansi)
+# Convertir HTML a texto con colores ANSI (guardar en /etc/ssh/banner-ansi)
 convertir_banner_html() {
     local origen="/etc/ssh/banner"
     local destino="/etc/ssh/banner-ansi"
