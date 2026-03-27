@@ -419,21 +419,10 @@ menu_ws() {
                 systemctl daemon-reload; echo -e "  ${G}Eliminado${NC}"; sleep 1 ;;
             7)
                 if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                    echo -e "  ${R}No existe /etc/ssh/banner${NC}"
                 else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                    systemctl restart dropbear
+                    echo -e "  ${G}Dropbear reiniciado con el banner actual${NC}"
                 fi
                 sleep 2 ;;
             8)
@@ -447,23 +436,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -499,82 +472,7 @@ menu_badvpn() {
         read -p "  Opcion: " OPT
         case $OPT in
             1)
-                if [ ! -f /usr/local/bin/badvpn-udpgw ] || [ ! -s /usr/local/bin/badvpn-udpgw ]; then
-                    rm -f /usr/local/bin/badvpn-udpgw
-                    echo -e "\n  ${C}Actualizando repositorios...${NC}"
-                    apt update -y > /dev/null 2>&1
-                    echo -e "  ${C}Instalando dependencias...${NC}"
-                    apt install -y cmake make gcc g++ git > /dev/null 2>&1
-                    echo -e "  ${C}Compilando BadVPN...${NC}"
-                    cd /tmp || cd /root
-                    rm -rf badvpn
-                    git clone https://github.com/ambrop72/badvpn.git > /dev/null 2>&1
-                    cd /tmp/badvpn && mkdir -p build && cd build
-                    cmake .. -DBUILD_NOTHING_BY_DEFAULT=1 -DBUILD_UDPGW=1 > /dev/null 2>&1
-                    make > /dev/null 2>&1
-                    cd /tmp
-                    if [ -f /tmp/badvpn/build/udpgw/badvpn-udpgw ] && [ -s /tmp/badvpn/build/udpgw/badvpn-udpgw ]; then
-                        cp /tmp/badvpn/build/udpgw/badvpn-udpgw /usr/local/bin/
-                        chmod +x /usr/local/bin/badvpn-udpgw
-                        echo -e "  ${G}OK Binario compilado${NC}"
-                    else
-                        echo -e "  ${R}Error: compilacion fallida${NC}"
-                        read -p "  ENTER..."; return
-                    fi
-                fi
-                for PORT in 7200 7300; do
-                    cat > $DIR_SERVICES/badvpn-${PORT}.service << EOF
-[Unit]
-Description=BadVPN UDP Gateway ${PORT}
-After=network.target
-[Service]
-Type=simple
-ExecStart=/usr/local/bin/badvpn-udpgw --listen-addr 127.0.0.1:${PORT} --max-clients 500 --max-connections-for-client 10
-Restart=always
-RestartSec=5
-[Install]
-WantedBy=multi-user.target
-EOF
-                    systemctl daemon-reload; systemctl enable badvpn-${PORT}; systemctl start badvpn-${PORT}
-                done
-                echo -e "  ${G}OK BadVPN 7200 y 7300${NC}"; sleep 2 ;;
-            2) systemctl start badvpn-7200 badvpn-7300 && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
-            3) systemctl stop badvpn-7200 badvpn-7300 && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            4) systemctl restart badvpn-7200 badvpn-7300 && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
-            5)
-                read -p "  Puerto: " BPORT
-                cat > $DIR_SERVICES/badvpn-${BPORT}.service << EOF
-[Unit]
-Description=BadVPN UDP Gateway ${BPORT}
-After=network.target
-[Service]
-Type=simple
-ExecStart=/usr/local/bin/badvpn-udpgw --listen-addr 127.0.0.1:${BPORT} --max-clients 500
-Restart=always
-RestartSec=5
-[Install]
-WantedBy=multi-user.target
-EOF
-                systemctl daemon-reload; systemctl enable badvpn-${BPORT}; systemctl start badvpn-${BPORT}
-                echo -e "  ${G}OK BadVPN puerto ${BPORT}${NC}"; sleep 2 ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
-                else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
-                fi
+                nano /etc/ssh/banner
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -587,23 +485,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -638,33 +520,7 @@ menu_udp() {
         read -p "  Opcion: " OPT
         case $OPT in
             1)
-                echo -e "\n  ${C}Instalando UDP Custom (Epro Dev Team)...${NC}"
-                read -p "  Puerto a excluir (default 5300): " UDP_EXCL; UDP_EXCL=${UDP_EXCL:-5300}
-                wget -O /tmp/install-udp "https://drive.usercontent.google.com/download?id=1S3IE25v_fyUfCLslnujFBSBMNunDHDk2&export=download&confirm=t"
-                chmod +x /tmp/install-udp; bash /tmp/install-udp $UDP_EXCL
-                echo -e "  ${G}OK UDP Custom instalado${NC}"; sleep 2 ;;
-            2) systemctl start udp-custom 2>/dev/null || (/root/udp/udp-custom server -exclude 5300 &); echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
-            3) systemctl stop udp-custom 2>/dev/null; pkill -f udp-custom 2>/dev/null; echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            4) pkill -f udp-custom 2>/dev/null; sleep 1; systemctl start udp-custom 2>/dev/null || (/root/udp/udp-custom server -exclude 5300 &); echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
-            5) ss -ulnp | grep udp; echo ""; read -p "  ENTER..." ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
-                else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
-                fi
+                nano /etc/ssh/banner
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -677,23 +533,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -728,42 +568,7 @@ menu_ssl() {
         read -p "  Opcion: " OPT
         case $OPT in
             1)
-                apt install -y stunnel4 > /dev/null 2>&1
-                read -p "  Puerto SSL (ej: 443): " SSL_PORT; SSL_PORT=${SSL_PORT:-443}
-                read -p "  Puerto local SSH (ej: 22): " LOCAL_PORT; LOCAL_PORT=${LOCAL_PORT:-22}
-                openssl req -new -x509 -days 3650 -nodes -out /etc/stunnel/stunnel.pem -keyout /etc/stunnel/stunnel.pem -subj "/C=US/ST=Miami/L=Miami/O=SSHFREE/CN=sshfree" 2>/dev/null
-                cat > /etc/stunnel/stunnel.conf << EOF
-pid = /var/run/stunnel4/stunnel.pid
-cert = /etc/stunnel/stunnel.pem
-socket = a:SO_REUSEADDR=1
-[ssh]
-accept = ${SSL_PORT}
-connect = 127.0.0.1:${LOCAL_PORT}
-EOF
-                sed -i 's/ENABLED=0/ENABLED=1/' /etc/default/stunnel4 2>/dev/null
-                systemctl enable stunnel4; systemctl start stunnel4
-                echo -e "  ${G}OK SSL/TLS en puerto ${SSL_PORT}${NC}"; sleep 2 ;;
-            2) systemctl start stunnel4 && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
-            3) systemctl stop stunnel4 && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            4) systemctl restart stunnel4 && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
-                else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
-                fi
+                nano /etc/ssh/banner
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -776,23 +581,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -841,170 +630,7 @@ except: pass
         read -p " Opcion: " OPT
         case $OPT in
             1)
-                read -p "  Dominio (para SSL): " DOMAIN
-                EMAIL="admin@${DOMAIN#*.}"
-                echo -e "  ${C}Instalando V2Ray...${NC}"
-                bash <(curl -s https://raw.githubusercontent.com/v2fly/fhs-install-v2ray/master/install-release.sh) > /dev/null 2>&1
-                echo -e "  ${C}Obteniendo certificado SSL...${NC}"
-                apt install -y certbot > /dev/null 2>&1
-                pkill -f "python3.*:80" 2>/dev/null; sleep 1
-                certbot certonly --standalone -d $DOMAIN --non-interactive --agree-tos -m $EMAIL
-                chmod 755 /etc/letsencrypt/live/ /etc/letsencrypt/archive/ 2>/dev/null
-                chmod 644 /etc/letsencrypt/live/$DOMAIN/*.pem 2>/dev/null
-                chmod 644 /etc/letsencrypt/archive/$DOMAIN/*.pem 2>/dev/null
-                cat > /usr/local/etc/v2ray/config.json << EOF
-{"log":{"loglevel":"warning"},"inbounds":[],"outbounds":[{"protocol":"freedom"}]}
-EOF
-                mkdir -p /etc/sshfreeltm
-                echo "$DOMAIN" > /etc/sshfreeltm/v2ray_domain
-                systemctl enable v2ray; systemctl start v2ray
-                echo -e "  ${G}OK V2Ray instalado — Usa ❬2❭ para agregar puertos${NC}"; sleep 2 ;;
-            2)
-                banner; sep
-                echo -e "  ${Y}  AGREGAR INBOUND${NC}"; sep; echo ""
-                read -p "  Puerto: " V2_PORT
-                echo -e "  Protocolo: ${Y}❬1❭${NC} vmess ${Y}❬2❭${NC} vless ${Y}❬3❭${NC} trojan"
-                read -p "  Opcion: " V2_PROTO_OPT
-                case $V2_PROTO_OPT in
-                    1) V2_PROTO="vmess" ;; 2) V2_PROTO="vless" ;; 3) V2_PROTO="trojan" ;; *) V2_PROTO="vmess" ;;
-                esac
-                echo -e "  Red: ${Y}❬1❭${NC} ws ${Y}❬2❭${NC} tcp ${Y}❬3❭${NC} xhttp ${Y}❬4❭${NC} grpc"
-                read -p "  Opcion: " V2_NET_OPT
-                case $V2_NET_OPT in
-                    1) V2_NET="ws" ;; 2) V2_NET="tcp" ;; 3) V2_NET="xhttp" ;; 4) V2_NET="grpc" ;; *) V2_NET="ws" ;;
-                esac
-                read -p "  Path (ej: /v2ray): " V2_PATH; V2_PATH=${V2_PATH:-/v2ray}
-                echo -e "  TLS: ${Y}❬1❭${NC} Si ${Y}❬2❭${NC} No"
-                read -p "  Opcion: " V2_TLS_OPT
-                [ "$V2_TLS_OPT" = "1" ] && V2_TLS="tls" || V2_TLS="none"
-                python3 - << PYEOF
-import json, os
-port, proto, net, path, tls = int("$V2_PORT"), "$V2_PROTO", "$V2_NET", "$V2_PATH", "$V2_TLS"
-with open('/usr/local/etc/v2ray/config.json') as f: config = json.load(f)
-ib = {"port": port, "protocol": proto, "settings": {"clients": []}, "streamSettings": {"network": net, "security": tls}}
-if net == "ws": ib["streamSettings"]["wsSettings"] = {"path": path}
-elif net == "xhttp": ib["streamSettings"]["xhttpSettings"] = {"path": path}
-elif net == "grpc": ib["streamSettings"]["grpcSettings"] = {"serviceName": path.strip("/")}
-if tls == "tls":
-    domain = open('/etc/sshfreeltm/v2ray_domain').read().strip() if os.path.exists('/etc/sshfreeltm/v2ray_domain') else ''
-    ib["streamSettings"]["tlsSettings"] = {"certificates": [{"certificateFile": f"/etc/letsencrypt/live/{domain}/fullchain.pem","keyFile": f"/etc/letsencrypt/live/{domain}/privkey.pem"}]}
-config["inbounds"].append(ib)
-with open('/usr/local/etc/v2ray/config.json', 'w') as f: json.dump(config, f, indent=2)
-print(f"OK {proto} {net} puerto {port}")
-PYEOF
-                systemctl restart v2ray; echo -e "  ${G}OK Inbound agregado${NC}"; read -p "  ENTER..." ;;
-            3)
-                banner; sep; echo -e "  ${R}  ELIMINAR INBOUND${NC}"; sep; echo ""
-                python3 -c "
-import json
-with open('/usr/local/etc/v2ray/config.json') as f: c=json.load(f)
-for i,ib in enumerate(c.get('inbounds',[])):
-    print(f'  [{i+1}] Puerto {ib[\"port\"]} | {ib[\"protocol\"]}')
-" 2>/dev/null
-                echo ""; read -p "  Numero a eliminar: " DEL_NUM
-                python3 - << PYEOF
-import json
-with open('/usr/local/etc/v2ray/config.json') as f: config = json.load(f)
-idx = int("$DEL_NUM") - 1
-if 0 <= idx < len(config['inbounds']):
-    removed = config['inbounds'].pop(idx)
-    with open('/usr/local/etc/v2ray/config.json', 'w') as f: json.dump(config, f, indent=2)
-    print(f"OK Puerto {removed['port']} eliminado")
-else: print("Numero invalido")
-PYEOF
-                systemctl restart v2ray; sleep 1 ;;
-            4) systemctl start v2ray && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
-            5) systemctl stop v2ray && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            6) systemctl restart v2ray && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
-            7)
-                banner; sep; echo -e "  ${Y}  CREAR USUARIO VMESS${NC}"; sep; echo ""
-                python3 -c "
-import json
-with open('/usr/local/etc/v2ray/config.json') as f: c=json.load(f)
-for i,ib in enumerate(c.get('inbounds',[])):
-    net=ib.get('streamSettings',{}).get('network','tcp')
-    tls=ib.get('streamSettings',{}).get('security','none')
-    print(f'  [{i+1}] Puerto {ib[\"port\"]} | {ib[\"protocol\"]} | {net} | tls:{tls}')
-" 2>/dev/null
-                echo ""; read -p "  Numero de inbound: " IB_NUM
-                IB_IDX=$((IB_NUM - 1))
-                read -p "  Nombre del perfil: " VNAME
-                read -p "  Dias de validez (default 30): " V2_DAYS; V2_DAYS=${V2_DAYS:-30}
-                EXP_SHOW=$(date -d "+${V2_DAYS} days" +%d/%m/%Y)
-                VDOMAIN=$(cat /etc/sshfreeltm/v2ray_domain 2>/dev/null || hostname -I | awk '{print $1}')
-                python3 - << PYEOF
-import json, uuid, base64, datetime
-idx, name, days, domain = int("$IB_IDX"), "$VNAME", int("$V2_DAYS"), "$VDOMAIN"
-with open('/usr/local/etc/v2ray/config.json') as f: config = json.load(f)
-inbounds = config.get('inbounds', [])
-if idx >= len(inbounds): print("Inbound no encontrado"); exit(1)
-ib = inbounds[idx]
-uid = str(uuid.uuid4())
-exp = (datetime.datetime.now() + datetime.timedelta(days=days)).strftime("%Y-%m-%d")
-if 'clients' not in ib['settings']: ib['settings']['clients'] = []
-ib['settings']['clients'].append({"id": uid, "alterId": 0, "email": name, "expires": exp})
-with open('/usr/local/etc/v2ray/config.json', 'w') as f: json.dump(config, f, indent=2)
-net = ib.get('streamSettings', {}).get('network', 'tcp')
-tls = ib.get('streamSettings', {}).get('security', 'none')
-path = ib.get('streamSettings', {}).get('wsSettings', {}).get('path', '/v2ray') if net == 'ws' else ''
-out_port = "443" if ib['port'] == 8080 else str(ib['port'])
-out_tls = "tls" if ib['port'] == 8080 else (tls if tls != "none" else "")
-vmess = {"v":"2","ps":name,"add":domain,"port":out_port,"id":uid,"aid":"0","net":net,"type":"none","host":domain,"path":path,"tls":out_tls}
-link = "vmess://" + base64.b64encode(json.dumps(vmess).encode()).decode()
-print("")
-print("\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m")
-print("  \033[1;32m✅ CUENTA VMESS CREADA\033[0m")
-print("\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m")
-print(f"  \033[1;96m◈\033[0m \033[2;37mPerfil :\033[0m  \033[1;97m{name}\033[0m")
-print(f"  \033[1;96m◈\033[0m \033[2;37mHost   :\033[0m  \033[1;97m{domain}\033[0m")
-print(f"  \033[1;96m◈\033[0m \033[2;37mPuerto :\033[0m  \033[1;33m{out_port}\033[0m")
-print(f"  \033[1;96m◈\033[0m \033[2;37mRed    :\033[0m  \033[1;96m{net}\033[0m")
-print(f"  \033[1;96m◈\033[0m \033[2;37mExpira :\033[0m  \033[1;33m$EXP_SHOW\033[0m")
-print("\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m")
-print("  \033[1;96m🔑 VMESS LINK:\033[0m")
-print("")
-print("\033[1;97m" + link + "\033[0m")
-print("")
-print("\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m")
-PYEOF
-                systemctl restart v2ray; read -p "  ENTER..." ;;
-            8)
-                python3 -c "
-import json
-try:
-    with open('/usr/local/etc/v2ray/config.json') as f: c=json.load(f)
-    for ib in c['inbounds']:
-        print(f'  Puerto {ib[\"port\"]}:')
-        for u in ib['settings'].get('clients',[]):
-            print(f'    - {u.get(\"email\",\"?\")} | expira: {u.get(\"expires\",\"sin exp\")}')
-except Exception as e: print(f'Error: {e}')
-"; read -p "  ENTER..." ;;
-            9)
-                read -p "  Confirmar desinstalar V2Ray (si/no): " CONFIRM
-                if [ "$CONFIRM" = "si" ]; then
-                    systemctl stop v2ray; systemctl disable v2ray
-                    bash <(curl -s https://raw.githubusercontent.com/v2fly/fhs-install-v2ray/master/install-release.sh) --remove > /dev/null 2>&1
-                    rm -f /etc/sshfreeltm/v2ray_domain
-                    echo -e "  ${G}OK V2Ray desinstalado${NC}"; sleep 2
-                fi ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
-                else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
-                fi
+                nano /etc/ssh/banner
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -1017,23 +643,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -1082,21 +692,10 @@ menu_ziv() {
             7) bash <(curl -fsSL https://raw.githubusercontent.com/powermx/zivpn/main/uninstall.sh) 2>/dev/null; echo -e "  ${G}Desinstalado${NC}"; sleep 1 ;;
             7)
                 if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                    echo -e "  ${R}No existe /etc/ssh/banner${NC}"
                 else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                    systemctl restart dropbear
+                    echo -e "  ${G}Dropbear reiniciado con el banner actual${NC}"
                 fi
                 sleep 2 ;;
             8)
@@ -1110,23 +709,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -1259,21 +842,10 @@ menu_users_ziv() {
             4) limpiar_expirados_ziv; aplicar_passwords_ziv; echo -e "  ${G}Limpiado${NC}"; sleep 1 ;;
             7)
                 if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                    echo -e "  ${R}No existe /etc/ssh/banner${NC}"
                 else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                    systemctl restart dropbear
+                    echo -e "  ${G}Dropbear reiniciado con el banner actual${NC}"
                 fi
                 sleep 2 ;;
             8)
@@ -1287,23 +859,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -1421,21 +977,10 @@ menu_usuarios() {
             4) renovar_usuario ;;
             7)
                 if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                    echo -e "  ${R}No existe /etc/ssh/banner${NC}"
                 else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                    systemctl restart dropbear
+                    echo -e "  ${G}Dropbear reiniciado con el banner actual${NC}"
                 fi
                 sleep 2 ;;
             8)
@@ -1449,23 +994,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -1683,132 +1212,7 @@ menu_antiddos() {
         read -p "  Opcion: " OPT
         case $OPT in
             1)
-                echo -e "
-  ${C}[1/5] Instalando dependencias...${NC}"
-                DEBIAN_FRONTEND=noninteractive apt install -y -qq iptables-persistent fail2ban 2>&1 | \
-                    grep -E "^(Get|Setting|Processing|Unpacking)" | while read line; do echo "    $line"; done
-                echo -e "  ${G}  ✓ Dependencias listas${NC}"
-
-                echo -e "  ${C}[2/5] Limpiando reglas previas...${NC}"
-                iptables -F; iptables -X; iptables -Z
-                echo -e "  ${G}  ✓ Reglas limpiadas${NC}"
-
-                echo -e "  ${C}[3/5] Aplicando politicas base...${NC}"
-                iptables -P INPUT ACCEPT
-                iptables -P FORWARD DROP
-                iptables -P OUTPUT ACCEPT
-                iptables -A INPUT -i lo -j ACCEPT
-                iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-                echo -e "  ${G}  ✓ Politicas base aplicadas${NC}"
-
-                echo -e "  ${C}[4/5] Abriendo puertos activos...${NC}"
-                for PORT in $(ss -tlnp | awk '/LISTEN/{print $4}' | grep -oE '[0-9]+$' | sort -u); do
-                    iptables -A INPUT -p tcp --dport $PORT -j ACCEPT
-                    echo -e "  ${DIM}    TCP $PORT abierto${NC}"
-                done
-                for PORT in $(ss -ulnp | awk '/UNCONN/{print $4}' | grep -oE '[0-9]+$' | sort -u); do
-                    iptables -A INPUT -p udp --dport $PORT -j ACCEPT
-                    echo -e "  ${DIM}    UDP $PORT abierto${NC}"
-                done
-                echo -e "  ${G}  ✓ Puertos configurados${NC}"
-
-                echo -e "  ${C}[5/5] Aplicando reglas anti-ataque...${NC}"
-                iptables -A INPUT -p tcp --syn -m limit --limit 10/s --limit-burst 20 -j ACCEPT
-                iptables -A INPUT -p tcp --syn -j DROP
-                echo -e "  ${G}  ✓ SYN Flood bloqueado${NC}"
-                iptables -A INPUT -p udp -m limit --limit 50/s --limit-burst 100 -j ACCEPT
-                iptables -A INPUT -p udp -j DROP
-                echo -e "  ${G}  ✓ UDP Flood bloqueado${NC}"
-                iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 2/s --limit-burst 4 -j ACCEPT
-                iptables -A INPUT -p icmp -j DROP
-                echo -e "  ${G}  ✓ ICMP Flood bloqueado${NC}"
-                iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
-                iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
-                iptables -A INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
-                echo -e "  ${G}  ✓ Port scanning bloqueado${NC}"
-                iptables -A INPUT -p tcp --dport 22 -m connlimit --connlimit-above 5 -j REJECT
-                iptables -A INPUT -p tcp -m connlimit --connlimit-above 50 -j REJECT
-                iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --set
-                iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --update --seconds 60 --hitcount 5 -j DROP
-                iptables -A INPUT -s 10.0.0.0/8 ! -i lo -j DROP
-                iptables -A INPUT -s 172.16.0.0/12 ! -i lo -j DROP
-                iptables -A INPUT -s 192.168.0.0/16 ! -i lo -j DROP
-                echo -e "  ${G}  ✓ Brute Force y spoofing bloqueados${NC}"
-
-                echo -e "  ${C}  Guardando reglas...${NC}"
-                iptables-save > /etc/iptables/rules.v4 2>/dev/null || iptables-save > /etc/iptables.rules
-                echo -e "  ${G}  ✓ Reglas guardadas${NC}"
-
-                echo -e "  ${C}  Configurando Fail2ban...${NC}"
-                mkdir -p /etc/fail2ban
-                cat > /etc/fail2ban/jail.local << EOF_JAIL
-[DEFAULT]
-bantime = 3600
-findtime = 600
-maxretry = 3
-ignoreip = 127.0.0.1/8
-
-[sshd]
-enabled = true
-port = ssh
-maxretry = 3
-bantime = 86400
-
-[http-get-dos]
-enabled = true
-port = http,https
-filter = http-get-dos
-logpath = /var/log/nginx/access.log
-maxretry = 100
-findtime = 60
-bantime = 3600
-EOF_JAIL
-                echo -e "  ${G}  ✓ Fail2ban configurado${NC}"
-
-                systemctl enable fail2ban -q 2>/dev/null
-                systemctl restart fail2ban 2>/dev/null
-                echo -ne "  ${C}  Iniciando Fail2ban${NC}"
-                for i in 1 2 3 4 5; do sleep 0.5; echo -ne "."; done; echo ""
-                systemctl is-active --quiet fail2ban && \
-                    echo -e "  ${G}  ✓ Fail2ban activo${NC}" || \
-                    echo -e "  ${Y}  ⚠ Verifica: systemctl status fail2ban${NC}"
-
-                BANNED_IPS=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2 | xargs)
-                if [ -n "$BANNED_IPS" ]; then
-                    curl -s -X POST "https://api.telegram.org/bot7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws/sendMessage" \
-                        -d "chat_id=6290827127&text=Anti-DDoS+Activado+-+IPs:+${BANNED_IPS}&parse_mode=Markdown" > /dev/null 2>&1
-                fi
-
-                echo ""; sep
-                echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"; sep
-                read -p "  ENTER..." ;;
-            2)
-                iptables -F; iptables -X
-                iptables -P INPUT ACCEPT; iptables -P FORWARD ACCEPT; iptables -P OUTPUT ACCEPT
-                systemctl stop fail2ban 2>/dev/null
-                echo -e "  ${Y}Anti-DDoS desactivado${NC}"; sleep 2 ;;
-            3)
-                echo ""; iptables -L INPUT -n --line-numbers | head -30; echo ""
-                read -p "  ENTER..." ;;
-            4) menu_atacantes ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
-                else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
-                fi
+                nano /etc/ssh/banner
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -1821,23 +1225,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -1939,132 +1327,7 @@ menu_antiddos() {
         read -p "  Opcion: " OPT
         case $OPT in
             1)
-                echo -e "
-  ${C}[1/5] Instalando dependencias...${NC}"
-                DEBIAN_FRONTEND=noninteractive apt install -y -qq iptables-persistent fail2ban 2>&1 | \
-                    grep -E "^(Get|Setting|Processing|Unpacking)" | while read line; do echo "    $line"; done
-                echo -e "  ${G}  ✓ Dependencias listas${NC}"
-
-                echo -e "  ${C}[2/5] Limpiando reglas previas...${NC}"
-                iptables -F; iptables -X; iptables -Z
-                echo -e "  ${G}  ✓ Reglas limpiadas${NC}"
-
-                echo -e "  ${C}[3/5] Aplicando politicas base...${NC}"
-                iptables -P INPUT ACCEPT
-                iptables -P FORWARD DROP
-                iptables -P OUTPUT ACCEPT
-                iptables -A INPUT -i lo -j ACCEPT
-                iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-                echo -e "  ${G}  ✓ Politicas base aplicadas${NC}"
-
-                echo -e "  ${C}[4/5] Abriendo puertos activos...${NC}"
-                for PORT in $(ss -tlnp | awk '/LISTEN/{print $4}' | grep -oE '[0-9]+$' | sort -u); do
-                    iptables -A INPUT -p tcp --dport $PORT -j ACCEPT
-                    echo -e "  ${DIM}    TCP $PORT abierto${NC}"
-                done
-                for PORT in $(ss -ulnp | awk '/UNCONN/{print $4}' | grep -oE '[0-9]+$' | sort -u); do
-                    iptables -A INPUT -p udp --dport $PORT -j ACCEPT
-                    echo -e "  ${DIM}    UDP $PORT abierto${NC}"
-                done
-                echo -e "  ${G}  ✓ Puertos configurados${NC}"
-
-                echo -e "  ${C}[5/5] Aplicando reglas anti-ataque...${NC}"
-                iptables -A INPUT -p tcp --syn -m limit --limit 10/s --limit-burst 20 -j ACCEPT
-                iptables -A INPUT -p tcp --syn -j DROP
-                echo -e "  ${G}  ✓ SYN Flood bloqueado${NC}"
-                iptables -A INPUT -p udp -m limit --limit 50/s --limit-burst 100 -j ACCEPT
-                iptables -A INPUT -p udp -j DROP
-                echo -e "  ${G}  ✓ UDP Flood bloqueado${NC}"
-                iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 2/s --limit-burst 4 -j ACCEPT
-                iptables -A INPUT -p icmp -j DROP
-                echo -e "  ${G}  ✓ ICMP Flood bloqueado${NC}"
-                iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
-                iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
-                iptables -A INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
-                echo -e "  ${G}  ✓ Port scanning bloqueado${NC}"
-                iptables -A INPUT -p tcp --dport 22 -m connlimit --connlimit-above 5 -j REJECT
-                iptables -A INPUT -p tcp -m connlimit --connlimit-above 50 -j REJECT
-                iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --set
-                iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --update --seconds 60 --hitcount 5 -j DROP
-                iptables -A INPUT -s 10.0.0.0/8 ! -i lo -j DROP
-                iptables -A INPUT -s 172.16.0.0/12 ! -i lo -j DROP
-                iptables -A INPUT -s 192.168.0.0/16 ! -i lo -j DROP
-                echo -e "  ${G}  ✓ Brute Force y spoofing bloqueados${NC}"
-
-                echo -e "  ${C}  Guardando reglas...${NC}"
-                iptables-save > /etc/iptables/rules.v4 2>/dev/null || iptables-save > /etc/iptables.rules
-                echo -e "  ${G}  ✓ Reglas guardadas${NC}"
-
-                echo -e "  ${C}  Configurando Fail2ban...${NC}"
-                mkdir -p /etc/fail2ban
-                cat > /etc/fail2ban/jail.local << EOF_JAIL
-[DEFAULT]
-bantime = 3600
-findtime = 600
-maxretry = 3
-ignoreip = 127.0.0.1/8
-
-[sshd]
-enabled = true
-port = ssh
-maxretry = 3
-bantime = 86400
-
-[http-get-dos]
-enabled = true
-port = http,https
-filter = http-get-dos
-logpath = /var/log/nginx/access.log
-maxretry = 100
-findtime = 60
-bantime = 3600
-EOF_JAIL
-                echo -e "  ${G}  ✓ Fail2ban configurado${NC}"
-
-                systemctl enable fail2ban -q 2>/dev/null
-                systemctl restart fail2ban 2>/dev/null
-                echo -ne "  ${C}  Iniciando Fail2ban${NC}"
-                for i in 1 2 3 4 5; do sleep 0.5; echo -ne "."; done; echo ""
-                systemctl is-active --quiet fail2ban && \
-                    echo -e "  ${G}  ✓ Fail2ban activo${NC}" || \
-                    echo -e "  ${Y}  ⚠ Verifica: systemctl status fail2ban${NC}"
-
-                BANNED_IPS=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2 | xargs)
-                if [ -n "$BANNED_IPS" ]; then
-                    curl -s -X POST "https://api.telegram.org/bot7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws/sendMessage" \
-                        -d "chat_id=6290827127&text=Anti-DDoS+Activado+-+IPs:+${BANNED_IPS}&parse_mode=Markdown" > /dev/null 2>&1
-                fi
-
-                echo ""; sep
-                echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"; sep
-                read -p "  ENTER..." ;;
-            2)
-                iptables -F; iptables -X
-                iptables -P INPUT ACCEPT; iptables -P FORWARD ACCEPT; iptables -P OUTPUT ACCEPT
-                systemctl stop fail2ban 2>/dev/null
-                echo -e "  ${Y}Anti-DDoS desactivado${NC}"; sleep 2 ;;
-            3)
-                echo ""; iptables -L INPUT -n --line-numbers | head -30; echo ""
-                read -p "  ENTER..." ;;
-            4) menu_atacantes ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
-                else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
-                fi
+                nano /etc/ssh/banner
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -2077,23 +1340,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -2170,79 +1417,7 @@ menu_slowdns() {
         read -p "  Opcion: " OPT
         case $OPT in
             1)
-                echo -e "
-  ${C}Instalando dependencias...${NC}"
-                apt install -y git screen iptables net-tools curl wget dos2unix gnutls-bin netfilter-persistent
-                mkdir -p $SLOWDNS_DIR
-                chmod 700 $SLOWDNS_DIR
-                read -p "  Dominio NS: " SDNS_DOMAIN
-                read -p "  Puerto SSH local (default 22): " SDNS_PORT
-                SDNS_PORT=${SDNS_PORT:-22}
-                echo -e "  ${C}Descargando binarios...${NC}"
-                wget -q -O $SLOWDNS_DIR/sldns-server "https://raw.githubusercontent.com/fisabiliyusri/SLDNS/main/slowdns/sldns-server"
-                wget -q -O $SLOWDNS_DIR/sldns-client "https://raw.githubusercontent.com/fisabiliyusri/SLDNS/main/slowdns/sldns-client"
-                wget -q -O $SLOWDNS_DIR/server.key "https://raw.githubusercontent.com/fisabiliyusri/SLDNS/main/slowdns/server.key"
-                wget -q -O $SLOWDNS_DIR/server.pub "https://raw.githubusercontent.com/fisabiliyusri/SLDNS/main/slowdns/server.pub"
-                chmod +x $SLOWDNS_DIR/*
-                iptables -I INPUT -p udp --dport 5300 -j ACCEPT
-                iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300
-                netfilter-persistent save 2>/dev/null
-                cat > /etc/systemd/system/$CLIENT_SERVICE.service << EOF
-[Unit]
-Description=Client SlowDNS
-After=network.target
-[Service]
-Type=simple
-ExecStart=$SLOWDNS_DIR/sldns-client -udp 8.8.8.8:53 --pubkey-file $PUBKEY_FILE $SDNS_DOMAIN 127.0.0.1:$SDNS_PORT
-Restart=on-failure
-[Install]
-WantedBy=multi-user.target
-EOF
-                cat > /etc/systemd/system/$SERVER_SERVICE.service << EOF
-[Unit]
-Description=Server SlowDNS
-After=network.target
-[Service]
-Type=simple
-ExecStart=$SLOWDNS_DIR/sldns-server -udp :5300 -privkey-file $SLOWDNS_DIR/server.key $SDNS_DOMAIN 127.0.0.1:$SDNS_PORT
-Restart=on-failure
-[Install]
-WantedBy=multi-user.target
-EOF
-                systemctl daemon-reload
-                systemctl enable $CLIENT_SERVICE $SERVER_SERVICE
-                systemctl start $CLIENT_SERVICE $SERVER_SERVICE
-                echo -e "  ${G}OK SlowDNS instalado${NC}"
-                echo -e "  PubKey: $(cat $PUBKEY_FILE 2>/dev/null)"
-                read -p "  ENTER..." ;;
-            2) systemctl start $CLIENT_SERVICE $SERVER_SERVICE && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
-            3) systemctl stop $CLIENT_SERVICE $SERVER_SERVICE && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            4) cat $PUBKEY_FILE 2>/dev/null || echo -e "  ${R}No encontrada${NC}"; echo ""; read -p "  ENTER..." ;;
-            5)
-                systemctl stop $CLIENT_SERVICE $SERVER_SERVICE 2>/dev/null
-                systemctl disable $CLIENT_SERVICE $SERVER_SERVICE 2>/dev/null
-                rm -rf $SLOWDNS_DIR
-                rm -f /etc/systemd/system/$CLIENT_SERVICE.service /etc/systemd/system/$SERVER_SERVICE.service
-                systemctl daemon-reload
-                echo -e "  ${G}SlowDNS desinstalado${NC}"; sleep 2 ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
-                else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
-                fi
+                nano /etc/ssh/banner
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -2255,23 +1430,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -2312,77 +1471,7 @@ menu_dropbear() {
         read -p "  Opcion: " OPT
         case $OPT in
             1)
-                echo -e "
-  ${C}Instalando Dropbear...${NC}"
-                apt install -y dropbear
-                read -p "  Puerto Dropbear (default 444): " DB_PORT
-                DB_PORT=${DB_PORT:-444}
-                mkdir -p /etc/sshfreeltm
-                echo "$DB_PORT" > /etc/sshfreeltm/dropbear_port
-                # Configurar
-                sed -i "s/NO_START=1/NO_START=0/" /etc/default/dropbear 2>/dev/null
-                sed -i "s/DROPBEAR_PORT=.*/DROPBEAR_PORT=$DB_PORT/" /etc/default/dropbear 2>/dev/null
-                grep -q "DROPBEAR_PORT" /etc/default/dropbear || echo "DROPBEAR_PORT=$DB_PORT" >> /etc/default/dropbear
-                # Crear servicio
-                cat > /etc/systemd/system/dropbear.service << EOF
-[Unit]
-Description=Dropbear SSH Server
-After=network.target
-[Service]
-Type=simple
-ExecStart=/usr/sbin/dropbear -F -p $DB_PORT
-Restart=always
-RestartSec=3
-[Install]
-WantedBy=multi-user.target
-EOF
-                systemctl daemon-reload
-                # Generar llaves Dropbear
-                mkdir -p /etc/dropbear
-                [ ! -f /etc/dropbear/dropbear_dss_host_key ] && dropbearkey -t dss -f /etc/dropbear/dropbear_dss_host_key > /dev/null 2>&1
-                [ ! -f /etc/dropbear/dropbear_rsa_host_key ] && dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key > /dev/null 2>&1
-                [ ! -f /etc/dropbear/dropbear_ecdsa_host_key ] && dropbearkey -t ecdsa -f /etc/dropbear/dropbear_ecdsa_host_key > /dev/null 2>&1
-                # Agregar /bin/false a shells permitidos
-                grep -q "/bin/false" /etc/shells || echo "/bin/false" >> /etc/shells
-                systemctl enable dropbear
-                systemctl start dropbear
-                iptables -I INPUT -p tcp --dport $DB_PORT -j ACCEPT 2>/dev/null
-                echo -e "  ${G}OK Dropbear instalado en puerto ${DB_PORT}${NC}"; sleep 2 ;;
-            2) systemctl start dropbear && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
-            3) systemctl stop dropbear && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            4) systemctl restart dropbear && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
-            5)
-                read -p "  Nuevo puerto: " NEW_PORT
-                echo "$NEW_PORT" > /etc/sshfreeltm/dropbear_port
-                sed -i "s/DROPBEAR_PORT=.*/DROPBEAR_PORT=$NEW_PORT/" /etc/default/dropbear 2>/dev/null
-                sed -i "s/-p [0-9]*/-p $NEW_PORT/" /etc/systemd/system/dropbear.service 2>/dev/null
-                systemctl daemon-reload
-                systemctl restart dropbear
-                echo -e "  ${G}Puerto cambiado a ${NEW_PORT}${NC}"; sleep 2 ;;
-            6)
-                systemctl stop dropbear; systemctl disable dropbear
-                apt remove -y dropbear > /dev/null 2>&1
-                rm -f /etc/systemd/system/dropbear.service
-                systemctl daemon-reload
-                echo -e "  ${G}Dropbear desinstalado${NC}"; sleep 2 ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
-                else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
-                fi
+                nano /etc/ssh/banner
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -2395,23 +1484,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -2464,103 +1537,7 @@ menu_banner_ssh() {
         read -p "  Opcion: " OPT
         case $OPT in
             1)
-                # Crear archivo banner SSH si no existe
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << 'BANNEREOF'
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                # Activar automaticamente al editar
-                grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null &&                     sed -i "s|^Banner.*|Banner /etc/ssh/banner|" /etc/ssh/sshd_config ||                     echo "Banner /etc/ssh/banner" >> /etc/ssh/sshd_config
-                systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null
-                echo -e "  ${G}OK Banner SSH guardado y activado${NC}"; sleep 2 ;;
-            2)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No hay banner creado. Usa [1] para crear uno.${NC}"; sleep 2
-                else
-                    grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null &&                         sed -i "s|^Banner.*|Banner /etc/ssh/banner|" /etc/ssh/sshd_config ||                         echo "Banner /etc/ssh/banner" >> /etc/ssh/sshd_config
-                    systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null
-                    echo -e "  ${G}OK Banner SSH activado${NC}"; sleep 2
-                fi ;;
-            3)
-                sed -i '/^Banner/d' /etc/ssh/sshd_config 2>/dev/null
-                systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null
-                echo -e "  ${Y}Banner SSH desactivado (archivo conservado)${NC}"; sleep 2 ;;
-            4)
-                echo ""; sep
-                echo -e "  ${Y}Banner SSH actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}Sin archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
-            5)
-                # Editar banner de todos los WebSocket activos
-                WS_LIST=$(ls /etc/sshfreeltm/proxy_ws_*.py 2>/dev/null)
-                if [ -z "$WS_LIST" ]; then
-                    echo -e "  ${R}No hay WebSocket instalado. Instala uno primero.${NC}"; sleep 2
-                else
-                    echo ""; sep
-                    echo -e "  ${Y}WebSockets activos:${NC}"; echo ""
-                    for f in $WS_LIST; do
-                        PORT=$(echo $f | grep -o '[0-9]*\.py$' | tr -d '.py')
-                        CMSG=$(grep "^MSG = " "$f" 2>/dev/null | sed "s/MSG = '\(.*\)'.encode.*/\1/")
-                        echo -e "  ${NEON}◈${NC} Puerto ${Y}${PORT}${NC} — Banner: ${W}${CMSG}${NC}"
-                    done
-                    echo ""; sep
-                    read -p "  Puerto WebSocket a editar (0=todos): " WS_EDIT_PORT
-                    read -p "  Nuevo banner: " NEW_WS_BANNER
-                    [ -z "$NEW_WS_BANNER" ] && echo -e "  ${R}Cancelado${NC}" && sleep 1 && continue
-
-                    if [ "$WS_EDIT_PORT" = "0" ]; then
-                        TARGETS="$WS_LIST"
-                    else
-                        TARGETS="/etc/sshfreeltm/proxy_ws_${WS_EDIT_PORT}.py"
-                    fi
-
-                    for f in $TARGETS; do
-                        if [ -f "$f" ]; then
-                            sed -i "s|^MSG = '.*'\.encode|MSG = '${NEW_WS_BANNER}'.encode|" "$f"
-                            PORT=$(echo $f | grep -o '[0-9]*\.py$' | tr -d '.py')
-                            systemctl restart ws-proxy-${PORT} 2>/dev/null
-                            echo -e "  ${G}✓ Banner actualizado en puerto ${PORT}${NC}"
-                        fi
-                    done
-                    sleep 2
-                fi ;;
-            6)
-                echo ""; sep
-                echo -e "  ${Y}Banners HTTP Custom actuales:${NC}"; echo ""
-                for f in $(ls /etc/sshfreeltm/proxy_ws_*.py 2>/dev/null); do
-                    PORT=$(echo $f | grep -o '[0-9]*\.py$' | tr -d '.py')
-                    CMSG=$(grep "^MSG = " "$f" 2>/dev/null | sed "s/MSG = '\(.*\)'.encode.*/\1/")
-                    CRESP=$(grep "^STATUS_RESP = " "$f" 2>/dev/null | sed "s/STATUS_RESP = b'\(.*\)'/\1/")
-                    echo -e "  ${NEON}◈${NC} Puerto ${Y}${PORT}${NC}"
-                    echo -e "    Banner : ${W}${CMSG}${NC}"
-                    echo -e "    Status : ${W}${CRESP}${NC}"
-                done
-                echo ""; read -p "  ENTER..." ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
-                else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
-                fi
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -2573,23 +1550,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -2623,22 +1584,15 @@ menu_limpieza() {
         read -p " Opcion: " OPT
         case $OPT in
             1)
-                echo -e "\n  ${C}Limpiando cache RAM...${NC}"
-                sync
-                echo 3 > /proc/sys/vm/drop_caches
-                RAM_FREE_NEW=$(free -h | awk '/^Mem:/{print $4}')
-                echo -e "  ${G}✓ Cache limpiada${NC}"
-                echo -e "  ${NEON}◈${NC} ${W}RAM Libre ahora:${NC} ${Y}${RAM_FREE_NEW}${NC}"
+                nano /etc/ssh/banner
                 sleep 2 ;;
             2)
-                echo -e "\n  ${C}Limpiando archivos temporales...${NC}"
-                apt autoremove -y > /dev/null 2>&1
-                apt clean > /dev/null 2>&1
-                rm -rf /tmp/*.sh /tmp/*.py /tmp/*.txt 2>/dev/null
-                journalctl --vacuum-time=3d > /dev/null 2>&1
-                echo -e "  ${G}✓ Temporales eliminados${NC}"
-                echo -e "  ${G}✓ Cache apt limpiada${NC}"
-                echo -e "  ${G}✓ Logs antiguos eliminados${NC}"
+                if [ ! -f /etc/ssh/banner ]; then
+                    echo -e "  ${R}No existe /etc/ssh/banner${NC}"
+                else
+                    systemctl restart sshd
+                    echo -e "  ${G}SSH reiniciado con el banner actual${NC}"
+                fi
                 sleep 2 ;;
             3)
                 banner; sep
@@ -2672,21 +1626,10 @@ REBOOTEOF
                     /sbin/reboot; } ;;
             7)
                 if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                    echo -e "  ${R}No existe /etc/ssh/banner${NC}"
                 else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                    systemctl restart dropbear
+                    echo -e "  ${G}Dropbear reiniciado con el banner actual${NC}"
                 fi
                 sleep 2 ;;
             8)
@@ -2700,23 +1643,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -2752,117 +1679,7 @@ menu_shadowsocks() {
         read -p " Opcion: " OPT
         case $OPT in
             1)
-                echo -e "\n  ${C}Instalando Shadowsocks...${NC}"
-                apt install -y shadowsocks-libev > /dev/null 2>&1
-                mkdir -p /etc/shadowsocks
-                read -p "  Puerto (default 8388): " SS_PORT; SS_PORT=${SS_PORT:-8388}
-                read -p "  Password: " SS_PASS; SS_PASS=${SS_PASS:-"ltmssh2026"}
-                echo -e "  Metodo: ${Y}❬1❭${NC} aes-256-gcm ${Y}❬2❭${NC} chacha20-ietf-poly1305 ${Y}❬3❭${NC} aes-128-gcm"
-                read -p "  Opcion: " SS_METHOD_OPT
-                case $SS_METHOD_OPT in
-                    1) SS_METHOD="aes-256-gcm" ;;
-                    2) SS_METHOD="chacha20-ietf-poly1305" ;;
-                    3) SS_METHOD="aes-128-gcm" ;;
-                    *) SS_METHOD="aes-256-gcm" ;;
-                esac
-                cat > /etc/shadowsocks/config.json << EOF
-{
-    "server": "0.0.0.0",
-    "server_port": $SS_PORT,
-    "password": "$SS_PASS",
-    "method": "$SS_METHOD",
-    "timeout": 300,
-    "mode": "tcp_and_udp",
-    "fast_open": true
-}
-EOF
-                cat > /etc/systemd/system/shadowsocks-server.service << EOF2
-[Unit]
-Description=Shadowsocks Server
-After=network.target
-[Service]
-Type=simple
-ExecStart=/usr/bin/ss-server -c /etc/shadowsocks/config.json
-Restart=always
-RestartSec=3
-[Install]
-WantedBy=multi-user.target
-EOF2
-                systemctl daemon-reload
-                systemctl enable shadowsocks-server
-                # Matar proceso anterior si el puerto esta ocupado
-                pkill -f ss-server 2>/dev/null; sleep 1
-                systemctl start shadowsocks-server
-                iptables -I INPUT -p tcp --dport $SS_PORT -j ACCEPT 2>/dev/null
-                iptables -I INPUT -p udp --dport $SS_PORT -j ACCEPT 2>/dev/null
-                SS_IP=$(hostname -I | awk '{print $1}')
-                echo ""
-                echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
-                echo -e "  ${G}✅ SHADOWSOCKS INSTALADO${NC}"
-                echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
-                echo -e "  ${NEON}◈${NC} ${W}IP:${NC}       ${Y}$SS_IP${NC}"
-                echo -e "  ${NEON}◈${NC} ${W}Puerto:${NC}   ${Y}$SS_PORT${NC}"
-                echo -e "  ${NEON}◈${NC} ${W}Password:${NC} ${Y}$SS_PASS${NC}"
-                echo -e "  ${NEON}◈${NC} ${W}Metodo:${NC}   ${Y}$SS_METHOD${NC}"
-                echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
-                read -p "  ENTER..." ;;
-            2) systemctl start shadowsocks-server && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
-            3) systemctl stop shadowsocks-server && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            4) systemctl restart shadowsocks-server && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
-            5)
-                banner; sep; echo -e "  ${Y}AGREGAR USUARIO${NC}"; sep; echo ""
-                echo -e "  ${Y}Shadowsocks basico usa una sola password${NC}"
-                echo -e "  ${Y}Para multi-usuario necesitas shadowsocks-manager${NC}"; echo ""
-                read -p "  Nueva password: " SS_NEW_PASS
-                python3 -c "
-import json
-with open('/etc/shadowsocks/config.json') as f: c=json.load(f)
-c['password'] = '$SS_NEW_PASS'
-with open('/etc/shadowsocks/config.json','w') as f: json.dump(c,f,indent=2)
-print('OK')
-"
-                systemctl restart shadowsocks-server
-                echo -e "  ${G}Password actualizada: ${Y}$SS_NEW_PASS${NC}"
-                read -p "  ENTER..." ;;
-            6)
-                echo ""; echo -e "  ${W}Configuracion actual:${NC}"; echo ""
-                python3 -c "
-import json
-with open('/etc/shadowsocks/config.json') as f: c=json.load(f)
-print(f'  Puerto:   {c.get(\"server_port\")}')
-print(f'  Password: {c.get(\"password\")}')
-print(f'  Metodo:   {c.get(\"method\")}')
-" 2>/dev/null || echo "  No instalado"
-                echo ""; read -p "  ENTER..." ;;
-            7) cat /etc/shadowsocks/config.json 2>/dev/null || echo "No instalado"; echo ""; read -p "  ENTER..." ;;
-            8)
-                read -p "  Confirmar (si/no): " CONFIRM
-                [ "$CONFIRM" = "si" ] && {
-                    systemctl stop shadowsocks-server 2>/dev/null
-                    systemctl disable shadowsocks-server 2>/dev/null
-                    apt remove -y shadowsocks-libev > /dev/null 2>&1
-                    rm -f /etc/systemd/system/shadowsocks-server.service
-                    rm -rf /etc/shadowsocks
-                    systemctl daemon-reload
-                    echo -e "  ${G}Desinstalado${NC}"; sleep 2; } ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
-                else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
-                fi
+                nano /etc/ssh/banner
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -2875,23 +1692,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -2923,102 +1724,7 @@ menu_udp_hysteria_mod() {
         read -p " Opcion: " OPT
         case $OPT in
             1)
-                echo -e "\n  ${C}Instalando UDP Hysteria Mod...${NC}"
-                curl -sL https://raw.githubusercontent.com/JotchuaDevz/JT-UDP-DEV/refs/heads/main/install_udp.sh -o /tmp/ltmudp_install.sh
-                sed -i 's/DOMAIN="requestlab-x.space"/DOMAIN="ltm.darkfullhn.xyz"/' /tmp/ltmudp_install.sh
-                sed -i 's/OBFS="jt"/OBFS="ltmudp"/' /tmp/ltmudp_install.sh
-                sed -i 's/PASSWORD="jt"/PASSWORD="ltmudp"/' /tmp/ltmudp_install.sh
-                bash /tmp/ltmudp_install.sh > /tmp/ltmudp_out.txt 2>&1
-                grep -v "JT-UDP\|Felicitaciones\|gestor\|udp'\|Ahora puedes\|Script del gestor\|Creando enlace\|Descargando script" /tmp/ltmudp_out.txt | sed 's/JT-UDP/LTMUDPv1/g'
-                echo -e "  ${G}OK Instalado${NC}"
-                read -p "  ENTER..." ;;
-            2) systemctl start hysteria-server && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
-            3) systemctl stop hysteria-server && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            4) systemctl restart hysteria-server && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
-            5)
-                banner; sep; echo -e "  ${Y}AGREGAR USUARIO${NC}"; sep; echo ""
-                read -p "  Usuario: " HM_USER
-                read -p "  Password: " HM_PASS
-                read -p "  Dias (default 30): " HM_DAYS; HM_DAYS=${HM_DAYS:-30}
-                HM_EXP=$(date -d "+${HM_DAYS} days" +%d/%m/%Y)
-                python3 -c "
-import json
-with open('/etc/hysteria/config.json') as f: c=json.load(f)
-users = c.get('auth',{}).get('config',[])
-entry = '$HM_USER:$HM_PASS'
-if entry not in users: users.append(entry)
-c['auth']['config'] = users
-with open('/etc/hysteria/config.json','w') as f: json.dump(c,f,indent=2)
-print('OK')
-"
-                systemctl restart hysteria-server
-                HM_IP=$(hostname -I | awk '{print $1}')
-                echo ""
-                echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
-                echo -e "  ${G}✅ USUARIO CREADO${NC}"
-                echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
-                echo -e "  ${NEON}◈${NC} ${W}Usuario:${NC}  ${Y}$HM_USER${NC}"
-                echo -e "  ${NEON}◈${NC} ${W}Password:${NC} ${Y}$HM_PASS${NC}"
-                echo -e "  ${NEON}◈${NC} ${W}IP:${NC}       ${Y}$HM_IP${NC}"
-                echo -e "  ${NEON}◈${NC} ${W}Puerto:${NC}   ${Y}36712${NC}"
-                HM_OBFS_NOW=$(python3 -c "import json; c=json.load(open('/etc/hysteria/config.json')); print(c.get('obfs','ltmudp'))" 2>/dev/null || echo "ltmudp")
-                echo -e "  ${NEON}◈${NC} ${W}Obfs:${NC}     ${Y}${HM_OBFS_NOW}${NC}"
-                echo -e "  ${NEON}◈${NC} ${W}Expira:${NC}   ${Y}$HM_EXP${NC}"
-                echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
-                read -p "  ENTER..." ;;
-            6)
-                echo ""; echo -e "  ${W}Usuarios:${NC}"; echo ""
-                echo -e "  ${NEON}◈${NC} ${DIM}Usuario : Password${NC}"; echo ""
-                python3 -c "
-import json
-with open('/etc/hysteria/config.json') as f: c=json.load(f)
-users = c.get('auth',{}).get('config',[])
-for u in users: print('  ' + u)
-" 2>/dev/null || echo "  No instalado"
-                echo ""; read -p "  ENTER..." ;;
-            7)
-                banner; sep; echo -e "  ${Y}CAMBIAR OBFS${NC}"; sep; echo ""
-                CURRENT_OBFS=$(grep -o '"obfs":"[^"]*"' /etc/hysteria/config.json 2>/dev/null | cut -d'"' -f4 || echo "ltmudp")
-                echo -e "  ${NEON}◈${NC} ${W}Obfs actual:${NC} ${Y}$CURRENT_OBFS${NC}"; echo ""
-                read -p "  Nuevo obfs: " NEW_OBFS
-                [ -z "$NEW_OBFS" ] && echo -e "  ${R}Cancelado${NC}" && sleep 1 && continue
-                python3 -c "
-import json
-with open('/etc/hysteria/config.json') as f: c=json.load(f)
-c['obfs'] = '$NEW_OBFS'
-with open('/etc/hysteria/config.json','w') as f: json.dump(c,f,indent=2)
-print('OK')
-" 2>/dev/null
-                systemctl restart hysteria-server
-                echo -e "  ${G}Obfs cambiado a: ${Y}$NEW_OBFS${NC}"; sleep 2 ;;
-            8)
-                read -p "  Confirmar (si/no): " CONFIRM
-                [ "$CONFIRM" = "si" ] && {
-                    systemctl stop hysteria-server 2>/dev/null
-                    systemctl disable hysteria-server 2>/dev/null
-                    rm -f /etc/systemd/system/hysteria-server.service
-                    rm -f /usr/local/bin/hysteria
-                    rm -rf /etc/hysteria
-                    systemctl daemon-reload
-                    echo -e "  ${G}Desinstalado${NC}"; sleep 2; } ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
-                else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
-                fi
+                nano /etc/ssh/banner
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -3031,23 +1737,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -3081,151 +1771,7 @@ menu_hysteria() {
         read -p " Opcion: " OPT
         case $OPT in
             1)
-                echo -e "\n  ${C}Instalando Hysteria V1...${NC}"
-                apt install -y wget > /dev/null 2>&1
-                wget -q -O /usr/local/bin/hysteria-v1 https://github.com/HyNetwork/hysteria/releases/download/v1.3.5/hysteria-linux-amd64
-                chmod +x /usr/local/bin/hysteria-v1
-                read -p "  Puerto UDP (default 36712): " H1_PORT; H1_PORT=${H1_PORT:-36712}
-                read -p "  Password: " H1_PASS; H1_PASS=${H1_PASS:-"ltmssh2026"}
-                read -p "  Dominio (para TLS, deja vacio para self-signed): " H1_DOMAIN
-                mkdir -p /etc/hysteria
-                if [ -n "$H1_DOMAIN" ]; then
-                    apt install -y certbot > /dev/null 2>&1
-                    certbot certonly --standalone -d $H1_DOMAIN --non-interactive --agree-tos -m admin@${H1_DOMAIN#*.} 2>/dev/null
-                    CERT_FILE="/etc/letsencrypt/live/$H1_DOMAIN/fullchain.pem"
-                    KEY_FILE="/etc/letsencrypt/live/$H1_DOMAIN/privkey.pem"
-                else
-                    openssl req -x509 -nodes -newkey ec:<(openssl ecparam -name prime256v1) \
-                        -keyout /etc/hysteria/server.key -out /etc/hysteria/server.crt \
-                        -subj "/CN=hysteria" -days 36500 2>/dev/null
-                    CERT_FILE="/etc/hysteria/server.crt"
-                    KEY_FILE="/etc/hysteria/server.key"
-                fi
-                cat > /etc/hysteria/config.json << EOF
-{
-  "listen": ":$H1_PORT",
-  "cert": "$CERT_FILE",
-  "key": "$KEY_FILE",
-  "auth": {
-    "mode": "password",
-    "config": {"password": "$H1_PASS"}
-  },
-  "obfs": "ltmssh",
-  "up_mbps": 100,
-  "down_mbps": 100
-}
-EOF
-                cat > /etc/systemd/system/hysteria-server.service << EOF
-[Unit]
-Description=Hysteria V1 Server
-After=network.target
-[Service]
-Type=simple
-ExecStart=/usr/local/bin/hysteria-v1 server --config /etc/hysteria/config.json
-Restart=always
-RestartSec=3
-[Install]
-WantedBy=multi-user.target
-EOF
-                systemctl daemon-reload
-                systemctl enable hysteria-server
-                systemctl start hysteria-server
-                iptables -I INPUT -p udp --dport $H1_PORT -j ACCEPT 2>/dev/null
-                echo -e "  ${G}OK Hysteria V1 instalado${NC}"
-                echo -e "  ${NEON}◈${NC} Puerto: ${Y}$H1_PORT${NC}"
-                echo -e "  ${NEON}◈${NC} Password: ${Y}$H1_PASS${NC}"
-                echo -e "  ${NEON}◈${NC} Obfs: ${Y}ltmssh${NC}"
-                read -p "  ENTER..." ;;
-            2)
-                echo -e "\n  ${C}Instalando Hysteria V2...${NC}"
-                apt install -y wget > /dev/null 2>&1
-                wget -q -O /usr/local/bin/hysteria2 https://github.com/apernet/hysteria/releases/latest/download/hysteria-linux-amd64
-                # hysteria2 es el mismo binario de apernet pero con nombre diferente
-                chmod +x /usr/local/bin/hysteria2
-                read -p "  Puerto UDP (default 8443): " H2_PORT; H2_PORT=${H2_PORT:-8443}
-                read -p "  Password: " H2_PASS; H2_PASS=${H2_PASS:-"ltmssh2026"}
-                read -p "  Dominio (deja vacio para self-signed): " H2_DOMAIN
-                mkdir -p /etc/hysteria2
-                if [ -n "$H2_DOMAIN" ]; then
-                    apt install -y certbot > /dev/null 2>&1
-                    certbot certonly --standalone -d $H2_DOMAIN --non-interactive --agree-tos -m admin@${H2_DOMAIN#*.} 2>/dev/null
-                    CERT2_FILE="/etc/letsencrypt/live/$H2_DOMAIN/fullchain.pem"
-                    KEY2_FILE="/etc/letsencrypt/live/$H2_DOMAIN/privkey.pem"
-                else
-                    openssl req -x509 -nodes -newkey ec:<(openssl ecparam -name prime256v1) \
-                        -keyout /etc/hysteria2/server.key -out /etc/hysteria2/server.crt \
-                        -subj "/CN=hysteria2" -days 36500 2>/dev/null
-                    CERT2_FILE="/etc/hysteria2/server.crt"
-                    KEY2_FILE="/etc/hysteria2/server.key"
-                fi
-                cat > /etc/hysteria2/config.yaml << EOF
-listen: :$H2_PORT
-tls:
-  cert: $CERT2_FILE
-  key: $KEY2_FILE
-auth:
-  type: password
-  password: $H2_PASS
-masquerade:
-  type: proxy
-  proxy:
-    url: https://news.ycombinator.com/
-    rewriteHost: true
-EOF
-                cat > /etc/systemd/system/hysteria2-server.service << EOF
-[Unit]
-Description=Hysteria V2 Server
-After=network.target
-[Service]
-Type=simple
-ExecStart=/usr/local/bin/hysteria2 server --config /etc/hysteria2/config.yaml
-Restart=always
-RestartSec=3
-[Install]
-WantedBy=multi-user.target
-EOF
-                systemctl daemon-reload
-                systemctl enable hysteria2-server
-                systemctl start hysteria2-server
-                iptables -I INPUT -p udp --dport $H2_PORT -j ACCEPT 2>/dev/null
-                echo -e "  ${G}OK Hysteria V2 instalado${NC}"
-                echo -e "  ${NEON}◈${NC} Puerto: ${Y}$H2_PORT${NC}"
-                echo -e "  ${NEON}◈${NC} Password: ${Y}$H2_PASS${NC}"
-                read -p "  ENTER..." ;;
-            3) systemctl start hysteria-server && echo -e "  ${G}Hysteria V1 iniciado${NC}"; sleep 1 ;;
-            4) systemctl start hysteria2-server && echo -e "  ${G}Hysteria V2 iniciado${NC}"; sleep 1 ;;
-            5) systemctl stop hysteria-server && echo -e "  ${Y}Hysteria V1 detenido${NC}"; sleep 1 ;;
-            6) systemctl stop hysteria2-server && echo -e "  ${Y}Hysteria V2 detenido${NC}"; sleep 1 ;;
-            7) cat /etc/hysteria/config.json 2>/dev/null || echo "No instalado"; echo ""; read -p "  ENTER..." ;;
-            8) cat /etc/hysteria2/config.yaml 2>/dev/null || echo "No instalado"; echo ""; read -p "  ENTER..." ;;
-            9)
-                systemctl stop hysteria-server; systemctl disable hysteria-server
-                rm -f /usr/local/bin/hysteria /etc/systemd/system/hysteria-server.service
-                rm -rf /etc/hysteria; systemctl daemon-reload
-                echo -e "  ${G}Hysteria V1 desinstalado${NC}"; sleep 2 ;;
-            10)
-                systemctl stop hysteria2-server; systemctl disable hysteria2-server
-                rm -f /usr/local/bin/hysteria2 /etc/systemd/system/hysteria2-server.service
-                rm -rf /etc/hysteria2; systemctl daemon-reload
-                echo -e "  ${G}Hysteria V2 desinstalado${NC}"; sleep 2 ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
-                else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
-                fi
+                nano /etc/ssh/banner
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -3238,23 +1784,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -3312,21 +1842,10 @@ menu_herramientas() {
             14) menu_limpieza ;;
             7)
                 if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
+                    echo -e "  ${R}No existe /etc/ssh/banner${NC}"
                 else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
+                    systemctl restart dropbear
+                    echo -e "  ${G}Dropbear reiniciado con el banner actual${NC}"
                 fi
                 sleep 2 ;;
             8)
@@ -3340,23 +1859,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -3473,132 +1976,7 @@ menu_antiddos() {
         read -p "  Opcion: " OPT
         case $OPT in
             1)
-                echo -e "
-  ${C}[1/5] Instalando dependencias...${NC}"
-                DEBIAN_FRONTEND=noninteractive apt install -y -qq iptables-persistent fail2ban 2>&1 | \
-                    grep -E "^(Get|Setting|Processing|Unpacking)" | while read line; do echo "    $line"; done
-                echo -e "  ${G}  ✓ Dependencias listas${NC}"
-
-                echo -e "  ${C}[2/5] Limpiando reglas previas...${NC}"
-                iptables -F; iptables -X; iptables -Z
-                echo -e "  ${G}  ✓ Reglas limpiadas${NC}"
-
-                echo -e "  ${C}[3/5] Aplicando politicas base...${NC}"
-                iptables -P INPUT ACCEPT
-                iptables -P FORWARD DROP
-                iptables -P OUTPUT ACCEPT
-                iptables -A INPUT -i lo -j ACCEPT
-                iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-                echo -e "  ${G}  ✓ Politicas base aplicadas${NC}"
-
-                echo -e "  ${C}[4/5] Abriendo puertos activos...${NC}"
-                for PORT in $(ss -tlnp | awk '/LISTEN/{print $4}' | grep -oE '[0-9]+$' | sort -u); do
-                    iptables -A INPUT -p tcp --dport $PORT -j ACCEPT
-                    echo -e "  ${DIM}    TCP $PORT abierto${NC}"
-                done
-                for PORT in $(ss -ulnp | awk '/UNCONN/{print $4}' | grep -oE '[0-9]+$' | sort -u); do
-                    iptables -A INPUT -p udp --dport $PORT -j ACCEPT
-                    echo -e "  ${DIM}    UDP $PORT abierto${NC}"
-                done
-                echo -e "  ${G}  ✓ Puertos configurados${NC}"
-
-                echo -e "  ${C}[5/5] Aplicando reglas anti-ataque...${NC}"
-                iptables -A INPUT -p tcp --syn -m limit --limit 10/s --limit-burst 20 -j ACCEPT
-                iptables -A INPUT -p tcp --syn -j DROP
-                echo -e "  ${G}  ✓ SYN Flood bloqueado${NC}"
-                iptables -A INPUT -p udp -m limit --limit 50/s --limit-burst 100 -j ACCEPT
-                iptables -A INPUT -p udp -j DROP
-                echo -e "  ${G}  ✓ UDP Flood bloqueado${NC}"
-                iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 2/s --limit-burst 4 -j ACCEPT
-                iptables -A INPUT -p icmp -j DROP
-                echo -e "  ${G}  ✓ ICMP Flood bloqueado${NC}"
-                iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
-                iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
-                iptables -A INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
-                echo -e "  ${G}  ✓ Port scanning bloqueado${NC}"
-                iptables -A INPUT -p tcp --dport 22 -m connlimit --connlimit-above 5 -j REJECT
-                iptables -A INPUT -p tcp -m connlimit --connlimit-above 50 -j REJECT
-                iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --set
-                iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --update --seconds 60 --hitcount 5 -j DROP
-                iptables -A INPUT -s 10.0.0.0/8 ! -i lo -j DROP
-                iptables -A INPUT -s 172.16.0.0/12 ! -i lo -j DROP
-                iptables -A INPUT -s 192.168.0.0/16 ! -i lo -j DROP
-                echo -e "  ${G}  ✓ Brute Force y spoofing bloqueados${NC}"
-
-                echo -e "  ${C}  Guardando reglas...${NC}"
-                iptables-save > /etc/iptables/rules.v4 2>/dev/null || iptables-save > /etc/iptables.rules
-                echo -e "  ${G}  ✓ Reglas guardadas${NC}"
-
-                echo -e "  ${C}  Configurando Fail2ban...${NC}"
-                mkdir -p /etc/fail2ban
-                cat > /etc/fail2ban/jail.local << EOF_JAIL
-[DEFAULT]
-bantime = 3600
-findtime = 600
-maxretry = 3
-ignoreip = 127.0.0.1/8
-
-[sshd]
-enabled = true
-port = ssh
-maxretry = 3
-bantime = 86400
-
-[http-get-dos]
-enabled = true
-port = http,https
-filter = http-get-dos
-logpath = /var/log/nginx/access.log
-maxretry = 100
-findtime = 60
-bantime = 3600
-EOF_JAIL
-                echo -e "  ${G}  ✓ Fail2ban configurado${NC}"
-
-                systemctl enable fail2ban -q 2>/dev/null
-                systemctl restart fail2ban 2>/dev/null
-                echo -ne "  ${C}  Iniciando Fail2ban${NC}"
-                for i in 1 2 3 4 5; do sleep 0.5; echo -ne "."; done; echo ""
-                systemctl is-active --quiet fail2ban && \
-                    echo -e "  ${G}  ✓ Fail2ban activo${NC}" || \
-                    echo -e "  ${Y}  ⚠ Verifica: systemctl status fail2ban${NC}"
-
-                BANNED_IPS=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2 | xargs)
-                if [ -n "$BANNED_IPS" ]; then
-                    curl -s -X POST "https://api.telegram.org/bot7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws/sendMessage" \
-                        -d "chat_id=6290827127&text=Anti-DDoS+Activado+-+IPs:+${BANNED_IPS}&parse_mode=Markdown" > /dev/null 2>&1
-                fi
-
-                echo ""; sep
-                echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"; sep
-                read -p "  ENTER..." ;;
-            2)
-                iptables -F; iptables -X
-                iptables -P INPUT ACCEPT; iptables -P FORWARD ACCEPT; iptables -P OUTPUT ACCEPT
-                systemctl stop fail2ban 2>/dev/null
-                echo -e "  ${Y}Anti-DDoS desactivado${NC}"; sleep 2 ;;
-            3)
-                echo ""; iptables -L INPUT -n --line-numbers | head -30; echo ""
-                read -p "  ENTER..." ;;
-            4) menu_atacantes ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
-                else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
-                fi
+                nano /etc/ssh/banner
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -3611,23 +1989,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -3729,132 +2091,7 @@ menu_antiddos() {
         read -p "  Opcion: " OPT
         case $OPT in
             1)
-                echo -e "
-  ${C}[1/5] Instalando dependencias...${NC}"
-                DEBIAN_FRONTEND=noninteractive apt install -y -qq iptables-persistent fail2ban 2>&1 | \
-                    grep -E "^(Get|Setting|Processing|Unpacking)" | while read line; do echo "    $line"; done
-                echo -e "  ${G}  ✓ Dependencias listas${NC}"
-
-                echo -e "  ${C}[2/5] Limpiando reglas previas...${NC}"
-                iptables -F; iptables -X; iptables -Z
-                echo -e "  ${G}  ✓ Reglas limpiadas${NC}"
-
-                echo -e "  ${C}[3/5] Aplicando politicas base...${NC}"
-                iptables -P INPUT ACCEPT
-                iptables -P FORWARD DROP
-                iptables -P OUTPUT ACCEPT
-                iptables -A INPUT -i lo -j ACCEPT
-                iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-                echo -e "  ${G}  ✓ Politicas base aplicadas${NC}"
-
-                echo -e "  ${C}[4/5] Abriendo puertos activos...${NC}"
-                for PORT in $(ss -tlnp | awk '/LISTEN/{print $4}' | grep -oE '[0-9]+$' | sort -u); do
-                    iptables -A INPUT -p tcp --dport $PORT -j ACCEPT
-                    echo -e "  ${DIM}    TCP $PORT abierto${NC}"
-                done
-                for PORT in $(ss -ulnp | awk '/UNCONN/{print $4}' | grep -oE '[0-9]+$' | sort -u); do
-                    iptables -A INPUT -p udp --dport $PORT -j ACCEPT
-                    echo -e "  ${DIM}    UDP $PORT abierto${NC}"
-                done
-                echo -e "  ${G}  ✓ Puertos configurados${NC}"
-
-                echo -e "  ${C}[5/5] Aplicando reglas anti-ataque...${NC}"
-                iptables -A INPUT -p tcp --syn -m limit --limit 10/s --limit-burst 20 -j ACCEPT
-                iptables -A INPUT -p tcp --syn -j DROP
-                echo -e "  ${G}  ✓ SYN Flood bloqueado${NC}"
-                iptables -A INPUT -p udp -m limit --limit 50/s --limit-burst 100 -j ACCEPT
-                iptables -A INPUT -p udp -j DROP
-                echo -e "  ${G}  ✓ UDP Flood bloqueado${NC}"
-                iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 2/s --limit-burst 4 -j ACCEPT
-                iptables -A INPUT -p icmp -j DROP
-                echo -e "  ${G}  ✓ ICMP Flood bloqueado${NC}"
-                iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
-                iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
-                iptables -A INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
-                echo -e "  ${G}  ✓ Port scanning bloqueado${NC}"
-                iptables -A INPUT -p tcp --dport 22 -m connlimit --connlimit-above 5 -j REJECT
-                iptables -A INPUT -p tcp -m connlimit --connlimit-above 50 -j REJECT
-                iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --set
-                iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --update --seconds 60 --hitcount 5 -j DROP
-                iptables -A INPUT -s 10.0.0.0/8 ! -i lo -j DROP
-                iptables -A INPUT -s 172.16.0.0/12 ! -i lo -j DROP
-                iptables -A INPUT -s 192.168.0.0/16 ! -i lo -j DROP
-                echo -e "  ${G}  ✓ Brute Force y spoofing bloqueados${NC}"
-
-                echo -e "  ${C}  Guardando reglas...${NC}"
-                iptables-save > /etc/iptables/rules.v4 2>/dev/null || iptables-save > /etc/iptables.rules
-                echo -e "  ${G}  ✓ Reglas guardadas${NC}"
-
-                echo -e "  ${C}  Configurando Fail2ban...${NC}"
-                mkdir -p /etc/fail2ban
-                cat > /etc/fail2ban/jail.local << EOF_JAIL
-[DEFAULT]
-bantime = 3600
-findtime = 600
-maxretry = 3
-ignoreip = 127.0.0.1/8
-
-[sshd]
-enabled = true
-port = ssh
-maxretry = 3
-bantime = 86400
-
-[http-get-dos]
-enabled = true
-port = http,https
-filter = http-get-dos
-logpath = /var/log/nginx/access.log
-maxretry = 100
-findtime = 60
-bantime = 3600
-EOF_JAIL
-                echo -e "  ${G}  ✓ Fail2ban configurado${NC}"
-
-                systemctl enable fail2ban -q 2>/dev/null
-                systemctl restart fail2ban 2>/dev/null
-                echo -ne "  ${C}  Iniciando Fail2ban${NC}"
-                for i in 1 2 3 4 5; do sleep 0.5; echo -ne "."; done; echo ""
-                systemctl is-active --quiet fail2ban && \
-                    echo -e "  ${G}  ✓ Fail2ban activo${NC}" || \
-                    echo -e "  ${Y}  ⚠ Verifica: systemctl status fail2ban${NC}"
-
-                BANNED_IPS=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2 | xargs)
-                if [ -n "$BANNED_IPS" ]; then
-                    curl -s -X POST "https://api.telegram.org/bot7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws/sendMessage" \
-                        -d "chat_id=6290827127&text=Anti-DDoS+Activado+-+IPs:+${BANNED_IPS}&parse_mode=Markdown" > /dev/null 2>&1
-                fi
-
-                echo ""; sep
-                echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"; sep
-                read -p "  ENTER..." ;;
-            2)
-                iptables -F; iptables -X
-                iptables -P INPUT ACCEPT; iptables -P FORWARD ACCEPT; iptables -P OUTPUT ACCEPT
-                systemctl stop fail2ban 2>/dev/null
-                echo -e "  ${Y}Anti-DDoS desactivado${NC}"; sleep 2 ;;
-            3)
-                echo ""; iptables -L INPUT -n --line-numbers | head -30; echo ""
-                read -p "  ENTER..." ;;
-            4) menu_atacantes ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
-                else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
-                fi
+                nano /etc/ssh/banner
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -3867,23 +2104,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -3960,79 +2181,7 @@ menu_slowdns() {
         read -p "  Opcion: " OPT
         case $OPT in
             1)
-                echo -e "
-  ${C}Instalando dependencias...${NC}"
-                apt install -y git screen iptables net-tools curl wget dos2unix gnutls-bin netfilter-persistent
-                mkdir -p $SLOWDNS_DIR
-                chmod 700 $SLOWDNS_DIR
-                read -p "  Dominio NS: " SDNS_DOMAIN
-                read -p "  Puerto SSH local (default 22): " SDNS_PORT
-                SDNS_PORT=${SDNS_PORT:-22}
-                echo -e "  ${C}Descargando binarios...${NC}"
-                wget -q -O $SLOWDNS_DIR/sldns-server "https://raw.githubusercontent.com/fisabiliyusri/SLDNS/main/slowdns/sldns-server"
-                wget -q -O $SLOWDNS_DIR/sldns-client "https://raw.githubusercontent.com/fisabiliyusri/SLDNS/main/slowdns/sldns-client"
-                wget -q -O $SLOWDNS_DIR/server.key "https://raw.githubusercontent.com/fisabiliyusri/SLDNS/main/slowdns/server.key"
-                wget -q -O $SLOWDNS_DIR/server.pub "https://raw.githubusercontent.com/fisabiliyusri/SLDNS/main/slowdns/server.pub"
-                chmod +x $SLOWDNS_DIR/*
-                iptables -I INPUT -p udp --dport 5300 -j ACCEPT
-                iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300
-                netfilter-persistent save 2>/dev/null
-                cat > /etc/systemd/system/$CLIENT_SERVICE.service << EOF
-[Unit]
-Description=Client SlowDNS
-After=network.target
-[Service]
-Type=simple
-ExecStart=$SLOWDNS_DIR/sldns-client -udp 8.8.8.8:53 --pubkey-file $PUBKEY_FILE $SDNS_DOMAIN 127.0.0.1:$SDNS_PORT
-Restart=on-failure
-[Install]
-WantedBy=multi-user.target
-EOF
-                cat > /etc/systemd/system/$SERVER_SERVICE.service << EOF
-[Unit]
-Description=Server SlowDNS
-After=network.target
-[Service]
-Type=simple
-ExecStart=$SLOWDNS_DIR/sldns-server -udp :5300 -privkey-file $SLOWDNS_DIR/server.key $SDNS_DOMAIN 127.0.0.1:$SDNS_PORT
-Restart=on-failure
-[Install]
-WantedBy=multi-user.target
-EOF
-                systemctl daemon-reload
-                systemctl enable $CLIENT_SERVICE $SERVER_SERVICE
-                systemctl start $CLIENT_SERVICE $SERVER_SERVICE
-                echo -e "  ${G}OK SlowDNS instalado${NC}"
-                echo -e "  PubKey: $(cat $PUBKEY_FILE 2>/dev/null)"
-                read -p "  ENTER..." ;;
-            2) systemctl start $CLIENT_SERVICE $SERVER_SERVICE && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
-            3) systemctl stop $CLIENT_SERVICE $SERVER_SERVICE && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            4) cat $PUBKEY_FILE 2>/dev/null || echo -e "  ${R}No encontrada${NC}"; echo ""; read -p "  ENTER..." ;;
-            5)
-                systemctl stop $CLIENT_SERVICE $SERVER_SERVICE 2>/dev/null
-                systemctl disable $CLIENT_SERVICE $SERVER_SERVICE 2>/dev/null
-                rm -rf $SLOWDNS_DIR
-                rm -f /etc/systemd/system/$CLIENT_SERVICE.service /etc/systemd/system/$SERVER_SERVICE.service
-                systemctl daemon-reload
-                echo -e "  ${G}SlowDNS desinstalado${NC}"; sleep 2 ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
-                else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
-                fi
+                nano /etc/ssh/banner
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -4045,23 +2194,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -4102,77 +2235,7 @@ menu_dropbear() {
         read -p "  Opcion: " OPT
         case $OPT in
             1)
-                echo -e "
-  ${C}Instalando Dropbear...${NC}"
-                apt install -y dropbear
-                read -p "  Puerto Dropbear (default 444): " DB_PORT
-                DB_PORT=${DB_PORT:-444}
-                mkdir -p /etc/sshfreeltm
-                echo "$DB_PORT" > /etc/sshfreeltm/dropbear_port
-                # Configurar
-                sed -i "s/NO_START=1/NO_START=0/" /etc/default/dropbear 2>/dev/null
-                sed -i "s/DROPBEAR_PORT=.*/DROPBEAR_PORT=$DB_PORT/" /etc/default/dropbear 2>/dev/null
-                grep -q "DROPBEAR_PORT" /etc/default/dropbear || echo "DROPBEAR_PORT=$DB_PORT" >> /etc/default/dropbear
-                # Crear servicio
-                cat > /etc/systemd/system/dropbear.service << EOF
-[Unit]
-Description=Dropbear SSH Server
-After=network.target
-[Service]
-Type=simple
-ExecStart=/usr/sbin/dropbear -F -p $DB_PORT
-Restart=always
-RestartSec=3
-[Install]
-WantedBy=multi-user.target
-EOF
-                systemctl daemon-reload
-                # Generar llaves Dropbear
-                mkdir -p /etc/dropbear
-                [ ! -f /etc/dropbear/dropbear_dss_host_key ] && dropbearkey -t dss -f /etc/dropbear/dropbear_dss_host_key > /dev/null 2>&1
-                [ ! -f /etc/dropbear/dropbear_rsa_host_key ] && dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key > /dev/null 2>&1
-                [ ! -f /etc/dropbear/dropbear_ecdsa_host_key ] && dropbearkey -t ecdsa -f /etc/dropbear/dropbear_ecdsa_host_key > /dev/null 2>&1
-                # Agregar /bin/false a shells permitidos
-                grep -q "/bin/false" /etc/shells || echo "/bin/false" >> /etc/shells
-                systemctl enable dropbear
-                systemctl start dropbear
-                iptables -I INPUT -p tcp --dport $DB_PORT -j ACCEPT 2>/dev/null
-                echo -e "  ${G}OK Dropbear instalado en puerto ${DB_PORT}${NC}"; sleep 2 ;;
-            2) systemctl start dropbear && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
-            3) systemctl stop dropbear && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
-            4) systemctl restart dropbear && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
-            5)
-                read -p "  Nuevo puerto: " NEW_PORT
-                echo "$NEW_PORT" > /etc/sshfreeltm/dropbear_port
-                sed -i "s/DROPBEAR_PORT=.*/DROPBEAR_PORT=$NEW_PORT/" /etc/default/dropbear 2>/dev/null
-                sed -i "s/-p [0-9]*/-p $NEW_PORT/" /etc/systemd/system/dropbear.service 2>/dev/null
-                systemctl daemon-reload
-                systemctl restart dropbear
-                echo -e "  ${G}Puerto cambiado a ${NEW_PORT}${NC}"; sleep 2 ;;
-            6)
-                systemctl stop dropbear; systemctl disable dropbear
-                apt remove -y dropbear > /dev/null 2>&1
-                rm -f /etc/systemd/system/dropbear.service
-                systemctl daemon-reload
-                echo -e "  ${G}Dropbear desinstalado${NC}"; sleep 2 ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
-                else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
-                fi
+                nano /etc/ssh/banner
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -4185,23 +2248,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -4254,103 +2301,7 @@ menu_banner_ssh() {
         read -p "  Opcion: " OPT
         case $OPT in
             1)
-                # Crear archivo banner SSH si no existe
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << 'BANNEREOF'
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                # Activar automaticamente al editar
-                grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null &&                     sed -i "s|^Banner.*|Banner /etc/ssh/banner|" /etc/ssh/sshd_config ||                     echo "Banner /etc/ssh/banner" >> /etc/ssh/sshd_config
-                systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null
-                echo -e "  ${G}OK Banner SSH guardado y activado${NC}"; sleep 2 ;;
-            2)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No hay banner creado. Usa [1] para crear uno.${NC}"; sleep 2
-                else
-                    grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null &&                         sed -i "s|^Banner.*|Banner /etc/ssh/banner|" /etc/ssh/sshd_config ||                         echo "Banner /etc/ssh/banner" >> /etc/ssh/sshd_config
-                    systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null
-                    echo -e "  ${G}OK Banner SSH activado${NC}"; sleep 2
-                fi ;;
-            3)
-                sed -i '/^Banner/d' /etc/ssh/sshd_config 2>/dev/null
-                systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null
-                echo -e "  ${Y}Banner SSH desactivado (archivo conservado)${NC}"; sleep 2 ;;
-            4)
-                echo ""; sep
-                echo -e "  ${Y}Banner SSH actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}Sin archivo de banner${NC}"
-                echo ""; read -p "  ENTER..." ;;
-            5)
-                # Editar banner de todos los WebSocket activos
-                WS_LIST=$(ls /etc/sshfreeltm/proxy_ws_*.py 2>/dev/null)
-                if [ -z "$WS_LIST" ]; then
-                    echo -e "  ${R}No hay WebSocket instalado. Instala uno primero.${NC}"; sleep 2
-                else
-                    echo ""; sep
-                    echo -e "  ${Y}WebSockets activos:${NC}"; echo ""
-                    for f in $WS_LIST; do
-                        PORT=$(echo $f | grep -o '[0-9]*\.py$' | tr -d '.py')
-                        CMSG=$(grep "^MSG = " "$f" 2>/dev/null | sed "s/MSG = '\(.*\)'.encode.*/\1/")
-                        echo -e "  ${NEON}◈${NC} Puerto ${Y}${PORT}${NC} — Banner: ${W}${CMSG}${NC}"
-                    done
-                    echo ""; sep
-                    read -p "  Puerto WebSocket a editar (0=todos): " WS_EDIT_PORT
-                    read -p "  Nuevo banner: " NEW_WS_BANNER
-                    [ -z "$NEW_WS_BANNER" ] && echo -e "  ${R}Cancelado${NC}" && sleep 1 && continue
-
-                    if [ "$WS_EDIT_PORT" = "0" ]; then
-                        TARGETS="$WS_LIST"
-                    else
-                        TARGETS="/etc/sshfreeltm/proxy_ws_${WS_EDIT_PORT}.py"
-                    fi
-
-                    for f in $TARGETS; do
-                        if [ -f "$f" ]; then
-                            sed -i "s|^MSG = '.*'\.encode|MSG = '${NEW_WS_BANNER}'.encode|" "$f"
-                            PORT=$(echo $f | grep -o '[0-9]*\.py$' | tr -d '.py')
-                            systemctl restart ws-proxy-${PORT} 2>/dev/null
-                            echo -e "  ${G}✓ Banner actualizado en puerto ${PORT}${NC}"
-                        fi
-                    done
-                    sleep 2
-                fi ;;
-            6)
-                echo ""; sep
-                echo -e "  ${Y}Banners HTTP Custom actuales:${NC}"; echo ""
-                for f in $(ls /etc/sshfreeltm/proxy_ws_*.py 2>/dev/null); do
-                    PORT=$(echo $f | grep -o '[0-9]*\.py$' | tr -d '.py')
-                    CMSG=$(grep "^MSG = " "$f" 2>/dev/null | sed "s/MSG = '\(.*\)'.encode.*/\1/")
-                    CRESP=$(grep "^STATUS_RESP = " "$f" 2>/dev/null | sed "s/STATUS_RESP = b'\(.*\)'/\1/")
-                    echo -e "  ${NEON}◈${NC} Puerto ${Y}${PORT}${NC}"
-                    echo -e "    Banner : ${W}${CMSG}${NC}"
-                    echo -e "    Status : ${W}${CRESP}${NC}"
-                done
-                echo ""; read -p "  ENTER..." ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
-                else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
-                fi
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -4363,23 +2314,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -4413,151 +2348,7 @@ menu_hysteria() {
         read -p " Opcion: " OPT
         case $OPT in
             1)
-                echo -e "\n  ${C}Instalando Hysteria V1...${NC}"
-                apt install -y wget > /dev/null 2>&1
-                wget -q -O /usr/local/bin/hysteria-v1 https://github.com/HyNetwork/hysteria/releases/download/v1.3.5/hysteria-linux-amd64
-                chmod +x /usr/local/bin/hysteria-v1
-                read -p "  Puerto UDP (default 36712): " H1_PORT; H1_PORT=${H1_PORT:-36712}
-                read -p "  Password: " H1_PASS; H1_PASS=${H1_PASS:-"ltmssh2026"}
-                read -p "  Dominio (para TLS, deja vacio para self-signed): " H1_DOMAIN
-                mkdir -p /etc/hysteria
-                if [ -n "$H1_DOMAIN" ]; then
-                    apt install -y certbot > /dev/null 2>&1
-                    certbot certonly --standalone -d $H1_DOMAIN --non-interactive --agree-tos -m admin@${H1_DOMAIN#*.} 2>/dev/null
-                    CERT_FILE="/etc/letsencrypt/live/$H1_DOMAIN/fullchain.pem"
-                    KEY_FILE="/etc/letsencrypt/live/$H1_DOMAIN/privkey.pem"
-                else
-                    openssl req -x509 -nodes -newkey ec:<(openssl ecparam -name prime256v1) \
-                        -keyout /etc/hysteria/server.key -out /etc/hysteria/server.crt \
-                        -subj "/CN=hysteria" -days 36500 2>/dev/null
-                    CERT_FILE="/etc/hysteria/server.crt"
-                    KEY_FILE="/etc/hysteria/server.key"
-                fi
-                cat > /etc/hysteria/config.json << EOF
-{
-  "listen": ":$H1_PORT",
-  "cert": "$CERT_FILE",
-  "key": "$KEY_FILE",
-  "auth": {
-    "mode": "password",
-    "config": {"password": "$H1_PASS"}
-  },
-  "obfs": "ltmssh",
-  "up_mbps": 100,
-  "down_mbps": 100
-}
-EOF
-                cat > /etc/systemd/system/hysteria-server.service << EOF
-[Unit]
-Description=Hysteria V1 Server
-After=network.target
-[Service]
-Type=simple
-ExecStart=/usr/local/bin/hysteria-v1 server --config /etc/hysteria/config.json
-Restart=always
-RestartSec=3
-[Install]
-WantedBy=multi-user.target
-EOF
-                systemctl daemon-reload
-                systemctl enable hysteria-server
-                systemctl start hysteria-server
-                iptables -I INPUT -p udp --dport $H1_PORT -j ACCEPT 2>/dev/null
-                echo -e "  ${G}OK Hysteria V1 instalado${NC}"
-                echo -e "  ${NEON}◈${NC} Puerto: ${Y}$H1_PORT${NC}"
-                echo -e "  ${NEON}◈${NC} Password: ${Y}$H1_PASS${NC}"
-                echo -e "  ${NEON}◈${NC} Obfs: ${Y}ltmssh${NC}"
-                read -p "  ENTER..." ;;
-            2)
-                echo -e "\n  ${C}Instalando Hysteria V2...${NC}"
-                apt install -y wget > /dev/null 2>&1
-                wget -q -O /usr/local/bin/hysteria2 https://github.com/apernet/hysteria/releases/latest/download/hysteria-linux-amd64
-                # hysteria2 es el mismo binario de apernet pero con nombre diferente
-                chmod +x /usr/local/bin/hysteria2
-                read -p "  Puerto UDP (default 8443): " H2_PORT; H2_PORT=${H2_PORT:-8443}
-                read -p "  Password: " H2_PASS; H2_PASS=${H2_PASS:-"ltmssh2026"}
-                read -p "  Dominio (deja vacio para self-signed): " H2_DOMAIN
-                mkdir -p /etc/hysteria2
-                if [ -n "$H2_DOMAIN" ]; then
-                    apt install -y certbot > /dev/null 2>&1
-                    certbot certonly --standalone -d $H2_DOMAIN --non-interactive --agree-tos -m admin@${H2_DOMAIN#*.} 2>/dev/null
-                    CERT2_FILE="/etc/letsencrypt/live/$H2_DOMAIN/fullchain.pem"
-                    KEY2_FILE="/etc/letsencrypt/live/$H2_DOMAIN/privkey.pem"
-                else
-                    openssl req -x509 -nodes -newkey ec:<(openssl ecparam -name prime256v1) \
-                        -keyout /etc/hysteria2/server.key -out /etc/hysteria2/server.crt \
-                        -subj "/CN=hysteria2" -days 36500 2>/dev/null
-                    CERT2_FILE="/etc/hysteria2/server.crt"
-                    KEY2_FILE="/etc/hysteria2/server.key"
-                fi
-                cat > /etc/hysteria2/config.yaml << EOF
-listen: :$H2_PORT
-tls:
-  cert: $CERT2_FILE
-  key: $KEY2_FILE
-auth:
-  type: password
-  password: $H2_PASS
-masquerade:
-  type: proxy
-  proxy:
-    url: https://news.ycombinator.com/
-    rewriteHost: true
-EOF
-                cat > /etc/systemd/system/hysteria2-server.service << EOF
-[Unit]
-Description=Hysteria V2 Server
-After=network.target
-[Service]
-Type=simple
-ExecStart=/usr/local/bin/hysteria2 server --config /etc/hysteria2/config.yaml
-Restart=always
-RestartSec=3
-[Install]
-WantedBy=multi-user.target
-EOF
-                systemctl daemon-reload
-                systemctl enable hysteria2-server
-                systemctl start hysteria2-server
-                iptables -I INPUT -p udp --dport $H2_PORT -j ACCEPT 2>/dev/null
-                echo -e "  ${G}OK Hysteria V2 instalado${NC}"
-                echo -e "  ${NEON}◈${NC} Puerto: ${Y}$H2_PORT${NC}"
-                echo -e "  ${NEON}◈${NC} Password: ${Y}$H2_PASS${NC}"
-                read -p "  ENTER..." ;;
-            3) systemctl start hysteria-server && echo -e "  ${G}Hysteria V1 iniciado${NC}"; sleep 1 ;;
-            4) systemctl start hysteria2-server && echo -e "  ${G}Hysteria V2 iniciado${NC}"; sleep 1 ;;
-            5) systemctl stop hysteria-server && echo -e "  ${Y}Hysteria V1 detenido${NC}"; sleep 1 ;;
-            6) systemctl stop hysteria2-server && echo -e "  ${Y}Hysteria V2 detenido${NC}"; sleep 1 ;;
-            7) cat /etc/hysteria/config.json 2>/dev/null || echo "No instalado"; echo ""; read -p "  ENTER..." ;;
-            8) cat /etc/hysteria2/config.yaml 2>/dev/null || echo "No instalado"; echo ""; read -p "  ENTER..." ;;
-            9)
-                systemctl stop hysteria-server; systemctl disable hysteria-server
-                rm -f /usr/local/bin/hysteria /etc/systemd/system/hysteria-server.service
-                rm -rf /etc/hysteria; systemctl daemon-reload
-                echo -e "  ${G}Hysteria V1 desinstalado${NC}"; sleep 2 ;;
-            10)
-                systemctl stop hysteria2-server; systemctl disable hysteria2-server
-                rm -f /usr/local/bin/hysteria2 /etc/systemd/system/hysteria2-server.service
-                rm -rf /etc/hysteria2; systemctl daemon-reload
-                echo -e "  ${G}Hysteria V2 desinstalado${NC}"; sleep 2 ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe archivo de banner. Creando uno por defecto...${NC}"
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                if ! grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner|" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner activado en Dropbear${NC}"
-                else
-                    echo -e "  ${Y}El banner ya estaba activo${NC}"
-                fi
+                nano /etc/ssh/banner
                 sleep 2 ;;
             8)
                 if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
@@ -4570,23 +2361,7 @@ BANNEREOF
                 fi
                 sleep 2 ;;
             9)
-                if [ ! -f /etc/ssh/banner ]; then
-                    cat > /etc/ssh/banner << BANNEREOF
-╔══════════════════════════════════════╗
-║   SERVIDOR PRIVADO - SSHFREE LTM    ║
-║        by @DarkZFull ❴LTM❵          ║
-╚══════════════════════════════════════╝
-BANNEREOF
-                fi
-                echo -e "  ${C}Abriendo editor nano...${NC}"
-                sleep 1
                 nano /etc/ssh/banner
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    systemctl restart dropbear
-                    echo -e "  ${G}Banner actualizado y Dropbear reiniciado${NC}"
-                else
-                    echo -e "  ${G}Banner actualizado. Actívalo con la opción 7 si lo deseas${NC}"
-                fi
                 sleep 2 ;;
             10)
                 echo ""; sep
@@ -4676,3 +2451,4 @@ echo -e "\033[0;32mComando menu instalado\033[0m"
 
 
 
+# Convertir HTML a texto plano (eliminar etiquetas)
