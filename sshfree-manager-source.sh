@@ -2399,6 +2399,7 @@ menu_principal() {
         sep
         printf " ${Y}❬9❭ 🖥️  %-18s${NC} ${R}❬10❭ 🗑️  %s${NC}\n" "Configurar MOTD" "Desinstalar"
         printf " ${Y}❬11❭ 🔄 Actualizar Script${NC}\n"
+    printf " ${Y}❬12❭ 🤖 Configurar Bot Telegram${NC}\n"
         sep
         printf " ${R}❬0❭ ✖  Salir${NC}\n"
         sep
@@ -2414,8 +2415,8 @@ menu_principal() {
             4) menu_herramientas ;;
             9) instalar_motd ;;
             10) desinstalar_script ;;
-            11) actualizar_script ;;
-            11) actualizar_script ;;
+            11) actualizar_script ;; 12) config_bot ;;
+            11) actualizar_script ;; 12) config_bot ;;
             0) echo -e "\n  ${G}Hasta luego! — DarkZFull${NC}\n"; exit 0 ;;
             *) echo -e "  ${R}Opcion invalida${NC}"; sleep 1 ;;
         esac
@@ -2712,3 +2713,124 @@ _convert_banner() {
     /usr/local/bin/convert-banner-txt
 }
 
+
+# ============================================================
+# FUNCIONES DEL BOT DE TELEGRAM LTM
+# ============================================================
+
+config_bot() {
+    banner
+    echo -e "  ${Y}CONFIGURACIÓN DEL BOT DE TELEGRAM${NC}"
+    sep
+    read -p "  Ingrese el Token del Bot: " B_TOKEN
+    read -p "  Ingrese el ID del Admin: " B_ADMIN
+    mkdir -p /etc/sshfreeltm
+    echo "TOKEN=$B_TOKEN" > /etc/sshfreeltm/bot.conf
+    echo "ADMINS=$B_ADMIN" >> /etc/sshfreeltm/bot.conf
+    
+    # Crear el script del bot
+    cat <<'BOTEOF' > /etc/sshfreeltm/bot_ltm.sh
+#!/bin/bash
+CONF="/etc/sshfreeltm/bot.conf"
+OFFSET=0
+
+send_msg() {
+    local chat_id=$1
+    local text=$2
+    TOKEN=$(grep "TOKEN" $CONF | cut -d'=' -f2)
+    curl -s -X POST "https://api.telegram.org/bot$TOKEN/sendMessage" -d "chat_id=$chat_id&text=$text&parse_mode=html" > /dev/null
+}
+
+while true; do
+    TOKEN=$(grep "TOKEN" $CONF | cut -d'=' -f2)
+    ADMINS=$(grep "ADMINS" $CONF | cut -d'=' -f2)
+    UPDATES=$(curl -s "https://api.telegram.org/bot$TOKEN/getUpdates?offset=$OFFSET&timeout=30")
+    
+    python3 - << PYEOF > /tmp/bot_logic.sh
+import json, sys
+data = json.loads('''$UPDATES''')
+if not data.get("result"): sys.exit(0)
+for update in data["result"]:
+    u_id = update["update_id"]
+    msg = update.get("message")
+    if not msg: continue
+    chat_id = msg["chat"]["id"]
+    text = msg.get("text", "")
+    print(f"OFFSET=\$(( {u_id} + 1 ))")
+    print(f"CHAT_ID={chat_id}")
+    print(f"MSG_TEXT='{text}'")
+PYEOF
+    
+    [ -f /tmp/bot_logic.sh ] && source /tmp/bot_logic.sh && rm /tmp/bot_logic.sh
+    
+    if [[ "$ADMINS" == *"$CHAT_ID"* ]]; then
+        case $MSG_TEXT in
+            /start)
+                send_msg "$CHAT_ID" "⚡ <b>LTM BOT GESTOR</b> ⚡%0A%0A/ssh [user] [pass] [dias]%0A/vmess [user] [dias]%0A/ziv [pass] [dias]%0A/addadmin [id]"
+                ;;
+            /ssh*)
+                read -r cmd user pass days <<< "$MSG_TEXT"
+                days=${days:-30}
+                if [ -z "$user" ] || [ -z "$pass" ]; then
+                    send_msg "$CHAT_ID" "❌ Uso: /ssh usuario clave dias"
+                else
+                    useradd -M -s /bin/false -e $(date -d "+$days days" +%Y-%m-%d) "$user"
+                    echo "$user:$pass" | chpasswd
+                    send_msg "$CHAT_ID" "✅ Usuario SSH <b>$user</b> creado por $days días."
+                fi
+                ;;
+            /ziv*)
+                read -r cmd pass days <<< "$MSG_TEXT"
+                days=${days:-30}
+                if [ -z "$pass" ]; then
+                    send_msg "$CHAT_ID" "❌ Uso: /ziv clave dias"
+                else
+                    exp=$(date -d "+$days days" -Iseconds)
+                    python3 -c "import json; f=open('/etc/zivpn/users.json','r+'); u=json.load(f); u.append({'password':'$pass','expires':'$exp'}); f.seek(0); json.dump(u,f); f.truncate()"
+                    # Llamar a la funcion del script original para aplicar cambios
+                    bash /root/sshfree-manager-1.sh --apply-ziv
+                    send_msg "$CHAT_ID" "✅ Usuario ZIV <b>$pass</b> creado por $days días."
+                fi
+                ;;
+            /addadmin*)
+                read -r cmd new_id <<< "$MSG_TEXT"
+                if [ -n "$new_id" ]; then
+                    sed -i "s/ADMINS=/ADMINS=$new_id,/" $CONF
+                    send_msg "$CHAT_ID" "✅ ID $new_id añadido como Admin."
+                fi
+                ;;
+        esac
+    fi
+    sleep 2
+done
+BOTEOF
+    chmod +x /etc/sshfreeltm/bot_ltm.sh
+
+    # Crear servicio systemd
+    cat <<'SERVEOF' > /etc/systemd/system/ltm-bot.service
+[Unit]
+Description=LTM Telegram Bot Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /etc/sshfreeltm/bot_ltm.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+SERVEOF
+    systemctl daemon-reload
+    systemctl enable ltm-bot
+    systemctl start ltm-bot
+    echo -e "  ${G}Bot instalado y corriendo.${NC}"
+    sleep 2
+}
+
+# Wrapper para aplicar cambios de ZIV desde el bot sin entrar al menu
+if [ "$1" == "--apply-ziv" ]; then
+    # Esta parte asume que la funcion aplicar_passwords_ziv existe en tu script
+    aplicar_passwords_ziv > /dev/null 2>&1
+    exit 0
+fi
