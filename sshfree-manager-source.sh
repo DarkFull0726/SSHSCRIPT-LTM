@@ -2400,6 +2400,7 @@ menu_principal() {
         printf " ${Y}❬9❭ 🖥️  %-18s${NC} ${R}❬10❭ 🗑️  %s${NC}\n" "Configurar MOTD" "Desinstalar"
         printf " ${Y}❬11❭ 🔄 Actualizar Script${NC}\n"
     printf " ${Y}❬12❭ 🤖 Configurar Bot Telegram${NC}\n"
+    printf " ${Y}❬12❭ 🤖 Configurar Bot Telegram${NC}\n"
         sep
         printf " ${R}❬0❭ ✖  Salir${NC}\n"
         sep
@@ -2415,8 +2416,8 @@ menu_principal() {
             4) menu_herramientas ;;
             9) instalar_motd ;;
             10) desinstalar_script ;;
-            11) actualizar_script ;; 12) config_bot ;;
-            11) actualizar_script ;; 12) config_bot ;;
+            11) actualizar_script ;; 12) config_bot ;; 12) config_bot ;;
+            11) actualizar_script ;; 12) config_bot ;; 12) config_bot ;;
             0) echo -e "\n  ${G}Hasta luego! — DarkZFull${NC}\n"; exit 0 ;;
             *) echo -e "  ${R}Opcion invalida${NC}"; sleep 1 ;;
         esac
