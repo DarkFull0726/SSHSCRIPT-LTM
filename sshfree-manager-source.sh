@@ -220,6 +220,24 @@ status_service() {
 status_port() {
     ss -${2:-t}lnp 2>/dev/null | grep -q ":${1} " && echo -e "${NEON}◆ ON ${NC}" || echo -e "${R}◇ OFF${NC}"
 }
+# Generar versión de texto plano (sin HTML) para SSH y Dropbear
+generar_banner_txt() {
+    local origen="/etc/ssh/banner"
+    local destino="/etc/ssh/banner.txt"
+    if [ ! -f "$origen" ]; then
+        echo -e "${R}No existe $origen${NC}" >&2
+        return 1
+    fi
+    # Eliminar etiquetas HTML, entidades y espacios sobrantes
+    sed 's/<[^>]*>//g; s/&[a-zA-Z0-9#]\{2,6\};//g; s/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d' "$origen" > "$destino"
+    echo -e "${G}Banner de texto generado en $destino${NC}"
+}
+
+
+# Generar versión de texto plano (sin HTML) para SSH y Dropbear
+
+
+
 
 # ══════════════════════════════════════════
 #   WEBSOCKET PYTHON
@@ -2489,6 +2507,28 @@ menu_principal() {
     done
 }
 
+# Generar versión de texto plano (sin HTML) para SSH y Dropbear
+generar_banner_txt() {
+    local origen="/etc/ssh/banner"
+    local destino="/etc/ssh/banner.txt"
+    if [ ! -f "$origen" ]; then
+        echo -e "${R}No existe $origen${NC}" >&2
+        return 1
+    fi
+    sed 's/<[^>]*>//g; s/&[a-zA-Z0-9#]{2,6};//g; s/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d' "$origen" > "$destino"
+    echo -e "${G}Banner de texto generado en $destino${NC}"
+}
+# Generar versión de texto plano (sin HTML) para SSH y Dropbear
+generar_banner_txt() {
+    local origen="/etc/ssh/banner"
+    local destino="/etc/ssh/banner.txt"
+    if [ ! -f "$origen" ]; then
+        echo -e "${R}No existe $origen${NC}" >&2
+        return 1
+    fi
+    sed 's/<[^>]*>//g; s/&[a-zA-Z0-9#]{2,6};//g; s/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d' "$origen" > "$destino"
+    echo -e "${G}Banner de texto generado en $destino${NC}"
+}
 [ "$EUID" -ne 0 ] && echo -e "${R}Ejecuta como root${NC}" && exit 1
 menu_principal
 
@@ -2504,14 +2544,4 @@ echo -e "\033[0;32mComando menu instalado\033[0m"
 # Convertir HTML a texto plano (eliminar etiquetas)
 
 # Generar versión de texto plano (sin HTML) para SSH y Dropbear
-generar_banner_txt() {
-    local origen="/etc/ssh/banner"
-    local destino="/etc/ssh/banner.txt"
-    if [ ! -f "$origen" ]; then
-        echo -e "${R}No existe $origen${NC}" >&2
-        return 1
-    fi
-    # Eliminar etiquetas HTML, entidades y espacios sobrantes
-    sed 's/<[^>]*>//g; s/&[a-zA-Z0-9#]\{2,6\};//g; s/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d' "$origen" > "$destino"
-    echo -e "${G}Banner de texto generado en $destino${NC}"
-}
+
