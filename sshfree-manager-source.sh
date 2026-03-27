@@ -5220,7 +5220,10 @@ PYSCRIPT
 
 
 
-# Convertir HTML a texto con colores ANSI (con saltos de línea)
+
+
+
+# Convertir HTML a texto con colores ANSI (con saltos de línea forzados)
 convertir_banner_html() {
     local archivo="$1"
     local tmp_py="/tmp/convert_banner_$$.py"
@@ -5238,11 +5241,14 @@ def process(html_text):
     result = []
     i = 0
     color_stack = []
-    block_tags = {"div", "h1", "h2", "h3", "h4", "h5", "h6", "p", "br", "big", "small"}
-    # Para etiquetas que deben terminar con salto de línea
+    block_tags = {"div", "h1", "h2", "h3", "h4", "h5", "h6", "p", "big", "small"}
+    inline_break = {"br"}
+
+    # Función auxiliar para agregar salto de línea
     def add_newline():
-        if result and result[-1] != "\n":
+        if not result or result[-1] != "\n":
             result.append("\n")
+
     while i < len(html_text):
         if html_text[i] == "<":
             tag_end = html_text.find(">", i)
@@ -5278,8 +5284,8 @@ def process(html_text):
                     else:
                         color_stack.append(ansi)
                     result.append(ansi)
-            # Etiqueta especial <br>
-            if tag_name == "br":
+            # Etiqueta <br>
+            if tag_name in inline_break:
                 add_newline()
             i = tag_end + 1
         elif html_text[i] == "&":
@@ -5295,13 +5301,9 @@ def process(html_text):
                 result.append(html_text[i])
                 i += 1
         else:
-            # Texto normal: puede contener saltos de línea reales
-            if html_text[i] == "\n":
-                result.append("\n")
-            else:
-                result.append(html_text[i])
+            result.append(html_text[i])
             i += 1
-    # Asegurar reset de color y un salto final
+    # Añadir un salto final y reset
     result.append("\033[0m")
     return "".join(result)
 
@@ -5318,7 +5320,8 @@ with open(file_path, "r", encoding="utf-8") as f:
 cleaned = process(content)
 # Eliminar múltiples saltos de línea consecutivos (más de 2)
 cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
-
+# Limpiar espacios al inicio/final
+cleaned = cleaned.strip()
 with open(file_path, "w", encoding="utf-8") as f:
     f.write(cleaned)
 PYSCRIPT
