@@ -2096,52 +2096,72 @@ menu_atacantes() {
 }
 
 menu_antiddos() {
-    while true; do
-        banner; sep
-        echo -e "  ${Y}  ANTI-DDOS${NC}"; sep; echo ""
-        DDOS_ACTIVE=$(iptables -L INPUT -n 2>/dev/null | grep -q "limit" && echo 1 || echo 0)
-        if [ "$DDOS_ACTIVE" = "1" ]; then
+    local CHAIN="LTM_ANTIDDOS"
+
+    antiddos_estado() {
+        if iptables -S 2>/dev/null | grep -q -- "-j ${CHAIN}"; then
             echo -e "  Estado: ${G}[ACTIVO]${NC}"
         else
             echo -e "  Estado: ${R}[INACTIVO]${NC}"
         fi
+    }
+
+    antiddos_activar() {
+        iptables -N "${CHAIN}" 2>/dev/null
+        iptables -F "${CHAIN}" 2>/dev/null
+
+        iptables -C INPUT -j "${CHAIN}" 2>/dev/null || iptables -I INPUT 1 -j "${CHAIN}"
+
+        iptables -A "${CHAIN}" -i lo -j ACCEPT
+        iptables -A "${CHAIN}" -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+        iptables -A "${CHAIN}" -m conntrack --ctstate INVALID -j DROP
+        iptables -A "${CHAIN}" -p tcp --syn -m connlimit --connlimit-above 30 --connlimit-mask 32 -j DROP
+        iptables -A "${CHAIN}" -p tcp --syn -m limit --limit 50/second --limit-burst 100 -j RETURN
+        iptables -A "${CHAIN}" -p tcp --syn -j DROP
+        iptables -A "${CHAIN}" -p udp -m limit --limit 100/second --limit-burst 200 -j RETURN
+        iptables -A "${CHAIN}" -p udp -j DROP
+        iptables -A "${CHAIN}" -j RETURN
+
+        mkdir -p /etc/sshfreeltm
+        echo "enabled" > /etc/sshfreeltm/antiddos.status
+    }
+
+    antiddos_desactivar() {
+        iptables -D INPUT -j "${CHAIN}" 2>/dev/null
+        iptables -F "${CHAIN}" 2>/dev/null
+        iptables -X "${CHAIN}" 2>/dev/null
+        rm -f /etc/sshfreeltm/antiddos.status
+    }
+
+    while true; do
+        banner; sep
+        echo -e "  ${Y}  ANTI-DDOS${NC}"; sep; echo ""
+        antiddos_estado
         echo ""; sep
-        echo -e "  ${W}[1]${NC} Activar Anti-DDoS Agresivo"
+        echo -e "  ${W}[1]${NC} Activar Anti-DDoS"
         echo -e "  ${W}[2]${NC} Desactivar Anti-DDoS"
         echo -e "  ${W}[3]${NC} Ver reglas activas"
         echo -e "  ${W}[4]${NC} Ver IPs atacantes"
-        echo -e "  ${W}[7]${NC} Activar banner (usar banner SSH)"
-        echo -e "  ${W}[8]${NC} Desactivar banner"
-        echo -e "  ${W}[9]${NC} Editar banner"
-        echo -e "  ${W}[10]${NC} Ver banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
             1)
-                nano /etc/ssh/banner
-                generar_banner_txt
+                antiddos_activar
+                echo -e "  ${G}Anti-DDoS activado${NC}"
                 sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
+            2)
+                antiddos_desactivar
+                echo -e "  ${Y}Anti-DDoS desactivado${NC}"
                 sleep 2 ;;
-            9)
-                nano /etc/ssh/banner
-                generar_banner_txt
-                sleep 2 ;;
-            10)
+            3)
                 echo ""; sep
-                echo -e "  ${Y}Banner actual:${NC}"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  ${R}No hay archivo de banner${NC}"
+                echo -e "  ${Y}Reglas de Anti-DDoS:${NC}"; echo ""
+                iptables -S 2>/dev/null | grep -E "${CHAIN}|INPUT" || echo -e "  ${R}No hay reglas activas${NC}"
                 echo ""; read -p "  ENTER..." ;;
-
+            4)
+                menu_atacantes ;;
             0) break ;;
+            *) echo -e "  ${R}Opcion invalida${NC}"; sleep 1 ;;
         esac
     done
 }
