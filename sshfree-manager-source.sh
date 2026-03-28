@@ -75,7 +75,7 @@ if [ "$VALID_LICENSE" = "false" ]; then
 
     VPS_IP=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
     VPS_OS=$(lsb_release -d 2>/dev/null | cut -f2 || echo "Ubuntu")
-    VERIFY_RESULT=$(curl -s -X POST http://165.245.164.107:6000/api/key/verify -H "Content-Type: application/json" -d "{\"key\": \"$INPUT_KEY\", \"ip\": \"$VPS_IP\", \"os\": \"$VPS_OS\"}" 2>/dev/null)
+    VERIFY_RESULT=$(curl -s -X POST http://172.233.176.159:6000/api/key/verify -H "Content-Type: application/json" -d "{\"key\": \"$INPUT_KEY\", \"ip\": \"$VPS_IP\", \"os\": \"$VPS_OS\"}" 2>/dev/null)
 
     IS_OK=$(echo $VERIFY_RESULT | python3 -c "import sys,json; print(json.load(sys.stdin).get('ok','false'))" 2>/dev/null)
     ERROR_MSG=$(echo $VERIFY_RESULT | python3 -c "import sys,json; print(json.load(sys.stdin).get('error','Error desconocido'))" 2>/dev/null)
