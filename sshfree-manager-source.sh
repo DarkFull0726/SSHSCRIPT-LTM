@@ -14,40 +14,6 @@ W='\033[1;97m'
 B='\033[0;34m'
 P='\033[0;35m'
 NC='\033[0m'
-
-# Generar versión de texto plano (sin HTML) para SSH y Dropbear
-generar_banner_txt() {
-    local origen="/etc/ssh/banner"
-    local destino="/etc/ssh/banner.txt"
-    if [ ! -f "$origen" ]; then
-        echo -e "${R}No existe $origen${NC}" >&2
-        return 1
-    fi
-    sed 's/<[^>]*>//g; s/&[a-zA-Z0-9#]\{2,6\};//g; s/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d' "$origen" > "$destino"
-    echo -e "${G}Banner de texto generado en $destino${NC}"
-}
-
-# Generar versión de texto plano (sin HTML) para SSH y Dropbear
-generar_banner_txt() {
-    local origen="/etc/ssh/banner"
-    local destino="/etc/ssh/banner.txt"
-    if [ ! -f "$origen" ]; then
-        echo -e "${R}No existe $origen${NC}" >&2
-        return 1
-    fi
-    # Eliminar etiquetas HTML y entidades
-    sed 's/<[^>]*>//g; s/&[a-zA-Z0-9#]\{2,6\};//g; s/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d' "$origen" > "$destino"
-    echo -e "${G}Banner de texto generado en $destino${NC}"
-}
-
-# Generar versión de texto plano (sin HTML) para SSH y Dropbear
-
-
-# Generar versión de texto plano (sin HTML) para SSH y Dropbear
-
-
-# Generar versión de texto plano (sin HTML) para SSH y Dropbear
-
 BOLD='\033[1m'
 NEON='\033[1;96m'
 DIM='\033[2;37m'
@@ -109,7 +75,7 @@ if [ "$VALID_LICENSE" = "false" ]; then
 
     VPS_IP=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
     VPS_OS=$(lsb_release -d 2>/dev/null | cut -f2 || echo "Ubuntu")
-    VERIFY_RESULT=$(curl -s -X POST http://172.233.176.159:6000/api/key/verify -H "Content-Type: application/json" -d "{\"key\": \"$INPUT_KEY\", \"ip\": \"$VPS_IP\", \"os\": \"$VPS_OS\"}" 2>/dev/null)
+    VERIFY_RESULT=$(curl -s -X POST http://165.245.164.107:6000/api/key/verify -H "Content-Type: application/json" -d "{\"key\": \"$INPUT_KEY\", \"ip\": \"$VPS_IP\", \"os\": \"$VPS_OS\"}" 2>/dev/null)
 
     IS_OK=$(echo $VERIFY_RESULT | python3 -c "import sys,json; print(json.load(sys.stdin).get('ok','false'))" 2>/dev/null)
     ERROR_MSG=$(echo $VERIFY_RESULT | python3 -c "import sys,json; print(json.load(sys.stdin).get('error','Error desconocido'))" 2>/dev/null)
@@ -254,13 +220,6 @@ status_service() {
 status_port() {
     ss -${2:-t}lnp 2>/dev/null | grep -q ":${1} " && echo -e "${NEON}◆ ON ${NC}" || echo -e "${R}◇ OFF${NC}"
 }
-# Generar versión de texto plano (sin HTML) para SSH y Dropbear
-
-
-# Generar versión de texto plano (sin HTML) para SSH y Dropbear
-
-
-
 
 # ══════════════════════════════════════════
 #   WEBSOCKET PYTHON
@@ -454,32 +413,6 @@ menu_ws() {
                     rm -f $DIR_SERVICES/ws-proxy-${DEL_PORT}.service $DIR_SCRIPTS/proxy_ws_${DEL_PORT}.py
                 fi
                 systemctl daemon-reload; echo -e "  ${G}Eliminado${NC}"; sleep 1 ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe /etc/ssh/banner${NC}"
-                else
-                    echo "banner edit deshabilitado" >/dev/null
-                    systemctl restart dropbear
-                    echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
-                fi
-                sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
-                sleep 2 ;;
-            9)
-                echo -e "  ${Y}Edición de banner deshabilitada${NC}"
-                sleep 1 ;;
-            10)
-                echo -e "  ${Y}Vista de banner deshabilitada${NC}"
-                sleep 1 ;;
-
             0) break ;;
         esac
     done
@@ -503,10 +436,65 @@ menu_badvpn() {
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
-            1) activar_antiddos_agresivo ;;
-            2) desactivar_antiddos_agresivo ;;
-            3) ver_reglas_antiddos ;;
-            4) menu_atacantes ;;
+            1)
+                if [ ! -f /usr/local/bin/badvpn-udpgw ] || [ ! -s /usr/local/bin/badvpn-udpgw ]; then
+                    rm -f /usr/local/bin/badvpn-udpgw
+                    echo -e "\n  ${C}Actualizando repositorios...${NC}"
+                    apt update -y > /dev/null 2>&1
+                    echo -e "  ${C}Instalando dependencias...${NC}"
+                    apt install -y cmake make gcc g++ git > /dev/null 2>&1
+                    echo -e "  ${C}Compilando BadVPN...${NC}"
+                    cd /tmp || cd /root
+                    rm -rf badvpn
+                    git clone https://github.com/ambrop72/badvpn.git > /dev/null 2>&1
+                    cd /tmp/badvpn && mkdir -p build && cd build
+                    cmake .. -DBUILD_NOTHING_BY_DEFAULT=1 -DBUILD_UDPGW=1 > /dev/null 2>&1
+                    make > /dev/null 2>&1
+                    cd /tmp
+                    if [ -f /tmp/badvpn/build/udpgw/badvpn-udpgw ] && [ -s /tmp/badvpn/build/udpgw/badvpn-udpgw ]; then
+                        cp /tmp/badvpn/build/udpgw/badvpn-udpgw /usr/local/bin/
+                        chmod +x /usr/local/bin/badvpn-udpgw
+                        echo -e "  ${G}OK Binario compilado${NC}"
+                    else
+                        echo -e "  ${R}Error: compilacion fallida${NC}"
+                        read -p "  ENTER..."; return
+                    fi
+                fi
+                for PORT in 7200 7300; do
+                    cat > $DIR_SERVICES/badvpn-${PORT}.service << EOF
+[Unit]
+Description=BadVPN UDP Gateway ${PORT}
+After=network.target
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/badvpn-udpgw --listen-addr 127.0.0.1:${PORT} --max-clients 500 --max-connections-for-client 10
+Restart=always
+RestartSec=5
+[Install]
+WantedBy=multi-user.target
+EOF
+                    systemctl daemon-reload; systemctl enable badvpn-${PORT}; systemctl start badvpn-${PORT}
+                done
+                echo -e "  ${G}OK BadVPN 7200 y 7300${NC}"; sleep 2 ;;
+            2) systemctl start badvpn-7200 badvpn-7300 && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
+            3) systemctl stop badvpn-7200 badvpn-7300 && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
+            4) systemctl restart badvpn-7200 badvpn-7300 && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
+            5)
+                read -p "  Puerto: " BPORT
+                cat > $DIR_SERVICES/badvpn-${BPORT}.service << EOF
+[Unit]
+Description=BadVPN UDP Gateway ${BPORT}
+After=network.target
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/badvpn-udpgw --listen-addr 127.0.0.1:${BPORT} --max-clients 500
+Restart=always
+RestartSec=5
+[Install]
+WantedBy=multi-user.target
+EOF
+                systemctl daemon-reload; systemctl enable badvpn-${BPORT}; systemctl start badvpn-${BPORT}
+                echo -e "  ${G}OK BadVPN puerto ${BPORT}${NC}"; sleep 2 ;;
             0) break ;;
         esac
     done
@@ -529,10 +517,16 @@ menu_udp() {
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
-            1) activar_antiddos_agresivo ;;
-            2) desactivar_antiddos_agresivo ;;
-            3) ver_reglas_antiddos ;;
-            4) menu_atacantes ;;
+            1)
+                echo -e "\n  ${C}Instalando UDP Custom (Epro Dev Team)...${NC}"
+                read -p "  Puerto a excluir (default 5300): " UDP_EXCL; UDP_EXCL=${UDP_EXCL:-5300}
+                wget -O /tmp/install-udp "https://drive.usercontent.google.com/download?id=1S3IE25v_fyUfCLslnujFBSBMNunDHDk2&export=download&confirm=t"
+                chmod +x /tmp/install-udp; bash /tmp/install-udp $UDP_EXCL
+                echo -e "  ${G}OK UDP Custom instalado${NC}"; sleep 2 ;;
+            2) systemctl start udp-custom 2>/dev/null || (/root/udp/udp-custom server -exclude 5300 &); echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
+            3) systemctl stop udp-custom 2>/dev/null; pkill -f udp-custom 2>/dev/null; echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
+            4) pkill -f udp-custom 2>/dev/null; sleep 1; systemctl start udp-custom 2>/dev/null || (/root/udp/udp-custom server -exclude 5300 &); echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
+            5) ss -ulnp | grep udp; echo ""; read -p "  ENTER..." ;;
             0) break ;;
         esac
     done
@@ -555,10 +549,25 @@ menu_ssl() {
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
-            1) activar_antiddos_agresivo ;;
-            2) desactivar_antiddos_agresivo ;;
-            3) ver_reglas_antiddos ;;
-            4) menu_atacantes ;;
+            1)
+                apt install -y stunnel4 > /dev/null 2>&1
+                read -p "  Puerto SSL (ej: 443): " SSL_PORT; SSL_PORT=${SSL_PORT:-443}
+                read -p "  Puerto local SSH (ej: 22): " LOCAL_PORT; LOCAL_PORT=${LOCAL_PORT:-22}
+                openssl req -new -x509 -days 3650 -nodes -out /etc/stunnel/stunnel.pem -keyout /etc/stunnel/stunnel.pem -subj "/C=US/ST=Miami/L=Miami/O=SSHFREE/CN=sshfree" 2>/dev/null
+                cat > /etc/stunnel/stunnel.conf << EOF
+pid = /var/run/stunnel4/stunnel.pid
+cert = /etc/stunnel/stunnel.pem
+socket = a:SO_REUSEADDR=1
+[ssh]
+accept = ${SSL_PORT}
+connect = 127.0.0.1:${LOCAL_PORT}
+EOF
+                sed -i 's/ENABLED=0/ENABLED=1/' /etc/default/stunnel4 2>/dev/null
+                systemctl enable stunnel4; systemctl start stunnel4
+                echo -e "  ${G}OK SSL/TLS en puerto ${SSL_PORT}${NC}"; sleep 2 ;;
+            2) systemctl start stunnel4 && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
+            3) systemctl stop stunnel4 && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
+            4) systemctl restart stunnel4 && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
             0) break ;;
         esac
     done
@@ -599,10 +608,153 @@ except: pass
         printf " ${R}❬0❭ Volver${NC}\n"; sep; echo ""
         read -p " Opcion: " OPT
         case $OPT in
-            1) activar_antiddos_agresivo ;;
-            2) desactivar_antiddos_agresivo ;;
-            3) ver_reglas_antiddos ;;
-            4) menu_atacantes ;;
+            1)
+                read -p "  Dominio (para SSL): " DOMAIN
+                EMAIL="admin@${DOMAIN#*.}"
+                echo -e "  ${C}Instalando V2Ray...${NC}"
+                bash <(curl -s https://raw.githubusercontent.com/v2fly/fhs-install-v2ray/master/install-release.sh) > /dev/null 2>&1
+                echo -e "  ${C}Obteniendo certificado SSL...${NC}"
+                apt install -y certbot > /dev/null 2>&1
+                pkill -f "python3.*:80" 2>/dev/null; sleep 1
+                certbot certonly --standalone -d $DOMAIN --non-interactive --agree-tos -m $EMAIL
+                chmod 755 /etc/letsencrypt/live/ /etc/letsencrypt/archive/ 2>/dev/null
+                chmod 644 /etc/letsencrypt/live/$DOMAIN/*.pem 2>/dev/null
+                chmod 644 /etc/letsencrypt/archive/$DOMAIN/*.pem 2>/dev/null
+                cat > /usr/local/etc/v2ray/config.json << EOF
+{"log":{"loglevel":"warning"},"inbounds":[],"outbounds":[{"protocol":"freedom"}]}
+EOF
+                mkdir -p /etc/sshfreeltm
+                echo "$DOMAIN" > /etc/sshfreeltm/v2ray_domain
+                systemctl enable v2ray; systemctl start v2ray
+                echo -e "  ${G}OK V2Ray instalado — Usa ❬2❭ para agregar puertos${NC}"; sleep 2 ;;
+            2)
+                banner; sep
+                echo -e "  ${Y}  AGREGAR INBOUND${NC}"; sep; echo ""
+                read -p "  Puerto: " V2_PORT
+                echo -e "  Protocolo: ${Y}❬1❭${NC} vmess ${Y}❬2❭${NC} vless ${Y}❬3❭${NC} trojan"
+                read -p "  Opcion: " V2_PROTO_OPT
+                case $V2_PROTO_OPT in
+                    1) V2_PROTO="vmess" ;; 2) V2_PROTO="vless" ;; 3) V2_PROTO="trojan" ;; *) V2_PROTO="vmess" ;;
+                esac
+                echo -e "  Red: ${Y}❬1❭${NC} ws ${Y}❬2❭${NC} tcp ${Y}❬3❭${NC} xhttp ${Y}❬4❭${NC} grpc"
+                read -p "  Opcion: " V2_NET_OPT
+                case $V2_NET_OPT in
+                    1) V2_NET="ws" ;; 2) V2_NET="tcp" ;; 3) V2_NET="xhttp" ;; 4) V2_NET="grpc" ;; *) V2_NET="ws" ;;
+                esac
+                read -p "  Path (ej: /v2ray): " V2_PATH; V2_PATH=${V2_PATH:-/v2ray}
+                echo -e "  TLS: ${Y}❬1❭${NC} Si ${Y}❬2❭${NC} No"
+                read -p "  Opcion: " V2_TLS_OPT
+                [ "$V2_TLS_OPT" = "1" ] && V2_TLS="tls" || V2_TLS="none"
+                python3 - << PYEOF
+import json, os
+port, proto, net, path, tls = int("$V2_PORT"), "$V2_PROTO", "$V2_NET", "$V2_PATH", "$V2_TLS"
+with open('/usr/local/etc/v2ray/config.json') as f: config = json.load(f)
+ib = {"port": port, "protocol": proto, "settings": {"clients": []}, "streamSettings": {"network": net, "security": tls}}
+if net == "ws": ib["streamSettings"]["wsSettings"] = {"path": path}
+elif net == "xhttp": ib["streamSettings"]["xhttpSettings"] = {"path": path}
+elif net == "grpc": ib["streamSettings"]["grpcSettings"] = {"serviceName": path.strip("/")}
+if tls == "tls":
+    domain = open('/etc/sshfreeltm/v2ray_domain').read().strip() if os.path.exists('/etc/sshfreeltm/v2ray_domain') else ''
+    ib["streamSettings"]["tlsSettings"] = {"certificates": [{"certificateFile": f"/etc/letsencrypt/live/{domain}/fullchain.pem","keyFile": f"/etc/letsencrypt/live/{domain}/privkey.pem"}]}
+config["inbounds"].append(ib)
+with open('/usr/local/etc/v2ray/config.json', 'w') as f: json.dump(config, f, indent=2)
+print(f"OK {proto} {net} puerto {port}")
+PYEOF
+                systemctl restart v2ray; echo -e "  ${G}OK Inbound agregado${NC}"; read -p "  ENTER..." ;;
+            3)
+                banner; sep; echo -e "  ${R}  ELIMINAR INBOUND${NC}"; sep; echo ""
+                python3 -c "
+import json
+with open('/usr/local/etc/v2ray/config.json') as f: c=json.load(f)
+for i,ib in enumerate(c.get('inbounds',[])):
+    print(f'  [{i+1}] Puerto {ib[\"port\"]} | {ib[\"protocol\"]}')
+" 2>/dev/null
+                echo ""; read -p "  Numero a eliminar: " DEL_NUM
+                python3 - << PYEOF
+import json
+with open('/usr/local/etc/v2ray/config.json') as f: config = json.load(f)
+idx = int("$DEL_NUM") - 1
+if 0 <= idx < len(config['inbounds']):
+    removed = config['inbounds'].pop(idx)
+    with open('/usr/local/etc/v2ray/config.json', 'w') as f: json.dump(config, f, indent=2)
+    print(f"OK Puerto {removed['port']} eliminado")
+else: print("Numero invalido")
+PYEOF
+                systemctl restart v2ray; sleep 1 ;;
+            4) systemctl start v2ray && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
+            5) systemctl stop v2ray && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
+            6) systemctl restart v2ray && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
+            7)
+                banner; sep; echo -e "  ${Y}  CREAR USUARIO VMESS${NC}"; sep; echo ""
+                python3 -c "
+import json
+with open('/usr/local/etc/v2ray/config.json') as f: c=json.load(f)
+for i,ib in enumerate(c.get('inbounds',[])):
+    net=ib.get('streamSettings',{}).get('network','tcp')
+    tls=ib.get('streamSettings',{}).get('security','none')
+    print(f'  [{i+1}] Puerto {ib[\"port\"]} | {ib[\"protocol\"]} | {net} | tls:{tls}')
+" 2>/dev/null
+                echo ""; read -p "  Numero de inbound: " IB_NUM
+                IB_IDX=$((IB_NUM - 1))
+                read -p "  Nombre del perfil: " VNAME
+                read -p "  Dias de validez (default 30): " V2_DAYS; V2_DAYS=${V2_DAYS:-30}
+                EXP_SHOW=$(date -d "+${V2_DAYS} days" +%d/%m/%Y)
+                VDOMAIN=$(cat /etc/sshfreeltm/v2ray_domain 2>/dev/null || hostname -I | awk '{print $1}')
+                python3 - << PYEOF
+import json, uuid, base64, datetime
+idx, name, days, domain = int("$IB_IDX"), "$VNAME", int("$V2_DAYS"), "$VDOMAIN"
+with open('/usr/local/etc/v2ray/config.json') as f: config = json.load(f)
+inbounds = config.get('inbounds', [])
+if idx >= len(inbounds): print("Inbound no encontrado"); exit(1)
+ib = inbounds[idx]
+uid = str(uuid.uuid4())
+exp = (datetime.datetime.now() + datetime.timedelta(days=days)).strftime("%Y-%m-%d")
+if 'clients' not in ib['settings']: ib['settings']['clients'] = []
+ib['settings']['clients'].append({"id": uid, "alterId": 0, "email": name, "expires": exp})
+with open('/usr/local/etc/v2ray/config.json', 'w') as f: json.dump(config, f, indent=2)
+net = ib.get('streamSettings', {}).get('network', 'tcp')
+tls = ib.get('streamSettings', {}).get('security', 'none')
+path = ib.get('streamSettings', {}).get('wsSettings', {}).get('path', '/v2ray') if net == 'ws' else ''
+out_port = "443" if ib['port'] == 8080 else str(ib['port'])
+out_tls = "tls" if ib['port'] == 8080 else (tls if tls != "none" else "")
+vmess = {"v":"2","ps":name,"add":domain,"port":out_port,"id":uid,"aid":"0","net":net,"type":"none","host":domain,"path":path,"tls":out_tls}
+link = "vmess://" + base64.b64encode(json.dumps(vmess).encode()).decode()
+print("")
+print("\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m")
+print("  \033[1;32m✅ CUENTA VMESS CREADA\033[0m")
+print("\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m")
+print(f"  \033[1;96m◈\033[0m \033[2;37mPerfil :\033[0m  \033[1;97m{name}\033[0m")
+print(f"  \033[1;96m◈\033[0m \033[2;37mHost   :\033[0m  \033[1;97m{domain}\033[0m")
+print(f"  \033[1;96m◈\033[0m \033[2;37mPuerto :\033[0m  \033[1;33m{out_port}\033[0m")
+print(f"  \033[1;96m◈\033[0m \033[2;37mRed    :\033[0m  \033[1;96m{net}\033[0m")
+print(f"  \033[1;96m◈\033[0m \033[2;37mExpira :\033[0m  \033[1;33m$EXP_SHOW\033[0m")
+print("\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m")
+print("  \033[1;96m🔑 VMESS LINK:\033[0m")
+print("")
+print("\033[1;97m" + link + "\033[0m")
+print("")
+print("\033[1;96m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m")
+PYEOF
+                systemctl restart v2ray; read -p "  ENTER..." ;;
+            8)
+                python3 -c "
+import json
+try:
+    with open('/usr/local/etc/v2ray/config.json') as f: c=json.load(f)
+    for ib in c['inbounds']:
+        print(f'  Puerto {ib[\"port\"]}:')
+        for u in ib['settings'].get('clients',[]):
+            print(f'    - {u.get(\"email\",\"?\")} | expira: {u.get(\"expires\",\"sin exp\")}')
+except Exception as e: print(f'Error: {e}')
+"; read -p "  ENTER..." ;;
+            9)
+                read -p "  Confirmar desinstalar V2Ray (si/no): " CONFIRM
+                if [ "$CONFIRM" = "si" ]; then
+                    systemctl stop v2ray; systemctl disable v2ray
+                    bash <(curl -s https://raw.githubusercontent.com/v2fly/fhs-install-v2ray/master/install-release.sh) --remove > /dev/null 2>&1
+                    rm -f /etc/sshfreeltm/v2ray_domain
+                    echo -e "  ${G}OK V2Ray desinstalado${NC}"; sleep 2
+                fi ;;
             0) break ;;
             *) echo -e "  ${R}Opcion invalida${NC}"; sleep 1 ;;
         esac
@@ -636,25 +788,8 @@ menu_ziv() {
             3) systemctl start zivpn && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
             4) systemctl stop zivpn && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
             5) systemctl restart zivpn && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
-            6) cat /etc/zivpn/config.json 2>/dev/null || echo -e "  ${R}No hay configuracion${NC}"; sleep 2 ;;
-            7) echo -e "  ${Y}Desinstalación no implementada en esta copia${NC}"; sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
-                sleep 2 ;;
-            9)
-                echo -e "  ${Y}Edición de banner deshabilitada${NC}"
-                sleep 1 ;;
-            10)
-                echo -e "  ${Y}Vista de banner deshabilitada${NC}"
-                sleep 1 ;;
-
+            6) cat /etc/zivpn/config.json 2>/dev/null; echo ""; read -p "  ENTER..." ;;
+            7) bash <(curl -fsSL https://raw.githubusercontent.com/powermx/zivpn/main/uninstall.sh) 2>/dev/null; echo -e "  ${G}Desinstalado${NC}"; sleep 1 ;;
             0) break ;;
         esac
     done
@@ -774,32 +909,6 @@ menu_users_ziv() {
             2) listar_users_ziv ;;
             3) eliminar_user_ziv ;;
             4) limpiar_expirados_ziv; aplicar_passwords_ziv; echo -e "  ${G}Limpiado${NC}"; sleep 1 ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe /etc/ssh/banner${NC}"
-                else
-                    echo "banner edit deshabilitado" >/dev/null
-                    systemctl restart dropbear
-                    echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
-                fi
-                sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
-                sleep 2 ;;
-            9)
-                echo -e "  ${Y}Edición de banner deshabilitada${NC}"
-                sleep 1 ;;
-            10)
-                echo -e "  ${Y}Vista de banner deshabilitada${NC}"
-                sleep 1 ;;
-
             0) break ;;
         esac
     done
@@ -904,32 +1013,6 @@ menu_usuarios() {
             2) listar_usuarios ;;
             3) eliminar_usuario ;;
             4) renovar_usuario ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe /etc/ssh/banner${NC}"
-                else
-                    echo "banner edit deshabilitado" >/dev/null
-                    systemctl restart dropbear
-                    echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
-                fi
-                sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
-                sleep 2 ;;
-            9)
-                echo -e "  ${Y}Edición de banner deshabilitada${NC}"
-                sleep 1 ;;
-            10)
-                echo -e "  ${Y}Vista de banner deshabilitada${NC}"
-                sleep 1 ;;
-
             0) break ;;
         esac
     done
@@ -1065,30 +1148,6 @@ actualizar_script() {
     exec /usr/local/bin/menu
 }
 
-activar_antiddos_agresivo() {
-    iptables -C INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null ||         iptables -I INPUT 1 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-    iptables -C INPUT -m conntrack --ctstate INVALID -j DROP 2>/dev/null ||         iptables -I INPUT 2 -m conntrack --ctstate INVALID -j DROP
-    iptables -C INPUT -p tcp --syn -m limit --limit 25/s --limit-burst 100 -j ACCEPT 2>/dev/null ||         iptables -I INPUT 3 -p tcp --syn -m limit --limit 25/s --limit-burst 100 -j ACCEPT
-    iptables -C INPUT -p tcp --syn -j DROP 2>/dev/null ||         iptables -I INPUT 4 -p tcp --syn -j DROP
-    echo -e "  ${G}Anti-DDoS activado${NC}"
-}
-
-desactivar_antiddos_agresivo() {
-    iptables -D INPUT -p tcp --syn -j DROP 2>/dev/null || true
-    iptables -D INPUT -p tcp --syn -m limit --limit 25/s --limit-burst 100 -j ACCEPT 2>/dev/null || true
-    iptables -D INPUT -m conntrack --ctstate INVALID -j DROP 2>/dev/null || true
-    iptables -D INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || true
-    echo -e "  ${Y}Anti-DDoS desactivado${NC}"
-}
-
-ver_reglas_antiddos() {
-    echo ""
-    echo -e "  ${W}Reglas INPUT relacionadas:${NC}"
-    iptables -S INPUT | grep -E 'ctstate ESTABLISHED|ctstate INVALID|--syn' || echo -e "  ${R}No hay reglas Anti-DDoS visibles${NC}"
-    echo ""
-    read -p "  ENTER..."
-}
-
 menu_atacantes() {
     banner; sep
     echo -e "  ${NEON}◆ IPs ATACANTES${NC}"; sep; echo ""
@@ -1145,8 +1204,9 @@ menu_antiddos() {
     while true; do
         banner; sep
         echo -e "  ${Y}  ANTI-DDOS${NC}"; sep; echo ""
-        DDOS_ACTIVE=$(iptables -L INPUT -n 2>/dev/null | grep -q "limit" && echo 1 || echo 0)
-        if [ "$DDOS_ACTIVE" = "1" ]; then
+        # Ver estado
+        DDOS_ST=$(iptables -L INPUT -n 2>/dev/null | grep -c "limit\|REJECT\|DROP")
+        if [[ "${DDOS_ST:-0}" -gt 3 ]]; then
             echo -e "  Estado: ${G}[ACTIVO]${NC}"
         else
             echo -e "  Estado: ${R}[INACTIVO]${NC}"
@@ -1159,10 +1219,129 @@ menu_antiddos() {
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
-            1) activar_antiddos_agresivo ;;
-            2) desactivar_antiddos_agresivo ;;
-            3) ver_reglas_antiddos ;;
+            1)
+                echo -e "
+  ${C}Aplicando Anti-DDoS agresivo...${NC}"
+                apt install -y iptables-persistent fail2ban > /dev/null 2>&1
+
+                # Limpiar reglas previas
+                iptables -F
+                iptables -X
+                iptables -Z
+
+                # Política por defecto
+                iptables -P INPUT ACCEPT
+                iptables -P FORWARD DROP
+                iptables -P OUTPUT ACCEPT
+
+                # Permitir loopback
+                iptables -A INPUT -i lo -j ACCEPT
+                iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+                # Permitir puertos activos
+                for PORT in $(ss -tlnp | awk '/LISTEN/{print $4}' | grep -o '[0-9]*$' | sort -u); do
+                    iptables -A INPUT -p tcp --dport $PORT -j ACCEPT
+                done
+                for PORT in $(ss -ulnp | awk '/UNCONN/{print $4}' | grep -o '[0-9]*$' | sort -u); do
+                    iptables -A INPUT -p udp --dport $PORT -j ACCEPT
+                done
+
+                # Anti SYN Flood
+                iptables -A INPUT -p tcp --syn -m limit --limit 10/s --limit-burst 20 -j ACCEPT
+                iptables -A INPUT -p tcp --syn -j DROP
+
+                # Anti UDP Flood
+                iptables -A INPUT -p udp -m limit --limit 50/s --limit-burst 100 -j ACCEPT
+                iptables -A INPUT -p udp -j DROP
+
+                # Anti ICMP Flood (ping)
+                iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 2/s --limit-burst 4 -j ACCEPT
+                iptables -A INPUT -p icmp -j DROP
+
+                # Bloquear escaneo de puertos
+                iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
+                iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
+                iptables -A INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
+
+                # Limitar conexiones por IP
+                iptables -A INPUT -p tcp --dport 22 -m connlimit --connlimit-above 5 -j REJECT
+                iptables -A INPUT -p tcp -m connlimit --connlimit-above 50 -j REJECT
+
+                # Anti brute force SSH
+                iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --set
+                iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --update --seconds 60 --hitcount 5 -j DROP
+
+                # Bloquear IPs privadas falsas
+                iptables -A INPUT -s 10.0.0.0/8 ! -i lo -j DROP
+                iptables -A INPUT -s 172.16.0.0/12 ! -i lo -j DROP
+                iptables -A INPUT -s 192.168.0.0/16 ! -i lo -j DROP
+
+                # Guardar reglas
+                iptables-save > /etc/iptables/rules.v4 2>/dev/null || iptables-save > /etc/iptables.rules
+
+                # Configurar fail2ban
+                cat > /etc/fail2ban/jail.local << EOF
+[DEFAULT]
+bantime = 3600
+findtime = 600
+maxretry = 3
+ignoreip = 127.0.0.1/8
+
+[sshd]
+enabled = true
+port = ssh
+maxretry = 3
+bantime = 86400
+
+[http-get-dos]
+enabled = true
+port = http,https
+filter = http-get-dos
+logpath = /var/log/nginx/access.log
+maxretry = 100
+findtime = 60
+bantime = 3600
+EOF
+                systemctl enable fail2ban
+                systemctl restart fail2ban 2>/dev/null
+
+                echo -e "  ${G}✓ SYN Flood bloqueado${NC}"
+                echo -e "  ${G}✓ UDP Flood bloqueado${NC}"
+                echo -e "  ${G}✓ ICMP Flood bloqueado${NC}"
+                echo -e "  ${G}✓ Port scanning bloqueado${NC}"
+                echo -e "  ${G}✓ Brute Force SSH bloqueado${NC}"
+                echo -e "  ${G}✓ Conexiones limitadas por IP${NC}"
+                echo -e "  ${G}✓ Fail2ban activo${NC}"
+                echo ""
+                # Notificar IPs atacantes al admin
+                BANNED_IPS=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2)
+                if [ -n "$BANNED_IPS" ]; then
+                    python3 -c "
+import urllib.request, json
+TOKEN='7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws'
+ADMIN='6290827127'
+msg='🚨 *ANTI-DDoS ACTIVADO*\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🛡️ IPs bloqueadas:\n$BANNED_IPS'
+url=f'https://api.telegram.org/bot{TOKEN}/sendMessage'
+data=json.dumps({'chat_id':ADMIN,'text':msg,'parse_mode':'Markdown'}).encode()
+urllib.request.urlopen(urllib.request.Request(url,data=data,headers={'Content-Type':'application/json'}))
+" 2>/dev/null
+                fi
+                echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"
+                read -p "  ENTER..." ;;
+            2)
+                iptables -F
+                iptables -X
+                iptables -P INPUT ACCEPT
+                iptables -P FORWARD ACCEPT
+                iptables -P OUTPUT ACCEPT
+                systemctl stop fail2ban 2>/dev/null
+                echo -e "  ${Y}Anti-DDoS desactivado${NC}"; sleep 2 ;;
             4) menu_atacantes ;;
+            3)
+                echo ""
+                iptables -L INPUT -n --line-numbers | head -30
+                echo ""
+                read -p "  ENTER..." ;;
             0) break ;;
         esac
     done
@@ -1238,8 +1417,9 @@ menu_antiddos() {
     while true; do
         banner; sep
         echo -e "  ${Y}  ANTI-DDOS${NC}"; sep; echo ""
-        DDOS_ACTIVE=$(iptables -L INPUT -n 2>/dev/null | grep -q "limit" && echo 1 || echo 0)
-        if [ "$DDOS_ACTIVE" = "1" ]; then
+        # Ver estado
+        DDOS_ST=$(iptables -L INPUT -n 2>/dev/null | grep -c "limit\|REJECT\|DROP")
+        if [[ "${DDOS_ST:-0}" -gt 3 ]]; then
             echo -e "  Estado: ${G}[ACTIVO]${NC}"
         else
             echo -e "  Estado: ${R}[INACTIVO]${NC}"
@@ -1252,10 +1432,129 @@ menu_antiddos() {
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
-            1) activar_antiddos_agresivo ;;
-            2) desactivar_antiddos_agresivo ;;
-            3) ver_reglas_antiddos ;;
+            1)
+                echo -e "
+  ${C}Aplicando Anti-DDoS agresivo...${NC}"
+                apt install -y iptables-persistent fail2ban > /dev/null 2>&1
+
+                # Limpiar reglas previas
+                iptables -F
+                iptables -X
+                iptables -Z
+
+                # Política por defecto
+                iptables -P INPUT ACCEPT
+                iptables -P FORWARD DROP
+                iptables -P OUTPUT ACCEPT
+
+                # Permitir loopback
+                iptables -A INPUT -i lo -j ACCEPT
+                iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+                # Permitir puertos activos
+                for PORT in $(ss -tlnp | awk '/LISTEN/{print $4}' | grep -o '[0-9]*$' | sort -u); do
+                    iptables -A INPUT -p tcp --dport $PORT -j ACCEPT
+                done
+                for PORT in $(ss -ulnp | awk '/UNCONN/{print $4}' | grep -o '[0-9]*$' | sort -u); do
+                    iptables -A INPUT -p udp --dport $PORT -j ACCEPT
+                done
+
+                # Anti SYN Flood
+                iptables -A INPUT -p tcp --syn -m limit --limit 10/s --limit-burst 20 -j ACCEPT
+                iptables -A INPUT -p tcp --syn -j DROP
+
+                # Anti UDP Flood
+                iptables -A INPUT -p udp -m limit --limit 50/s --limit-burst 100 -j ACCEPT
+                iptables -A INPUT -p udp -j DROP
+
+                # Anti ICMP Flood (ping)
+                iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 2/s --limit-burst 4 -j ACCEPT
+                iptables -A INPUT -p icmp -j DROP
+
+                # Bloquear escaneo de puertos
+                iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
+                iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
+                iptables -A INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
+
+                # Limitar conexiones por IP
+                iptables -A INPUT -p tcp --dport 22 -m connlimit --connlimit-above 5 -j REJECT
+                iptables -A INPUT -p tcp -m connlimit --connlimit-above 50 -j REJECT
+
+                # Anti brute force SSH
+                iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --set
+                iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --update --seconds 60 --hitcount 5 -j DROP
+
+                # Bloquear IPs privadas falsas
+                iptables -A INPUT -s 10.0.0.0/8 ! -i lo -j DROP
+                iptables -A INPUT -s 172.16.0.0/12 ! -i lo -j DROP
+                iptables -A INPUT -s 192.168.0.0/16 ! -i lo -j DROP
+
+                # Guardar reglas
+                iptables-save > /etc/iptables/rules.v4 2>/dev/null || iptables-save > /etc/iptables.rules
+
+                # Configurar fail2ban
+                cat > /etc/fail2ban/jail.local << EOF
+[DEFAULT]
+bantime = 3600
+findtime = 600
+maxretry = 3
+ignoreip = 127.0.0.1/8
+
+[sshd]
+enabled = true
+port = ssh
+maxretry = 3
+bantime = 86400
+
+[http-get-dos]
+enabled = true
+port = http,https
+filter = http-get-dos
+logpath = /var/log/nginx/access.log
+maxretry = 100
+findtime = 60
+bantime = 3600
+EOF
+                systemctl enable fail2ban
+                systemctl restart fail2ban 2>/dev/null
+
+                echo -e "  ${G}✓ SYN Flood bloqueado${NC}"
+                echo -e "  ${G}✓ UDP Flood bloqueado${NC}"
+                echo -e "  ${G}✓ ICMP Flood bloqueado${NC}"
+                echo -e "  ${G}✓ Port scanning bloqueado${NC}"
+                echo -e "  ${G}✓ Brute Force SSH bloqueado${NC}"
+                echo -e "  ${G}✓ Conexiones limitadas por IP${NC}"
+                echo -e "  ${G}✓ Fail2ban activo${NC}"
+                echo ""
+                # Notificar IPs atacantes al admin
+                BANNED_IPS=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2)
+                if [ -n "$BANNED_IPS" ]; then
+                    python3 -c "
+import urllib.request, json
+TOKEN='7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws'
+ADMIN='6290827127'
+msg='🚨 *ANTI-DDoS ACTIVADO*\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🛡️ IPs bloqueadas:\n$BANNED_IPS'
+url=f'https://api.telegram.org/bot{TOKEN}/sendMessage'
+data=json.dumps({'chat_id':ADMIN,'text':msg,'parse_mode':'Markdown'}).encode()
+urllib.request.urlopen(urllib.request.Request(url,data=data,headers={'Content-Type':'application/json'}))
+" 2>/dev/null
+                fi
+                echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"
+                read -p "  ENTER..." ;;
+            2)
+                iptables -F
+                iptables -X
+                iptables -P INPUT ACCEPT
+                iptables -P FORWARD ACCEPT
+                iptables -P OUTPUT ACCEPT
+                systemctl stop fail2ban 2>/dev/null
+                echo -e "  ${Y}Anti-DDoS desactivado${NC}"; sleep 2 ;;
             4) menu_atacantes ;;
+            3)
+                echo ""
+                iptables -L INPUT -n --line-numbers | head -30
+                echo ""
+                read -p "  ENTER..." ;;
             0) break ;;
         esac
     done
@@ -1320,50 +1619,178 @@ menu_slowdns() {
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
-            1) activar_antiddos_agresivo ;;
-            2) desactivar_antiddos_agresivo ;;
-            3) ver_reglas_antiddos ;;
-            4) menu_atacantes ;;
+            1)
+                echo -e "
+  ${C}Instalando dependencias...${NC}"
+                apt install -y git screen iptables net-tools curl wget dos2unix gnutls-bin netfilter-persistent
+                mkdir -p $SLOWDNS_DIR
+                chmod 700 $SLOWDNS_DIR
+                read -p "  Dominio NS: " SDNS_DOMAIN
+                read -p "  Puerto SSH local (default 22): " SDNS_PORT
+                SDNS_PORT=${SDNS_PORT:-22}
+                echo -e "  ${C}Descargando binarios...${NC}"
+                wget -q -O $SLOWDNS_DIR/sldns-server "https://raw.githubusercontent.com/fisabiliyusri/SLDNS/main/slowdns/sldns-server"
+                wget -q -O $SLOWDNS_DIR/sldns-client "https://raw.githubusercontent.com/fisabiliyusri/SLDNS/main/slowdns/sldns-client"
+                wget -q -O $SLOWDNS_DIR/server.key "https://raw.githubusercontent.com/fisabiliyusri/SLDNS/main/slowdns/server.key"
+                wget -q -O $SLOWDNS_DIR/server.pub "https://raw.githubusercontent.com/fisabiliyusri/SLDNS/main/slowdns/server.pub"
+                chmod +x $SLOWDNS_DIR/*
+                iptables -I INPUT -p udp --dport 5300 -j ACCEPT
+                iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300
+                netfilter-persistent save 2>/dev/null
+                cat > /etc/systemd/system/$CLIENT_SERVICE.service << EOF
+[Unit]
+Description=Client SlowDNS
+After=network.target
+[Service]
+Type=simple
+ExecStart=$SLOWDNS_DIR/sldns-client -udp 8.8.8.8:53 --pubkey-file $PUBKEY_FILE $SDNS_DOMAIN 127.0.0.1:$SDNS_PORT
+Restart=on-failure
+[Install]
+WantedBy=multi-user.target
+EOF
+                cat > /etc/systemd/system/$SERVER_SERVICE.service << EOF
+[Unit]
+Description=Server SlowDNS
+After=network.target
+[Service]
+Type=simple
+ExecStart=$SLOWDNS_DIR/sldns-server -udp :5300 -privkey-file $SLOWDNS_DIR/server.key $SDNS_DOMAIN 127.0.0.1:$SDNS_PORT
+Restart=on-failure
+[Install]
+WantedBy=multi-user.target
+EOF
+                systemctl daemon-reload
+                systemctl enable $CLIENT_SERVICE $SERVER_SERVICE
+                systemctl start $CLIENT_SERVICE $SERVER_SERVICE
+                echo -e "  ${G}OK SlowDNS instalado${NC}"
+                echo -e "  PubKey: $(cat $PUBKEY_FILE 2>/dev/null)"
+                read -p "  ENTER..." ;;
+            2) systemctl start $CLIENT_SERVICE $SERVER_SERVICE && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
+            3) systemctl stop $CLIENT_SERVICE $SERVER_SERVICE && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
+            4) cat $PUBKEY_FILE 2>/dev/null || echo -e "  ${R}No encontrada${NC}"; echo ""; read -p "  ENTER..." ;;
+            5)
+                systemctl stop $CLIENT_SERVICE $SERVER_SERVICE 2>/dev/null
+                systemctl disable $CLIENT_SERVICE $SERVER_SERVICE 2>/dev/null
+                rm -rf $SLOWDNS_DIR
+                rm -f /etc/systemd/system/$CLIENT_SERVICE.service /etc/systemd/system/$SERVER_SERVICE.service
+                systemctl daemon-reload
+                echo -e "  ${G}SlowDNS desinstalado${NC}"; sleep 2 ;;
             0) break ;;
         esac
     done
 }
 
-
+menu_dropbear() {
+    while true; do
+        banner; sep
+        echo -e "  ${Y}  DROPBEAR SSH${NC}"; sep; echo ""
+        DB_ST=$(systemctl is-active dropbear 2>/dev/null)
+        [ "$DB_ST" = "active" ] && echo -e "  Estado: ${G}[ACTIVO]${NC}" || echo -e "  Estado: ${R}[INACTIVO]${NC}"
+        DB_PORT=$(cat /etc/sshfreeltm/dropbear_port 2>/dev/null || echo "444")
+        echo -e "  Puerto: ${W}${DB_PORT}${NC}"
+        echo ""; sep
+        echo -e "  ${W}[1]${NC} Instalar Dropbear"
+        echo -e "  ${W}[2]${NC} Iniciar"
+        echo -e "  ${W}[3]${NC} Detener"
+        echo -e "  ${W}[4]${NC} Reiniciar"
+        echo -e "  ${W}[5]${NC} Cambiar puerto"
+        echo -e "  ${W}[6]${NC} Desinstalar"
+        echo -e "  ${W}[0]${NC} Volver"; sep
+        read -p "  Opcion: " OPT
+        case $OPT in
+            1)
+                echo -e "
+  ${C}Instalando Dropbear...${NC}"
+                apt install -y dropbear
+                read -p "  Puerto Dropbear (default 444): " DB_PORT
+                DB_PORT=${DB_PORT:-444}
+                mkdir -p /etc/sshfreeltm
+                echo "$DB_PORT" > /etc/sshfreeltm/dropbear_port
+                # Configurar
+                sed -i "s/NO_START=1/NO_START=0/" /etc/default/dropbear 2>/dev/null
+                sed -i "s/DROPBEAR_PORT=.*/DROPBEAR_PORT=$DB_PORT/" /etc/default/dropbear 2>/dev/null
+                grep -q "DROPBEAR_PORT" /etc/default/dropbear || echo "DROPBEAR_PORT=$DB_PORT" >> /etc/default/dropbear
+                # Crear servicio
+                cat > /etc/systemd/system/dropbear.service << EOF
+[Unit]
+Description=Dropbear SSH Server
+After=network.target
+[Service]
+Type=simple
+ExecStart=/usr/sbin/dropbear -F -p $DB_PORT
+Restart=always
+RestartSec=3
+[Install]
+WantedBy=multi-user.target
+EOF
+                systemctl daemon-reload
+                # Generar llaves Dropbear
+                mkdir -p /etc/dropbear
+                [ ! -f /etc/dropbear/dropbear_dss_host_key ] && dropbearkey -t dss -f /etc/dropbear/dropbear_dss_host_key > /dev/null 2>&1
+                [ ! -f /etc/dropbear/dropbear_rsa_host_key ] && dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key > /dev/null 2>&1
+                [ ! -f /etc/dropbear/dropbear_ecdsa_host_key ] && dropbearkey -t ecdsa -f /etc/dropbear/dropbear_ecdsa_host_key > /dev/null 2>&1
+                # Agregar /bin/false a shells permitidos
+                grep -q "/bin/false" /etc/shells || echo "/bin/false" >> /etc/shells
+                systemctl enable dropbear
+                systemctl start dropbear
+                iptables -I INPUT -p tcp --dport $DB_PORT -j ACCEPT 2>/dev/null
+                echo -e "  ${G}OK Dropbear instalado en puerto ${DB_PORT}${NC}"; sleep 2 ;;
+            2) systemctl start dropbear && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
+            3) systemctl stop dropbear && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
+            4) systemctl restart dropbear && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
+            5)
+                read -p "  Nuevo puerto: " NEW_PORT
+                echo "$NEW_PORT" > /etc/sshfreeltm/dropbear_port
+                sed -i "s/DROPBEAR_PORT=.*/DROPBEAR_PORT=$NEW_PORT/" /etc/default/dropbear 2>/dev/null
+                sed -i "s/-p [0-9]*/-p $NEW_PORT/" /etc/systemd/system/dropbear.service 2>/dev/null
+                systemctl daemon-reload
+                systemctl restart dropbear
+                echo -e "  ${G}Puerto cambiado a ${NEW_PORT}${NC}"; sleep 2 ;;
+            6)
+                systemctl stop dropbear; systemctl disable dropbear
+                apt remove -y dropbear > /dev/null 2>&1
+                rm -f /etc/systemd/system/dropbear.service
+                systemctl daemon-reload
+                echo -e "  ${G}Dropbear desinstalado${NC}"; sleep 2 ;;
+            0) break ;;
+        esac
+    done
+}
 
 menu_banner_ssh() {
     while true; do
         banner; sep
-        echo -e "  ${NEON}◆ BANNER SSH & HTTP CUSTOM${NC}"; sep; echo ""
-
-        # Estado SSH Banner
-        if grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null; then
-            echo -e "  ${NEON}◈${NC} ${W}Banner SSH:${NC}        ${NEON}◆ ACTIVO${NC}"
-        else
-            echo -e "  ${NEON}◈${NC} ${W}Banner SSH:${NC}        ${R}◇ INACTIVO${NC}"
-        fi
-
-        # Estado Banner HTTP Custom (WebSocket)
-        WS_FILES=$(ls /etc/sshfreeltm/proxy_ws_*.py 2>/dev/null | head -1)
-        if [ -n "$WS_FILES" ]; then
-            CURRENT_MSG=$(grep "^MSG = " "$WS_FILES" 2>/dev/null | sed "s/MSG = '\(.*\)'.encode.*/\1/")
-            echo -e "  ${NEON}◈${NC} ${W}Banner HTTP Custom:${NC} ${Y}${CURRENT_MSG:-No configurado}${NC}"
-        else
-            echo -e "  ${NEON}◈${NC} ${W}Banner HTTP Custom:${NC} ${R}Sin WebSocket activo${NC}"
-        fi
-
+        echo -e "  ${Y}  BANNER SSH${NC}"; sep; echo ""
+        echo -e "  Banner actual:"
+        echo ""
+        cat /etc/ssh/sshd_config | grep -i "^Banner" || echo "  Sin banner configurado"
+        [ -f /etc/ssh/banner ] && cat /etc/ssh/banner || echo ""
         echo ""; sep
-        echo -e "  ${NEON}── SSH BANNER ──────────────────${NC}"
-        echo ""
-        echo -e "  ${NEON}── HTTP CUSTOM BANNER ──────────${NC}"
-        echo ""
+        echo -e "  ${W}[1]${NC} Crear/Editar banner"
+        echo -e "  ${W}[2]${NC} Quitar banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
-            1) activar_antiddos_agresivo ;;
-            2) desactivar_antiddos_agresivo ;;
-            3) ver_reglas_antiddos ;;
-            4) menu_atacantes ;;
+            1)
+                banner; sep
+                echo -e "  ${Y}Escribe el banner SSH${NC}"
+                echo -e "  ${C}(Texto que aparece al conectar por SSH)${NC}"; sep; echo ""
+                echo -e "  Ejemplo:"
+                echo -e "  ╔══════════════════════════════════╗"
+                echo -e "  ║   SERVIDOR PRIVADO - SSHFREE LTM ║"
+                echo -e "  ╚══════════════════════════════════╝"
+                echo ""; sep
+                read -p "  Texto del banner: " BANNER_TXT
+                echo "$BANNER_TXT" > /etc/ssh/banner
+                # Configurar sshd para mostrar banner
+                grep -q "^Banner" /etc/ssh/sshd_config && sed -i "s|^Banner.*|Banner /etc/ssh/banner|" /etc/ssh/sshd_config || echo "Banner /etc/ssh/banner" >> /etc/ssh/sshd_config
+                systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null
+                echo -e "  ${G}OK Banner SSH configurado${NC}"; sleep 2 ;;
+            2)
+                sed -i '/^Banner/d' /etc/ssh/sshd_config
+                rm -f /etc/ssh/banner
+                systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null
+                echo -e "  ${G}OK Banner eliminado${NC}"; sleep 1 ;;
             0) break ;;
         esac
     done
@@ -1390,13 +1817,22 @@ menu_limpieza() {
         read -p " Opcion: " OPT
         case $OPT in
             1)
+                echo -e "\n  ${C}Limpiando cache RAM...${NC}"
                 sync
-                echo 3 > /proc/sys/vm/drop_caches 2>/dev/null
-                echo -e "  ${G}Cache RAM limpiada${NC}"
+                echo 3 > /proc/sys/vm/drop_caches
+                RAM_FREE_NEW=$(free -h | awk '/^Mem:/{print $4}')
+                echo -e "  ${G}✓ Cache limpiada${NC}"
+                echo -e "  ${NEON}◈${NC} ${W}RAM Libre ahora:${NC} ${Y}${RAM_FREE_NEW}${NC}"
                 sleep 2 ;;
             2)
-                rm -rf /tmp/* /var/tmp/* 2>/dev/null
-                echo -e "  ${G}Archivos temporales limpiados${NC}"
+                echo -e "\n  ${C}Limpiando archivos temporales...${NC}"
+                apt autoremove -y > /dev/null 2>&1
+                apt clean > /dev/null 2>&1
+                rm -rf /tmp/*.sh /tmp/*.py /tmp/*.txt 2>/dev/null
+                journalctl --vacuum-time=3d > /dev/null 2>&1
+                echo -e "  ${G}✓ Temporales eliminados${NC}"
+                echo -e "  ${G}✓ Cache apt limpiada${NC}"
+                echo -e "  ${G}✓ Logs antiguos eliminados${NC}"
                 sleep 2 ;;
             3)
                 banner; sep
@@ -1428,32 +1864,6 @@ REBOOTEOF
                     echo -e "  ${Y}Reiniciando en 3 segundos...${NC}"
                     sleep 3
                     /sbin/reboot; } ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe /etc/ssh/banner${NC}"
-                else
-                    echo "banner edit deshabilitado" >/dev/null
-                    systemctl restart dropbear
-                    echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
-                fi
-                sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
-                sleep 2 ;;
-            9)
-                echo -e "  ${Y}Edición de banner deshabilitada${NC}"
-                sleep 1 ;;
-            10)
-                echo -e "  ${Y}Vista de banner deshabilitada${NC}"
-                sleep 1 ;;
-
             0) break ;;
         esac
     done
@@ -1481,10 +1891,100 @@ menu_shadowsocks() {
         sep; printf " ${R}❬0❭ Volver${NC}\n"; sep; echo ""
         read -p " Opcion: " OPT
         case $OPT in
-            1) activar_antiddos_agresivo ;;
-            2) desactivar_antiddos_agresivo ;;
-            3) ver_reglas_antiddos ;;
-            4) menu_atacantes ;;
+            1)
+                echo -e "\n  ${C}Instalando Shadowsocks...${NC}"
+                apt install -y shadowsocks-libev > /dev/null 2>&1
+                mkdir -p /etc/shadowsocks
+                read -p "  Puerto (default 8388): " SS_PORT; SS_PORT=${SS_PORT:-8388}
+                read -p "  Password: " SS_PASS; SS_PASS=${SS_PASS:-"ltmssh2026"}
+                echo -e "  Metodo: ${Y}❬1❭${NC} aes-256-gcm ${Y}❬2❭${NC} chacha20-ietf-poly1305 ${Y}❬3❭${NC} aes-128-gcm"
+                read -p "  Opcion: " SS_METHOD_OPT
+                case $SS_METHOD_OPT in
+                    1) SS_METHOD="aes-256-gcm" ;;
+                    2) SS_METHOD="chacha20-ietf-poly1305" ;;
+                    3) SS_METHOD="aes-128-gcm" ;;
+                    *) SS_METHOD="aes-256-gcm" ;;
+                esac
+                cat > /etc/shadowsocks/config.json << EOF
+{
+    "server": "0.0.0.0",
+    "server_port": $SS_PORT,
+    "password": "$SS_PASS",
+    "method": "$SS_METHOD",
+    "timeout": 300,
+    "mode": "tcp_and_udp",
+    "fast_open": true
+}
+EOF
+                cat > /etc/systemd/system/shadowsocks-server.service << EOF2
+[Unit]
+Description=Shadowsocks Server
+After=network.target
+[Service]
+Type=simple
+ExecStart=/usr/bin/ss-server -c /etc/shadowsocks/config.json
+Restart=always
+RestartSec=3
+[Install]
+WantedBy=multi-user.target
+EOF2
+                systemctl daemon-reload
+                systemctl enable shadowsocks-server
+                # Matar proceso anterior si el puerto esta ocupado
+                pkill -f ss-server 2>/dev/null; sleep 1
+                systemctl start shadowsocks-server
+                iptables -I INPUT -p tcp --dport $SS_PORT -j ACCEPT 2>/dev/null
+                iptables -I INPUT -p udp --dport $SS_PORT -j ACCEPT 2>/dev/null
+                SS_IP=$(hostname -I | awk '{print $1}')
+                echo ""
+                echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+                echo -e "  ${G}✅ SHADOWSOCKS INSTALADO${NC}"
+                echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+                echo -e "  ${NEON}◈${NC} ${W}IP:${NC}       ${Y}$SS_IP${NC}"
+                echo -e "  ${NEON}◈${NC} ${W}Puerto:${NC}   ${Y}$SS_PORT${NC}"
+                echo -e "  ${NEON}◈${NC} ${W}Password:${NC} ${Y}$SS_PASS${NC}"
+                echo -e "  ${NEON}◈${NC} ${W}Metodo:${NC}   ${Y}$SS_METHOD${NC}"
+                echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+                read -p "  ENTER..." ;;
+            2) systemctl start shadowsocks-server && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
+            3) systemctl stop shadowsocks-server && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
+            4) systemctl restart shadowsocks-server && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
+            5)
+                banner; sep; echo -e "  ${Y}AGREGAR USUARIO${NC}"; sep; echo ""
+                echo -e "  ${Y}Shadowsocks basico usa una sola password${NC}"
+                echo -e "  ${Y}Para multi-usuario necesitas shadowsocks-manager${NC}"; echo ""
+                read -p "  Nueva password: " SS_NEW_PASS
+                python3 -c "
+import json
+with open('/etc/shadowsocks/config.json') as f: c=json.load(f)
+c['password'] = '$SS_NEW_PASS'
+with open('/etc/shadowsocks/config.json','w') as f: json.dump(c,f,indent=2)
+print('OK')
+"
+                systemctl restart shadowsocks-server
+                echo -e "  ${G}Password actualizada: ${Y}$SS_NEW_PASS${NC}"
+                read -p "  ENTER..." ;;
+            6)
+                echo ""; echo -e "  ${W}Configuracion actual:${NC}"; echo ""
+                python3 -c "
+import json
+with open('/etc/shadowsocks/config.json') as f: c=json.load(f)
+print(f'  Puerto:   {c.get(\"server_port\")}')
+print(f'  Password: {c.get(\"password\")}')
+print(f'  Metodo:   {c.get(\"method\")}')
+" 2>/dev/null || echo "  No instalado"
+                echo ""; read -p "  ENTER..." ;;
+            7) cat /etc/shadowsocks/config.json 2>/dev/null || echo "No instalado"; echo ""; read -p "  ENTER..." ;;
+            8)
+                read -p "  Confirmar (si/no): " CONFIRM
+                [ "$CONFIRM" = "si" ] && {
+                    systemctl stop shadowsocks-server 2>/dev/null
+                    systemctl disable shadowsocks-server 2>/dev/null
+                    apt remove -y shadowsocks-libev > /dev/null 2>&1
+                    rm -f /etc/systemd/system/shadowsocks-server.service
+                    rm -rf /etc/shadowsocks
+                    systemctl daemon-reload
+                    echo -e "  ${G}Desinstalado${NC}"; sleep 2; } ;;
             0) break ;;
         esac
     done
@@ -1508,10 +2008,85 @@ menu_udp_hysteria_mod() {
         sep; printf " ${R}❬0❭ Volver${NC}\n"; sep; echo ""
         read -p " Opcion: " OPT
         case $OPT in
-            1) activar_antiddos_agresivo ;;
-            2) desactivar_antiddos_agresivo ;;
-            3) ver_reglas_antiddos ;;
-            4) menu_atacantes ;;
+            1)
+                echo -e "\n  ${C}Instalando UDP Hysteria Mod...${NC}"
+                curl -sL https://raw.githubusercontent.com/JotchuaDevz/JT-UDP-DEV/refs/heads/main/install_udp.sh -o /tmp/ltmudp_install.sh
+                sed -i 's/DOMAIN="requestlab-x.space"/DOMAIN="ltm.darkfullhn.xyz"/' /tmp/ltmudp_install.sh
+                sed -i 's/OBFS="jt"/OBFS="ltmudp"/' /tmp/ltmudp_install.sh
+                sed -i 's/PASSWORD="jt"/PASSWORD="ltmudp"/' /tmp/ltmudp_install.sh
+                bash /tmp/ltmudp_install.sh > /tmp/ltmudp_out.txt 2>&1
+                grep -v "JT-UDP\|Felicitaciones\|gestor\|udp'\|Ahora puedes\|Script del gestor\|Creando enlace\|Descargando script" /tmp/ltmudp_out.txt | sed 's/JT-UDP/LTMUDPv1/g'
+                echo -e "  ${G}OK Instalado${NC}"
+                read -p "  ENTER..." ;;
+            2) systemctl start hysteria-server && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
+            3) systemctl stop hysteria-server && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
+            4) systemctl restart hysteria-server && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
+            5)
+                banner; sep; echo -e "  ${Y}AGREGAR USUARIO${NC}"; sep; echo ""
+                read -p "  Usuario: " HM_USER
+                read -p "  Password: " HM_PASS
+                read -p "  Dias (default 30): " HM_DAYS; HM_DAYS=${HM_DAYS:-30}
+                HM_EXP=$(date -d "+${HM_DAYS} days" +%d/%m/%Y)
+                python3 -c "
+import json
+with open('/etc/hysteria/config.json') as f: c=json.load(f)
+users = c.get('auth',{}).get('config',[])
+entry = '$HM_USER:$HM_PASS'
+if entry not in users: users.append(entry)
+c['auth']['config'] = users
+with open('/etc/hysteria/config.json','w') as f: json.dump(c,f,indent=2)
+print('OK')
+"
+                systemctl restart hysteria-server
+                HM_IP=$(hostname -I | awk '{print $1}')
+                echo ""
+                echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+                echo -e "  ${G}✅ USUARIO CREADO${NC}"
+                echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+                echo -e "  ${NEON}◈${NC} ${W}Usuario:${NC}  ${Y}$HM_USER${NC}"
+                echo -e "  ${NEON}◈${NC} ${W}Password:${NC} ${Y}$HM_PASS${NC}"
+                echo -e "  ${NEON}◈${NC} ${W}IP:${NC}       ${Y}$HM_IP${NC}"
+                echo -e "  ${NEON}◈${NC} ${W}Puerto:${NC}   ${Y}36712${NC}"
+                HM_OBFS_NOW=$(python3 -c "import json; c=json.load(open('/etc/hysteria/config.json')); print(c.get('obfs','ltmudp'))" 2>/dev/null || echo "ltmudp")
+                echo -e "  ${NEON}◈${NC} ${W}Obfs:${NC}     ${Y}${HM_OBFS_NOW}${NC}"
+                echo -e "  ${NEON}◈${NC} ${W}Expira:${NC}   ${Y}$HM_EXP${NC}"
+                echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
+                read -p "  ENTER..." ;;
+            6)
+                echo ""; echo -e "  ${W}Usuarios:${NC}"; echo ""
+                echo -e "  ${NEON}◈${NC} ${DIM}Usuario : Password${NC}"; echo ""
+                python3 -c "
+import json
+with open('/etc/hysteria/config.json') as f: c=json.load(f)
+users = c.get('auth',{}).get('config',[])
+for u in users: print('  ' + u)
+" 2>/dev/null || echo "  No instalado"
+                echo ""; read -p "  ENTER..." ;;
+            7)
+                banner; sep; echo -e "  ${Y}CAMBIAR OBFS${NC}"; sep; echo ""
+                CURRENT_OBFS=$(grep -o '"obfs":"[^"]*"' /etc/hysteria/config.json 2>/dev/null | cut -d'"' -f4 || echo "ltmudp")
+                echo -e "  ${NEON}◈${NC} ${W}Obfs actual:${NC} ${Y}$CURRENT_OBFS${NC}"; echo ""
+                read -p "  Nuevo obfs: " NEW_OBFS
+                [ -z "$NEW_OBFS" ] && echo -e "  ${R}Cancelado${NC}" && sleep 1 && continue
+                python3 -c "
+import json
+with open('/etc/hysteria/config.json') as f: c=json.load(f)
+c['obfs'] = '$NEW_OBFS'
+with open('/etc/hysteria/config.json','w') as f: json.dump(c,f,indent=2)
+print('OK')
+" 2>/dev/null
+                systemctl restart hysteria-server
+                echo -e "  ${G}Obfs cambiado a: ${Y}$NEW_OBFS${NC}"; sleep 2 ;;
+            8)
+                read -p "  Confirmar (si/no): " CONFIRM
+                [ "$CONFIRM" = "si" ] && {
+                    systemctl stop hysteria-server 2>/dev/null
+                    systemctl disable hysteria-server 2>/dev/null
+                    rm -f /etc/systemd/system/hysteria-server.service
+                    rm -f /usr/local/bin/hysteria
+                    rm -rf /etc/hysteria
+                    systemctl daemon-reload
+                    echo -e "  ${G}Desinstalado${NC}"; sleep 2; } ;;
             0) break ;;
         esac
     done
@@ -1537,10 +2112,134 @@ menu_hysteria() {
         printf " ${R}❬0❭ Volver${NC}\n"; sep; echo ""
         read -p " Opcion: " OPT
         case $OPT in
-            1) activar_antiddos_agresivo ;;
-            2) desactivar_antiddos_agresivo ;;
-            3) ver_reglas_antiddos ;;
-            4) menu_atacantes ;;
+            1)
+                echo -e "\n  ${C}Instalando Hysteria V1...${NC}"
+                apt install -y wget > /dev/null 2>&1
+                wget -q -O /usr/local/bin/hysteria-v1 https://github.com/HyNetwork/hysteria/releases/download/v1.3.5/hysteria-linux-amd64
+                chmod +x /usr/local/bin/hysteria-v1
+                read -p "  Puerto UDP (default 36712): " H1_PORT; H1_PORT=${H1_PORT:-36712}
+                read -p "  Password: " H1_PASS; H1_PASS=${H1_PASS:-"ltmssh2026"}
+                read -p "  Dominio (para TLS, deja vacio para self-signed): " H1_DOMAIN
+                mkdir -p /etc/hysteria
+                if [ -n "$H1_DOMAIN" ]; then
+                    apt install -y certbot > /dev/null 2>&1
+                    certbot certonly --standalone -d $H1_DOMAIN --non-interactive --agree-tos -m admin@${H1_DOMAIN#*.} 2>/dev/null
+                    CERT_FILE="/etc/letsencrypt/live/$H1_DOMAIN/fullchain.pem"
+                    KEY_FILE="/etc/letsencrypt/live/$H1_DOMAIN/privkey.pem"
+                else
+                    openssl req -x509 -nodes -newkey ec:<(openssl ecparam -name prime256v1) \
+                        -keyout /etc/hysteria/server.key -out /etc/hysteria/server.crt \
+                        -subj "/CN=hysteria" -days 36500 2>/dev/null
+                    CERT_FILE="/etc/hysteria/server.crt"
+                    KEY_FILE="/etc/hysteria/server.key"
+                fi
+                cat > /etc/hysteria/config.json << EOF
+{
+  "listen": ":$H1_PORT",
+  "cert": "$CERT_FILE",
+  "key": "$KEY_FILE",
+  "auth": {
+    "mode": "password",
+    "config": {"password": "$H1_PASS"}
+  },
+  "obfs": "ltmssh",
+  "up_mbps": 100,
+  "down_mbps": 100
+}
+EOF
+                cat > /etc/systemd/system/hysteria-server.service << EOF
+[Unit]
+Description=Hysteria V1 Server
+After=network.target
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/hysteria-v1 server --config /etc/hysteria/config.json
+Restart=always
+RestartSec=3
+[Install]
+WantedBy=multi-user.target
+EOF
+                systemctl daemon-reload
+                systemctl enable hysteria-server
+                systemctl start hysteria-server
+                iptables -I INPUT -p udp --dport $H1_PORT -j ACCEPT 2>/dev/null
+                echo -e "  ${G}OK Hysteria V1 instalado${NC}"
+                echo -e "  ${NEON}◈${NC} Puerto: ${Y}$H1_PORT${NC}"
+                echo -e "  ${NEON}◈${NC} Password: ${Y}$H1_PASS${NC}"
+                echo -e "  ${NEON}◈${NC} Obfs: ${Y}ltmssh${NC}"
+                read -p "  ENTER..." ;;
+            2)
+                echo -e "\n  ${C}Instalando Hysteria V2...${NC}"
+                apt install -y wget > /dev/null 2>&1
+                wget -q -O /usr/local/bin/hysteria2 https://github.com/apernet/hysteria/releases/latest/download/hysteria-linux-amd64
+                # hysteria2 es el mismo binario de apernet pero con nombre diferente
+                chmod +x /usr/local/bin/hysteria2
+                read -p "  Puerto UDP (default 8443): " H2_PORT; H2_PORT=${H2_PORT:-8443}
+                read -p "  Password: " H2_PASS; H2_PASS=${H2_PASS:-"ltmssh2026"}
+                read -p "  Dominio (deja vacio para self-signed): " H2_DOMAIN
+                mkdir -p /etc/hysteria2
+                if [ -n "$H2_DOMAIN" ]; then
+                    apt install -y certbot > /dev/null 2>&1
+                    certbot certonly --standalone -d $H2_DOMAIN --non-interactive --agree-tos -m admin@${H2_DOMAIN#*.} 2>/dev/null
+                    CERT2_FILE="/etc/letsencrypt/live/$H2_DOMAIN/fullchain.pem"
+                    KEY2_FILE="/etc/letsencrypt/live/$H2_DOMAIN/privkey.pem"
+                else
+                    openssl req -x509 -nodes -newkey ec:<(openssl ecparam -name prime256v1) \
+                        -keyout /etc/hysteria2/server.key -out /etc/hysteria2/server.crt \
+                        -subj "/CN=hysteria2" -days 36500 2>/dev/null
+                    CERT2_FILE="/etc/hysteria2/server.crt"
+                    KEY2_FILE="/etc/hysteria2/server.key"
+                fi
+                cat > /etc/hysteria2/config.yaml << EOF
+listen: :$H2_PORT
+tls:
+  cert: $CERT2_FILE
+  key: $KEY2_FILE
+auth:
+  type: password
+  password: $H2_PASS
+masquerade:
+  type: proxy
+  proxy:
+    url: https://news.ycombinator.com/
+    rewriteHost: true
+EOF
+                cat > /etc/systemd/system/hysteria2-server.service << EOF
+[Unit]
+Description=Hysteria V2 Server
+After=network.target
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/hysteria2 server --config /etc/hysteria2/config.yaml
+Restart=always
+RestartSec=3
+[Install]
+WantedBy=multi-user.target
+EOF
+                systemctl daemon-reload
+                systemctl enable hysteria2-server
+                systemctl start hysteria2-server
+                iptables -I INPUT -p udp --dport $H2_PORT -j ACCEPT 2>/dev/null
+                echo -e "  ${G}OK Hysteria V2 instalado${NC}"
+                echo -e "  ${NEON}◈${NC} Puerto: ${Y}$H2_PORT${NC}"
+                echo -e "  ${NEON}◈${NC} Password: ${Y}$H2_PASS${NC}"
+                read -p "  ENTER..." ;;
+            3) systemctl start hysteria-server && echo -e "  ${G}Hysteria V1 iniciado${NC}"; sleep 1 ;;
+            4) systemctl start hysteria2-server && echo -e "  ${G}Hysteria V2 iniciado${NC}"; sleep 1 ;;
+            5) systemctl stop hysteria-server && echo -e "  ${Y}Hysteria V1 detenido${NC}"; sleep 1 ;;
+            6) systemctl stop hysteria2-server && echo -e "  ${Y}Hysteria V2 detenido${NC}"; sleep 1 ;;
+            7) cat /etc/hysteria/config.json 2>/dev/null || echo "No instalado"; echo ""; read -p "  ENTER..." ;;
+            8) cat /etc/hysteria2/config.yaml 2>/dev/null || echo "No instalado"; echo ""; read -p "  ENTER..." ;;
+            9)
+                systemctl stop hysteria-server; systemctl disable hysteria-server
+                rm -f /usr/local/bin/hysteria /etc/systemd/system/hysteria-server.service
+                rm -rf /etc/hysteria; systemctl daemon-reload
+                echo -e "  ${G}Hysteria V1 desinstalado${NC}"; sleep 2 ;;
+            10)
+                systemctl stop hysteria2-server; systemctl disable hysteria2-server
+                rm -f /usr/local/bin/hysteria2 /etc/systemd/system/hysteria2-server.service
+                rm -rf /etc/hysteria2; systemctl daemon-reload
+                echo -e "  ${G}Hysteria V2 desinstalado${NC}"; sleep 2 ;;
             0) break ;;
         esac
     done
@@ -1571,42 +2270,24 @@ menu_herramientas() {
             2) menu_badvpn ;;
             3) menu_udp ;;
             4) menu_ssl ;;
-            5) usuarios_ssh_online_count ;;
-            6) usuarios_v2ray_online_count ;;
-            7) usuarios_ziv_online_count ;;
+            5) menu_v2ray ;;
+            6) menu_ziv ;;
+            7) menu_banner_ssh ;;
             8) menu_speed_udp ;;
             9) menu_antiddos ;;
             10) menu_slowdns ;;
             11) menu_dropbear ;;
+
             12) menu_udp_hysteria_mod ;;
             13) menu_shadowsocks ;;
             14) menu_limpieza ;;
-            7)
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  ${R}No existe /etc/ssh/banner${NC}"
-                else
-                    echo "banner edit deshabilitado" >/dev/null
-                    systemctl restart dropbear
-                    echo -e "  ${G}Dropbear reiniciado con el banner en texto plano${NC}"
-                fi
-                sleep 2 ;;
-            8)
-                if grep -q "\-b /etc/ssh/banner" /etc/systemd/system/dropbear.service; then
-                    sed -i "s| -b /etc/ssh/banner||" /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                    systemctl restart dropbear
-                    echo -e "  ${Y}Banner desactivado en Dropbear${NC}"
-                else
-                    echo -e "  ${R}El banner no estaba activo${NC}"
-                fi
-                sleep 2 ;;
-            9)
-                echo -e "  ${Y}Edición de banner deshabilitada${NC}"
-                sleep 1 ;;
-            10)
-                echo -e "  ${Y}Vista de banner deshabilitada${NC}"
-                sleep 1 ;;
+            9) menu_antiddos ;;
+            10) menu_slowdns ;;
+            11) menu_dropbear ;;
 
+            12) menu_udp_hysteria_mod ;;
+            13) menu_shadowsocks ;;
+            14) menu_limpieza ;;
             0) break ;;
             *) echo -e "  ${R}Opcion invalida${NC}"; sleep 1 ;;
         esac
@@ -1697,8 +2378,9 @@ menu_antiddos() {
     while true; do
         banner; sep
         echo -e "  ${Y}  ANTI-DDOS${NC}"; sep; echo ""
-        DDOS_ACTIVE=$(iptables -L INPUT -n 2>/dev/null | grep -q "limit" && echo 1 || echo 0)
-        if [ "$DDOS_ACTIVE" = "1" ]; then
+        # Ver estado
+        DDOS_ST=$(iptables -L INPUT -n 2>/dev/null | grep -c "limit\|REJECT\|DROP")
+        if [[ "${DDOS_ST:-0}" -gt 3 ]]; then
             echo -e "  Estado: ${G}[ACTIVO]${NC}"
         else
             echo -e "  Estado: ${R}[INACTIVO]${NC}"
@@ -1711,10 +2393,129 @@ menu_antiddos() {
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
-            1) activar_antiddos_agresivo ;;
-            2) desactivar_antiddos_agresivo ;;
-            3) ver_reglas_antiddos ;;
+            1)
+                echo -e "
+  ${C}Aplicando Anti-DDoS agresivo...${NC}"
+                apt install -y iptables-persistent fail2ban > /dev/null 2>&1
+
+                # Limpiar reglas previas
+                iptables -F
+                iptables -X
+                iptables -Z
+
+                # Política por defecto
+                iptables -P INPUT ACCEPT
+                iptables -P FORWARD DROP
+                iptables -P OUTPUT ACCEPT
+
+                # Permitir loopback
+                iptables -A INPUT -i lo -j ACCEPT
+                iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+                # Permitir puertos activos
+                for PORT in $(ss -tlnp | awk '/LISTEN/{print $4}' | grep -o '[0-9]*$' | sort -u); do
+                    iptables -A INPUT -p tcp --dport $PORT -j ACCEPT
+                done
+                for PORT in $(ss -ulnp | awk '/UNCONN/{print $4}' | grep -o '[0-9]*$' | sort -u); do
+                    iptables -A INPUT -p udp --dport $PORT -j ACCEPT
+                done
+
+                # Anti SYN Flood
+                iptables -A INPUT -p tcp --syn -m limit --limit 10/s --limit-burst 20 -j ACCEPT
+                iptables -A INPUT -p tcp --syn -j DROP
+
+                # Anti UDP Flood
+                iptables -A INPUT -p udp -m limit --limit 50/s --limit-burst 100 -j ACCEPT
+                iptables -A INPUT -p udp -j DROP
+
+                # Anti ICMP Flood (ping)
+                iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 2/s --limit-burst 4 -j ACCEPT
+                iptables -A INPUT -p icmp -j DROP
+
+                # Bloquear escaneo de puertos
+                iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
+                iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
+                iptables -A INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
+
+                # Limitar conexiones por IP
+                iptables -A INPUT -p tcp --dport 22 -m connlimit --connlimit-above 5 -j REJECT
+                iptables -A INPUT -p tcp -m connlimit --connlimit-above 50 -j REJECT
+
+                # Anti brute force SSH
+                iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --set
+                iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --update --seconds 60 --hitcount 5 -j DROP
+
+                # Bloquear IPs privadas falsas
+                iptables -A INPUT -s 10.0.0.0/8 ! -i lo -j DROP
+                iptables -A INPUT -s 172.16.0.0/12 ! -i lo -j DROP
+                iptables -A INPUT -s 192.168.0.0/16 ! -i lo -j DROP
+
+                # Guardar reglas
+                iptables-save > /etc/iptables/rules.v4 2>/dev/null || iptables-save > /etc/iptables.rules
+
+                # Configurar fail2ban
+                cat > /etc/fail2ban/jail.local << EOF
+[DEFAULT]
+bantime = 3600
+findtime = 600
+maxretry = 3
+ignoreip = 127.0.0.1/8
+
+[sshd]
+enabled = true
+port = ssh
+maxretry = 3
+bantime = 86400
+
+[http-get-dos]
+enabled = true
+port = http,https
+filter = http-get-dos
+logpath = /var/log/nginx/access.log
+maxretry = 100
+findtime = 60
+bantime = 3600
+EOF
+                systemctl enable fail2ban
+                systemctl restart fail2ban 2>/dev/null
+
+                echo -e "  ${G}✓ SYN Flood bloqueado${NC}"
+                echo -e "  ${G}✓ UDP Flood bloqueado${NC}"
+                echo -e "  ${G}✓ ICMP Flood bloqueado${NC}"
+                echo -e "  ${G}✓ Port scanning bloqueado${NC}"
+                echo -e "  ${G}✓ Brute Force SSH bloqueado${NC}"
+                echo -e "  ${G}✓ Conexiones limitadas por IP${NC}"
+                echo -e "  ${G}✓ Fail2ban activo${NC}"
+                echo ""
+                # Notificar IPs atacantes al admin
+                BANNED_IPS=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2)
+                if [ -n "$BANNED_IPS" ]; then
+                    python3 -c "
+import urllib.request, json
+TOKEN='7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws'
+ADMIN='6290827127'
+msg='🚨 *ANTI-DDoS ACTIVADO*\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🛡️ IPs bloqueadas:\n$BANNED_IPS'
+url=f'https://api.telegram.org/bot{TOKEN}/sendMessage'
+data=json.dumps({'chat_id':ADMIN,'text':msg,'parse_mode':'Markdown'}).encode()
+urllib.request.urlopen(urllib.request.Request(url,data=data,headers={'Content-Type':'application/json'}))
+" 2>/dev/null
+                fi
+                echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"
+                read -p "  ENTER..." ;;
+            2)
+                iptables -F
+                iptables -X
+                iptables -P INPUT ACCEPT
+                iptables -P FORWARD ACCEPT
+                iptables -P OUTPUT ACCEPT
+                systemctl stop fail2ban 2>/dev/null
+                echo -e "  ${Y}Anti-DDoS desactivado${NC}"; sleep 2 ;;
             4) menu_atacantes ;;
+            3)
+                echo ""
+                iptables -L INPUT -n --line-numbers | head -30
+                echo ""
+                read -p "  ENTER..." ;;
             0) break ;;
         esac
     done
@@ -1790,6 +2591,7 @@ menu_antiddos() {
     while true; do
         banner; sep
         echo -e "  ${Y}  ANTI-DDOS${NC}"; sep; echo ""
+        # Ver estado
         DDOS_ACTIVE=$(iptables -L INPUT -n 2>/dev/null | grep -q "limit" && echo 1 || echo 0)
         if [ "$DDOS_ACTIVE" = "1" ]; then
             echo -e "  Estado: ${G}[ACTIVO]${NC}"
@@ -1804,10 +2606,129 @@ menu_antiddos() {
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
-            1) activar_antiddos_agresivo ;;
-            2) desactivar_antiddos_agresivo ;;
-            3) ver_reglas_antiddos ;;
+            1)
+                echo -e "
+  ${C}Aplicando Anti-DDoS agresivo...${NC}"
+                apt install -y iptables-persistent fail2ban > /dev/null 2>&1
+
+                # Limpiar reglas previas
+                iptables -F
+                iptables -X
+                iptables -Z
+
+                # Política por defecto
+                iptables -P INPUT ACCEPT
+                iptables -P FORWARD DROP
+                iptables -P OUTPUT ACCEPT
+
+                # Permitir loopback
+                iptables -A INPUT -i lo -j ACCEPT
+                iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+                # Permitir puertos activos
+                for PORT in $(ss -tlnp | awk '/LISTEN/{print $4}' | grep -o '[0-9]*$' | sort -u); do
+                    iptables -A INPUT -p tcp --dport $PORT -j ACCEPT
+                done
+                for PORT in $(ss -ulnp | awk '/UNCONN/{print $4}' | grep -o '[0-9]*$' | sort -u); do
+                    iptables -A INPUT -p udp --dport $PORT -j ACCEPT
+                done
+
+                # Anti SYN Flood
+                iptables -A INPUT -p tcp --syn -m limit --limit 10/s --limit-burst 20 -j ACCEPT
+                iptables -A INPUT -p tcp --syn -j DROP
+
+                # Anti UDP Flood
+                iptables -A INPUT -p udp -m limit --limit 50/s --limit-burst 100 -j ACCEPT
+                iptables -A INPUT -p udp -j DROP
+
+                # Anti ICMP Flood (ping)
+                iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 2/s --limit-burst 4 -j ACCEPT
+                iptables -A INPUT -p icmp -j DROP
+
+                # Bloquear escaneo de puertos
+                iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
+                iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
+                iptables -A INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
+
+                # Limitar conexiones por IP
+                iptables -A INPUT -p tcp --dport 22 -m connlimit --connlimit-above 5 -j REJECT
+                iptables -A INPUT -p tcp -m connlimit --connlimit-above 50 -j REJECT
+
+                # Anti brute force SSH
+                iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --set
+                iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --update --seconds 60 --hitcount 5 -j DROP
+
+                # Bloquear IPs privadas falsas
+                iptables -A INPUT -s 10.0.0.0/8 ! -i lo -j DROP
+                iptables -A INPUT -s 172.16.0.0/12 ! -i lo -j DROP
+                iptables -A INPUT -s 192.168.0.0/16 ! -i lo -j DROP
+
+                # Guardar reglas
+                iptables-save > /etc/iptables/rules.v4 2>/dev/null || iptables-save > /etc/iptables.rules
+
+                # Configurar fail2ban
+                cat > /etc/fail2ban/jail.local << EOF
+[DEFAULT]
+bantime = 3600
+findtime = 600
+maxretry = 3
+ignoreip = 127.0.0.1/8
+
+[sshd]
+enabled = true
+port = ssh
+maxretry = 3
+bantime = 86400
+
+[http-get-dos]
+enabled = true
+port = http,https
+filter = http-get-dos
+logpath = /var/log/nginx/access.log
+maxretry = 100
+findtime = 60
+bantime = 3600
+EOF
+                systemctl enable fail2ban
+                systemctl restart fail2ban 2>/dev/null
+
+                echo -e "  ${G}✓ SYN Flood bloqueado${NC}"
+                echo -e "  ${G}✓ UDP Flood bloqueado${NC}"
+                echo -e "  ${G}✓ ICMP Flood bloqueado${NC}"
+                echo -e "  ${G}✓ Port scanning bloqueado${NC}"
+                echo -e "  ${G}✓ Brute Force SSH bloqueado${NC}"
+                echo -e "  ${G}✓ Conexiones limitadas por IP${NC}"
+                echo -e "  ${G}✓ Fail2ban activo${NC}"
+                echo ""
+                # Notificar IPs atacantes al admin
+                BANNED_IPS=$(fail2ban-client status sshd 2>/dev/null | grep "Banned IP" | cut -d: -f2)
+                if [ -n "$BANNED_IPS" ]; then
+                    python3 -c "
+import urllib.request, json
+TOKEN='7998209606:AAGNwiDAH5cOhWftedzZosjq7GLElvJRtws'
+ADMIN='6290827127'
+msg='🚨 *ANTI-DDoS ACTIVADO*\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🛡️ IPs bloqueadas:\n$BANNED_IPS'
+url=f'https://api.telegram.org/bot{TOKEN}/sendMessage'
+data=json.dumps({'chat_id':ADMIN,'text':msg,'parse_mode':'Markdown'}).encode()
+urllib.request.urlopen(urllib.request.Request(url,data=data,headers={'Content-Type':'application/json'}))
+" 2>/dev/null
+                fi
+                echo -e "  ${G}OK Anti-DDoS agresivo activado${NC}"
+                read -p "  ENTER..." ;;
+            2)
+                iptables -F
+                iptables -X
+                iptables -P INPUT ACCEPT
+                iptables -P FORWARD ACCEPT
+                iptables -P OUTPUT ACCEPT
+                systemctl stop fail2ban 2>/dev/null
+                echo -e "  ${Y}Anti-DDoS desactivado${NC}"; sleep 2 ;;
             4) menu_atacantes ;;
+            3)
+                echo ""
+                iptables -L INPUT -n --line-numbers | head -30
+                echo ""
+                read -p "  ENTER..." ;;
             0) break ;;
         esac
     done
@@ -1872,50 +2793,178 @@ menu_slowdns() {
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
-            1) activar_antiddos_agresivo ;;
-            2) desactivar_antiddos_agresivo ;;
-            3) ver_reglas_antiddos ;;
-            4) menu_atacantes ;;
+            1)
+                echo -e "
+  ${C}Instalando dependencias...${NC}"
+                apt install -y git screen iptables net-tools curl wget dos2unix gnutls-bin netfilter-persistent
+                mkdir -p $SLOWDNS_DIR
+                chmod 700 $SLOWDNS_DIR
+                read -p "  Dominio NS: " SDNS_DOMAIN
+                read -p "  Puerto SSH local (default 22): " SDNS_PORT
+                SDNS_PORT=${SDNS_PORT:-22}
+                echo -e "  ${C}Descargando binarios...${NC}"
+                wget -q -O $SLOWDNS_DIR/sldns-server "https://raw.githubusercontent.com/fisabiliyusri/SLDNS/main/slowdns/sldns-server"
+                wget -q -O $SLOWDNS_DIR/sldns-client "https://raw.githubusercontent.com/fisabiliyusri/SLDNS/main/slowdns/sldns-client"
+                wget -q -O $SLOWDNS_DIR/server.key "https://raw.githubusercontent.com/fisabiliyusri/SLDNS/main/slowdns/server.key"
+                wget -q -O $SLOWDNS_DIR/server.pub "https://raw.githubusercontent.com/fisabiliyusri/SLDNS/main/slowdns/server.pub"
+                chmod +x $SLOWDNS_DIR/*
+                iptables -I INPUT -p udp --dport 5300 -j ACCEPT
+                iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300
+                netfilter-persistent save 2>/dev/null
+                cat > /etc/systemd/system/$CLIENT_SERVICE.service << EOF
+[Unit]
+Description=Client SlowDNS
+After=network.target
+[Service]
+Type=simple
+ExecStart=$SLOWDNS_DIR/sldns-client -udp 8.8.8.8:53 --pubkey-file $PUBKEY_FILE $SDNS_DOMAIN 127.0.0.1:$SDNS_PORT
+Restart=on-failure
+[Install]
+WantedBy=multi-user.target
+EOF
+                cat > /etc/systemd/system/$SERVER_SERVICE.service << EOF
+[Unit]
+Description=Server SlowDNS
+After=network.target
+[Service]
+Type=simple
+ExecStart=$SLOWDNS_DIR/sldns-server -udp :5300 -privkey-file $SLOWDNS_DIR/server.key $SDNS_DOMAIN 127.0.0.1:$SDNS_PORT
+Restart=on-failure
+[Install]
+WantedBy=multi-user.target
+EOF
+                systemctl daemon-reload
+                systemctl enable $CLIENT_SERVICE $SERVER_SERVICE
+                systemctl start $CLIENT_SERVICE $SERVER_SERVICE
+                echo -e "  ${G}OK SlowDNS instalado${NC}"
+                echo -e "  PubKey: $(cat $PUBKEY_FILE 2>/dev/null)"
+                read -p "  ENTER..." ;;
+            2) systemctl start $CLIENT_SERVICE $SERVER_SERVICE && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
+            3) systemctl stop $CLIENT_SERVICE $SERVER_SERVICE && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
+            4) cat $PUBKEY_FILE 2>/dev/null || echo -e "  ${R}No encontrada${NC}"; echo ""; read -p "  ENTER..." ;;
+            5)
+                systemctl stop $CLIENT_SERVICE $SERVER_SERVICE 2>/dev/null
+                systemctl disable $CLIENT_SERVICE $SERVER_SERVICE 2>/dev/null
+                rm -rf $SLOWDNS_DIR
+                rm -f /etc/systemd/system/$CLIENT_SERVICE.service /etc/systemd/system/$SERVER_SERVICE.service
+                systemctl daemon-reload
+                echo -e "  ${G}SlowDNS desinstalado${NC}"; sleep 2 ;;
             0) break ;;
         esac
     done
 }
 
-
+menu_dropbear() {
+    while true; do
+        banner; sep
+        echo -e "  ${Y}  DROPBEAR SSH${NC}"; sep; echo ""
+        DB_ST=$(systemctl is-active dropbear 2>/dev/null)
+        [ "$DB_ST" = "active" ] && echo -e "  Estado: ${G}[ACTIVO]${NC}" || echo -e "  Estado: ${R}[INACTIVO]${NC}"
+        DB_PORT=$(cat /etc/sshfreeltm/dropbear_port 2>/dev/null || echo "444")
+        echo -e "  Puerto: ${W}${DB_PORT}${NC}"
+        echo ""; sep
+        echo -e "  ${W}[1]${NC} Instalar Dropbear"
+        echo -e "  ${W}[2]${NC} Iniciar"
+        echo -e "  ${W}[3]${NC} Detener"
+        echo -e "  ${W}[4]${NC} Reiniciar"
+        echo -e "  ${W}[5]${NC} Cambiar puerto"
+        echo -e "  ${W}[6]${NC} Desinstalar"
+        echo -e "  ${W}[0]${NC} Volver"; sep
+        read -p "  Opcion: " OPT
+        case $OPT in
+            1)
+                echo -e "
+  ${C}Instalando Dropbear...${NC}"
+                apt install -y dropbear
+                read -p "  Puerto Dropbear (default 444): " DB_PORT
+                DB_PORT=${DB_PORT:-444}
+                mkdir -p /etc/sshfreeltm
+                echo "$DB_PORT" > /etc/sshfreeltm/dropbear_port
+                # Configurar
+                sed -i "s/NO_START=1/NO_START=0/" /etc/default/dropbear 2>/dev/null
+                sed -i "s/DROPBEAR_PORT=.*/DROPBEAR_PORT=$DB_PORT/" /etc/default/dropbear 2>/dev/null
+                grep -q "DROPBEAR_PORT" /etc/default/dropbear || echo "DROPBEAR_PORT=$DB_PORT" >> /etc/default/dropbear
+                # Crear servicio
+                cat > /etc/systemd/system/dropbear.service << EOF
+[Unit]
+Description=Dropbear SSH Server
+After=network.target
+[Service]
+Type=simple
+ExecStart=/usr/sbin/dropbear -F -p $DB_PORT
+Restart=always
+RestartSec=3
+[Install]
+WantedBy=multi-user.target
+EOF
+                systemctl daemon-reload
+                # Generar llaves Dropbear
+                mkdir -p /etc/dropbear
+                [ ! -f /etc/dropbear/dropbear_dss_host_key ] && dropbearkey -t dss -f /etc/dropbear/dropbear_dss_host_key > /dev/null 2>&1
+                [ ! -f /etc/dropbear/dropbear_rsa_host_key ] && dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key > /dev/null 2>&1
+                [ ! -f /etc/dropbear/dropbear_ecdsa_host_key ] && dropbearkey -t ecdsa -f /etc/dropbear/dropbear_ecdsa_host_key > /dev/null 2>&1
+                # Agregar /bin/false a shells permitidos
+                grep -q "/bin/false" /etc/shells || echo "/bin/false" >> /etc/shells
+                systemctl enable dropbear
+                systemctl start dropbear
+                iptables -I INPUT -p tcp --dport $DB_PORT -j ACCEPT 2>/dev/null
+                echo -e "  ${G}OK Dropbear instalado en puerto ${DB_PORT}${NC}"; sleep 2 ;;
+            2) systemctl start dropbear && echo -e "  ${G}Iniciado${NC}"; sleep 1 ;;
+            3) systemctl stop dropbear && echo -e "  ${Y}Detenido${NC}"; sleep 1 ;;
+            4) systemctl restart dropbear && echo -e "  ${G}Reiniciado${NC}"; sleep 1 ;;
+            5)
+                read -p "  Nuevo puerto: " NEW_PORT
+                echo "$NEW_PORT" > /etc/sshfreeltm/dropbear_port
+                sed -i "s/DROPBEAR_PORT=.*/DROPBEAR_PORT=$NEW_PORT/" /etc/default/dropbear 2>/dev/null
+                sed -i "s/-p [0-9]*/-p $NEW_PORT/" /etc/systemd/system/dropbear.service 2>/dev/null
+                systemctl daemon-reload
+                systemctl restart dropbear
+                echo -e "  ${G}Puerto cambiado a ${NEW_PORT}${NC}"; sleep 2 ;;
+            6)
+                systemctl stop dropbear; systemctl disable dropbear
+                apt remove -y dropbear > /dev/null 2>&1
+                rm -f /etc/systemd/system/dropbear.service
+                systemctl daemon-reload
+                echo -e "  ${G}Dropbear desinstalado${NC}"; sleep 2 ;;
+            0) break ;;
+        esac
+    done
+}
 
 menu_banner_ssh() {
     while true; do
         banner; sep
-        echo -e "  ${NEON}◆ BANNER SSH & HTTP CUSTOM${NC}"; sep; echo ""
-
-        # Estado SSH Banner
-        if grep -q "^Banner" /etc/ssh/sshd_config 2>/dev/null; then
-            echo -e "  ${NEON}◈${NC} ${W}Banner SSH:${NC}        ${NEON}◆ ACTIVO${NC}"
-        else
-            echo -e "  ${NEON}◈${NC} ${W}Banner SSH:${NC}        ${R}◇ INACTIVO${NC}"
-        fi
-
-        # Estado Banner HTTP Custom (WebSocket)
-        WS_FILES=$(ls /etc/sshfreeltm/proxy_ws_*.py 2>/dev/null | head -1)
-        if [ -n "$WS_FILES" ]; then
-            CURRENT_MSG=$(grep "^MSG = " "$WS_FILES" 2>/dev/null | sed "s/MSG = '\(.*\)'.encode.*/\1/")
-            echo -e "  ${NEON}◈${NC} ${W}Banner HTTP Custom:${NC} ${Y}${CURRENT_MSG:-No configurado}${NC}"
-        else
-            echo -e "  ${NEON}◈${NC} ${W}Banner HTTP Custom:${NC} ${R}Sin WebSocket activo${NC}"
-        fi
-
+        echo -e "  ${Y}  BANNER SSH${NC}"; sep; echo ""
+        echo -e "  Banner actual:"
+        echo ""
+        cat /etc/ssh/sshd_config | grep -i "^Banner" || echo "  Sin banner configurado"
+        [ -f /etc/ssh/banner ] && cat /etc/ssh/banner || echo ""
         echo ""; sep
-        echo -e "  ${NEON}── SSH BANNER ──────────────────${NC}"
-        echo ""
-        echo -e "  ${NEON}── HTTP CUSTOM BANNER ──────────${NC}"
-        echo ""
+        echo -e "  ${W}[1]${NC} Crear/Editar banner"
+        echo -e "  ${W}[2]${NC} Quitar banner"
         echo -e "  ${W}[0]${NC} Volver"; sep
         read -p "  Opcion: " OPT
         case $OPT in
-            1) activar_antiddos_agresivo ;;
-            2) desactivar_antiddos_agresivo ;;
-            3) ver_reglas_antiddos ;;
-            4) menu_atacantes ;;
+            1)
+                banner; sep
+                echo -e "  ${Y}Escribe el banner SSH${NC}"
+                echo -e "  ${C}(Texto que aparece al conectar por SSH)${NC}"; sep; echo ""
+                echo -e "  Ejemplo:"
+                echo -e "  ╔══════════════════════════════════╗"
+                echo -e "  ║   SERVIDOR PRIVADO - SSHFREE LTM ║"
+                echo -e "  ╚══════════════════════════════════╝"
+                echo ""; sep
+                read -p "  Texto del banner: " BANNER_TXT
+                echo "$BANNER_TXT" > /etc/ssh/banner
+                # Configurar sshd para mostrar banner
+                grep -q "^Banner" /etc/ssh/sshd_config && sed -i "s|^Banner.*|Banner /etc/ssh/banner|" /etc/ssh/sshd_config || echo "Banner /etc/ssh/banner" >> /etc/ssh/sshd_config
+                systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null
+                echo -e "  ${G}OK Banner SSH configurado${NC}"; sleep 2 ;;
+            2)
+                sed -i '/^Banner/d' /etc/ssh/sshd_config
+                rm -f /etc/ssh/banner
+                systemctl reload sshd 2>/dev/null || systemctl reload ssh 2>/dev/null
+                echo -e "  ${G}OK Banner eliminado${NC}"; sleep 1 ;;
             0) break ;;
         esac
     done
@@ -1941,10 +2990,134 @@ menu_hysteria() {
         printf " ${R}❬0❭ Volver${NC}\n"; sep; echo ""
         read -p " Opcion: " OPT
         case $OPT in
-            1) activar_antiddos_agresivo ;;
-            2) desactivar_antiddos_agresivo ;;
-            3) ver_reglas_antiddos ;;
-            4) menu_atacantes ;;
+            1)
+                echo -e "\n  ${C}Instalando Hysteria V1...${NC}"
+                apt install -y wget > /dev/null 2>&1
+                wget -q -O /usr/local/bin/hysteria-v1 https://github.com/HyNetwork/hysteria/releases/download/v1.3.5/hysteria-linux-amd64
+                chmod +x /usr/local/bin/hysteria-v1
+                read -p "  Puerto UDP (default 36712): " H1_PORT; H1_PORT=${H1_PORT:-36712}
+                read -p "  Password: " H1_PASS; H1_PASS=${H1_PASS:-"ltmssh2026"}
+                read -p "  Dominio (para TLS, deja vacio para self-signed): " H1_DOMAIN
+                mkdir -p /etc/hysteria
+                if [ -n "$H1_DOMAIN" ]; then
+                    apt install -y certbot > /dev/null 2>&1
+                    certbot certonly --standalone -d $H1_DOMAIN --non-interactive --agree-tos -m admin@${H1_DOMAIN#*.} 2>/dev/null
+                    CERT_FILE="/etc/letsencrypt/live/$H1_DOMAIN/fullchain.pem"
+                    KEY_FILE="/etc/letsencrypt/live/$H1_DOMAIN/privkey.pem"
+                else
+                    openssl req -x509 -nodes -newkey ec:<(openssl ecparam -name prime256v1) \
+                        -keyout /etc/hysteria/server.key -out /etc/hysteria/server.crt \
+                        -subj "/CN=hysteria" -days 36500 2>/dev/null
+                    CERT_FILE="/etc/hysteria/server.crt"
+                    KEY_FILE="/etc/hysteria/server.key"
+                fi
+                cat > /etc/hysteria/config.json << EOF
+{
+  "listen": ":$H1_PORT",
+  "cert": "$CERT_FILE",
+  "key": "$KEY_FILE",
+  "auth": {
+    "mode": "password",
+    "config": {"password": "$H1_PASS"}
+  },
+  "obfs": "ltmssh",
+  "up_mbps": 100,
+  "down_mbps": 100
+}
+EOF
+                cat > /etc/systemd/system/hysteria-server.service << EOF
+[Unit]
+Description=Hysteria V1 Server
+After=network.target
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/hysteria-v1 server --config /etc/hysteria/config.json
+Restart=always
+RestartSec=3
+[Install]
+WantedBy=multi-user.target
+EOF
+                systemctl daemon-reload
+                systemctl enable hysteria-server
+                systemctl start hysteria-server
+                iptables -I INPUT -p udp --dport $H1_PORT -j ACCEPT 2>/dev/null
+                echo -e "  ${G}OK Hysteria V1 instalado${NC}"
+                echo -e "  ${NEON}◈${NC} Puerto: ${Y}$H1_PORT${NC}"
+                echo -e "  ${NEON}◈${NC} Password: ${Y}$H1_PASS${NC}"
+                echo -e "  ${NEON}◈${NC} Obfs: ${Y}ltmssh${NC}"
+                read -p "  ENTER..." ;;
+            2)
+                echo -e "\n  ${C}Instalando Hysteria V2...${NC}"
+                apt install -y wget > /dev/null 2>&1
+                wget -q -O /usr/local/bin/hysteria2 https://github.com/apernet/hysteria/releases/latest/download/hysteria-linux-amd64
+                # hysteria2 es el mismo binario de apernet pero con nombre diferente
+                chmod +x /usr/local/bin/hysteria2
+                read -p "  Puerto UDP (default 8443): " H2_PORT; H2_PORT=${H2_PORT:-8443}
+                read -p "  Password: " H2_PASS; H2_PASS=${H2_PASS:-"ltmssh2026"}
+                read -p "  Dominio (deja vacio para self-signed): " H2_DOMAIN
+                mkdir -p /etc/hysteria2
+                if [ -n "$H2_DOMAIN" ]; then
+                    apt install -y certbot > /dev/null 2>&1
+                    certbot certonly --standalone -d $H2_DOMAIN --non-interactive --agree-tos -m admin@${H2_DOMAIN#*.} 2>/dev/null
+                    CERT2_FILE="/etc/letsencrypt/live/$H2_DOMAIN/fullchain.pem"
+                    KEY2_FILE="/etc/letsencrypt/live/$H2_DOMAIN/privkey.pem"
+                else
+                    openssl req -x509 -nodes -newkey ec:<(openssl ecparam -name prime256v1) \
+                        -keyout /etc/hysteria2/server.key -out /etc/hysteria2/server.crt \
+                        -subj "/CN=hysteria2" -days 36500 2>/dev/null
+                    CERT2_FILE="/etc/hysteria2/server.crt"
+                    KEY2_FILE="/etc/hysteria2/server.key"
+                fi
+                cat > /etc/hysteria2/config.yaml << EOF
+listen: :$H2_PORT
+tls:
+  cert: $CERT2_FILE
+  key: $KEY2_FILE
+auth:
+  type: password
+  password: $H2_PASS
+masquerade:
+  type: proxy
+  proxy:
+    url: https://news.ycombinator.com/
+    rewriteHost: true
+EOF
+                cat > /etc/systemd/system/hysteria2-server.service << EOF
+[Unit]
+Description=Hysteria V2 Server
+After=network.target
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/hysteria2 server --config /etc/hysteria2/config.yaml
+Restart=always
+RestartSec=3
+[Install]
+WantedBy=multi-user.target
+EOF
+                systemctl daemon-reload
+                systemctl enable hysteria2-server
+                systemctl start hysteria2-server
+                iptables -I INPUT -p udp --dport $H2_PORT -j ACCEPT 2>/dev/null
+                echo -e "  ${G}OK Hysteria V2 instalado${NC}"
+                echo -e "  ${NEON}◈${NC} Puerto: ${Y}$H2_PORT${NC}"
+                echo -e "  ${NEON}◈${NC} Password: ${Y}$H2_PASS${NC}"
+                read -p "  ENTER..." ;;
+            3) systemctl start hysteria-server && echo -e "  ${G}Hysteria V1 iniciado${NC}"; sleep 1 ;;
+            4) systemctl start hysteria2-server && echo -e "  ${G}Hysteria V2 iniciado${NC}"; sleep 1 ;;
+            5) systemctl stop hysteria-server && echo -e "  ${Y}Hysteria V1 detenido${NC}"; sleep 1 ;;
+            6) systemctl stop hysteria2-server && echo -e "  ${Y}Hysteria V2 detenido${NC}"; sleep 1 ;;
+            7) cat /etc/hysteria/config.json 2>/dev/null || echo "No instalado"; echo ""; read -p "  ENTER..." ;;
+            8) cat /etc/hysteria2/config.yaml 2>/dev/null || echo "No instalado"; echo ""; read -p "  ENTER..." ;;
+            9)
+                systemctl stop hysteria-server; systemctl disable hysteria-server
+                rm -f /usr/local/bin/hysteria /etc/systemd/system/hysteria-server.service
+                rm -rf /etc/hysteria; systemctl daemon-reload
+                echo -e "  ${G}Hysteria V1 desinstalado${NC}"; sleep 2 ;;
+            10)
+                systemctl stop hysteria2-server; systemctl disable hysteria2-server
+                rm -f /usr/local/bin/hysteria2 /etc/systemd/system/hysteria2-server.service
+                rm -rf /etc/hysteria2; systemctl daemon-reload
+                echo -e "  ${G}Hysteria V2 desinstalado${NC}"; sleep 2 ;;
             0) break ;;
         esac
     done
@@ -2001,12 +3174,13 @@ menu_principal() {
             1) menu_usuarios ;;
             2) menu_v2ray ;;
             3) menu_users_ziv ;;
-            5) usuarios_ssh_online_count ;; 
-            6) usuarios_v2ray_online_count ;; 
-            7) usuarios_ziv_online_count ;; 
+            5) usuarios_ssh_online_count ;;
+            6) usuarios_v2ray_online_count ;;
+            7) usuarios_ziv_online_count ;;
             4) menu_herramientas ;;
             9) instalar_motd ;;
             10) desinstalar_script ;;
+            11) actualizar_script ;;
             11) actualizar_script ;;
             0) echo -e "\n  ${G}Hasta luego! — DarkZFull${NC}\n"; exit 0 ;;
             *) echo -e "  ${R}Opcion invalida${NC}"; sleep 1 ;;
@@ -2014,273 +3188,7 @@ menu_principal() {
     done
 }
 
-# Generar versión de texto plano (sin HTML) para SSH y Dropbear
-# Generar versión de texto plano (sin HTML) para SSH y Dropbear
-
-menu_dropbear() {
-    while true; do
-        clear
-        echo -e "\033[1;34m"
-        figlet -f small "DROPBEAR" 2>/dev/null || echo "  DROPBEAR SSH"
-        echo -e "\033[0m"
-        echo -e "\033[1;34m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
-        echo -e "  \033[1;37m⚡ DROPBEAR SSH MANAGER\033[0m \033[2;37mby\033[0m \033[1;34m@DarkZFull\033[0m"
-        echo -e "\033[1;34m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
-        echo ""
-        DB_ST=$(systemctl is-active dropbear 2>/dev/null)
-        DB_PORT=$(cat /etc/sshfreeltm/dropbear_port 2>/dev/null || echo "444")
-        if [ "$DB_ST" = "active" ]; then
-            echo -e "  \033[1;34m◈\033[0m \033[1;37mEstado:\033[0m    \033[1;32m● ACTIVO\033[0m"
-        else
-            echo -e "  \033[1;34m◈\033[0m \033[1;37mEstado:\033[0m    \033[1;31m○ INACTIVO\033[0m"
-        fi
-        echo -e "  \033[1;34m◈\033[0m \033[1;37mPuerto:\033[0m    \033[1;33m$DB_PORT\033[0m"
-        if [ -f /etc/ssh/banner.txt ]; then
-            echo -e "  \033[1;34m◈\033[0m \033[1;37mBanner:\033[0m    \033[1;32m● ACTIVADO\033[0m"
-        else
-            echo -e "  \033[1;34m◈\033[0m \033[1;37mBanner:\033[0m    \033[1;31m○ DESACTIVADO\033[0m"
-        fi
-        echo ""
-        echo -e "\033[1;34m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
-        printf " \033[1;34m❬1❭\033[0m \033[1;37mInstalar\033[0m         \033[1;34m❬2❭\033[0m \033[1;37mIniciar\033[0m\n"
-        printf " \033[1;34m❬3❭\033[0m \033[1;37mDetener\033[0m          \033[1;34m❬4❭\033[0m \033[1;37mReiniciar\033[0m\n"
-        printf " \033[1;34m❬5❭\033[0m \033[1;37mCambiar puerto\033[0m   \033[1;34m❬6❭\033[0m \033[1;37mDesinstalar\033[0m\n"
-        echo ""
-        echo ""
-        echo -e "\033[1;34m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
-        printf " \033[1;31m❬0❭\033[0m \033[1;37mVolver\033[0m\n"
-        echo -e "\033[1;34m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
-        echo ""
-        read -p "  \033[1;34m➤\033[0m Opcion: " OPT
-        case $OPT in
-            1)
-                echo -e "\n  \033[1;36mInstalando Dropbear...\033[0m"
-                apt install -y dropbear
-                read -p "  \033[1;37mPuerto Dropbear (default 444): \033[0m" DB_PORT
-                DB_PORT=${DB_PORT:-444}
-                mkdir -p /etc/sshfreeltm
-                echo "$DB_PORT" > /etc/sshfreeltm/dropbear_port
-                sed -i "s/NO_START=1/NO_START=0/" /etc/default/dropbear 2>/dev/null
-                sed -i "s/DROPBEAR_PORT=.*/DROPBEAR_PORT=$DB_PORT/" /etc/default/dropbear 2>/dev/null
-                grep -q "DROPBEAR_PORT" /etc/default/dropbear || echo "DROPBEAR_PORT=$DB_PORT" >> /etc/default/dropbear
-                cat > /etc/systemd/system/dropbear.service << EOF
-[Unit]
-Description=Dropbear SSH Server
-After=network.target
-[Service]
-Type=simple
-ExecStart=/usr/sbin/dropbear -F -p $DB_PORT
-Restart=always
-RestartSec=3
-[Install]
-WantedBy=multi-user.target
-EOF
-                systemctl daemon-reload
-                mkdir -p /etc/dropbear
-                [ ! -f /etc/dropbear/dropbear_dss_host_key ] && dropbearkey -t dss -f /etc/dropbear/dropbear_dss_host_key > /dev/null 2>&1
-                [ ! -f /etc/dropbear/dropbear_rsa_host_key ] && dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key > /dev/null 2>&1
-                [ ! -f /etc/dropbear/dropbear_ecdsa_host_key ] && dropbearkey -t ecdsa -f /etc/dropbear/dropbear_ecdsa_host_key > /dev/null 2>&1
-                grep -q "/bin/false" /etc/shells || echo "/bin/false" >> /etc/shells
-                systemctl enable dropbear
-                systemctl start dropbear
-                iptables -I INPUT -p tcp --dport $DB_PORT -j ACCEPT 2>/dev/null
-                echo -e "  \033[1;32m✓ Dropbear instalado en puerto $DB_PORT\033[0m"; sleep 2 ;;
-            2) systemctl start dropbear && echo -e "  \033[1;32m✓ Dropbear iniciado\033[0m"; sleep 1 ;;
-            3) systemctl stop dropbear && echo -e "  \033[1;33m⚠ Dropbear detenido\033[0m"; sleep 1 ;;
-            4) systemctl restart dropbear && echo -e "  \033[1;32m✓ Dropbear reiniciado\033[0m"; sleep 1 ;;
-            5)
-                read -p "  \033[1;37mNuevo puerto: \033[0m" NEW_PORT
-                echo "$NEW_PORT" > /etc/sshfreeltm/dropbear_port
-                sed -i "s/DROPBEAR_PORT=.*/DROPBEAR_PORT=$NEW_PORT/" /etc/default/dropbear 2>/dev/null
-                sed -i "s|-p [0-9]*|-p $NEW_PORT|" /etc/systemd/system/dropbear.service 2>/dev/null
-                systemctl daemon-reload
-                systemctl restart dropbear
-                echo -e "  \033[1;32m✓ Puerto cambiado a $NEW_PORT\033[0m"; sleep 2 ;;
-            6)
-                systemctl stop dropbear; systemctl disable dropbear
-                apt remove -y dropbear > /dev/null 2>&1
-                rm -f /etc/systemd/system/dropbear.service
-                systemctl daemon-reload
-                echo -e "  \033[1;32m✓ Dropbear desinstalado\033[0m"; sleep 2 ;;
-            7)
-                echo -e "  \033[1;36mActivando banner...\033[0m"
-                if [ ! -f /etc/ssh/banner ]; then
-                    echo -e "  \033[1;33mCreando banner por defecto...\033[0m"
-                    cat > /etc/ssh/banner << BAN
-<h1 style="text-align:center"><span><big><big><span style="color: #00ff48">L</span><span style="color: #0dff5a">T</span><span style="color: #19fe6b">M</span><span style="color: #26fe7d"> </span><span style="color: #32fd8e">S</span><span style="color: #3ffda0">E</span><span style="color: #4cfcb1">R</span><span style="color: #58fcc3">V</span><span style="color: #65fbd4">I</span><span style="color: #71fbe6">D</span><span style="color: #7efaf7">OR</span><small></div><div><span style="color: #ff0000">NETFREE LTM VPS MIAMI 🇺🇲</span>
-<div><div><span style="color: #00ff83">🚫</span><span style="color: #00ff87"></span><span style="color: #00ff8b">P</span><span style="color: #00ff8f">R</span><span style="color: #00ff93">O</span><span style="color: #00ff97">H</span><span style="color: #00ff9b">I</span><span style="color: #00ff9f">B</span><span style="color: #00ffa3">I</span><span style="color: #00ffa7">D</span><span style="color: #00ffab">A</span><span style="color: #00ffb0"> L</span><span style="color: #00ffb4">A</span> <span style="color: #00ffb8">V</span><span style="color: #00ffbc"></span><span style="color: #00ffc0">E</span><span style="color: #00ffc4">N</span><span style="color: #00ffc8">T</span><span style="color: #00ffcc">A</span><span style="color: #00ffd0"></span><span style="color: #00ffd4"</span><span style="color: #00ffd8">🚫</span></div>
-<div><span style="color: #009aff">G</span><span style="color: #00cdc1">R</span><span style="color: #00ff83">U</span><span style="color: #80cc42">P</span><span style="color: #ff9900">O</span></div>https://t.me/+AzYZK49QGys4MDVh
-<div><span style="color: #009aff">C</span><span style="color: #00cdc1">A</span><span style="color: #00ff83">N</span><span style="color: #80cc42">A</span><span style="color: #ff9900">L</span></div>https://t.me/+g8bjM5B2izkyNzYx
-<big><big><big><big><big><big>🤑💥</big></big></big></big></big></big>
-<h2 style="text-align:center;"><small><small><small><small><small><small><span style="color: #faff00">∘₊✧ </span><span style="color:#ffbf00;">™✶▲▽DarkFull༻༒</span></small></small></small></small></small></small></h2>
-BAN
-                fi
-                sed 's/<[^>]*>//g; s/&[a-zA-Z0-9#]\{2,6\};//g; s/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d' /etc/ssh/banner > /etc/ssh/banner.txt
-                if ! grep -q "-b /etc/ssh/banner.txt" /etc/systemd/system/dropbear.service; then
-                    sed -i 's|ExecStart=/usr/sbin/dropbear -F -p [0-9]*|& -b /etc/ssh/banner.txt|' /etc/systemd/system/dropbear.service
-                    systemctl daemon-reload
-                fi
-                systemctl restart dropbear
-                echo -e "  \033[1;32m✓ Banner activado\033[0m"; sleep 2 ;;
-            8)
-                sed -i 's| -b /etc/ssh/banner.txt||' /etc/systemd/system/dropbear.service
-                systemctl daemon-reload
-                systemctl restart dropbear
-                echo -e "  \033[1;33m⚠ Banner desactivado\033[0m"; sleep 2 ;;
-            9)
-                echo "banner edit deshabilitado" >/dev/null
-                sed 's/<[^>]*>//g; s/&[a-zA-Z0-9#]\{2,6\};//g; s/^[[:space:]]*//; s/[[:space:]]*$//; /^$/d' /etc/ssh/banner > /etc/ssh/banner.txt
-                echo -e "  \033[1;32m✓ Banner actualizado\033[0m"; sleep 2 ;;
-            10)
-                echo ""; echo -e "  \033[1;34m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
-                echo -e "  \033[1;37mBanner HTML original:\033[0m"; echo ""
-                cat /etc/ssh/banner 2>/dev/null || echo -e "  \033[1;31mNo hay archivo de banner\033[0m"
-                echo ""; echo -e "  \033[1;34m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
-                echo -e "  \033[1;37mBanner texto plano (SSH/Dropbear):\033[0m"; echo ""
-                cat /etc/ssh/banner.txt 2>/dev/null || echo -e "  \033[1;31mNo hay archivo de texto\033[0m"
-                echo ""; echo -e "  \033[1;34m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\033[0m"
-                read -p "  \033[1;34m➤\033[0m ENTER..." ;;
-            0) break ;;
-        esac
-    done
-}
 [ "$EUID" -ne 0 ] && echo -e "${R}Ejecuta como root${NC}" && exit 1
-# ============================================================
-# FUNCIONES PARA VER USUARIOS CONECTADOS
-# ============================================================
-
-# Ver usuarios SSH conectados
-usuarios_ssh_online_count() {
-    banner
-    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
-    echo -e "  ${W}📡 USUARIOS SSH CONECTADOS${NC}"
-    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
-    echo ""
-    
-    # Obtener usuarios conectados por SSH
-    CONECTADOS=$(who | grep -E 'pts|tty' | awk '{print $1}' | sort | uniq)
-    
-    if [ -z "$CONECTADOS" ]; then
-        echo -e "  ${R}◇ No hay usuarios SSH conectados${NC}"
-    else
-        echo -e "  ${NEON}◈${NC} ${W}Usuarios activos:${NC}"
-        echo ""
-        echo "$CONECTADOS" | while read user; do
-            # Obtener IP de cada usuario
-            IP=$(who | grep "$user" | awk '{print $5}' | sed 's/(//;s/)//' | head -1)
-            # Obtener tiempo de conexión
-            TIEMPO=$(who | grep "$user" | awk '{print $3,$4}' | head -1)
-            echo -e "  ${NEON}◈${NC} ${G}${user}${NC}  →  ${Y}IP:${NC} ${W}${IP}${NC}  ${DIM}(${TIEMPO})${NC}"
-        done
-        echo ""
-        TOTAL=$(echo "$CONECTADOS" | wc -l)
-        echo -e "  ${NEON}◈${NC} ${W}Total conectados:${NC} ${G}${TOTAL}${NC}"
-    fi
-    echo ""
-    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
-    read -p "  ENTER..."
-}
-
-# Ver usuarios V2Ray conectados
-usuarios_v2ray_online_count() {
-    banner
-    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
-    echo -e "  ${W}📡 USUARIOS V2RAY CONECTADOS${NC}"
-    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
-    echo ""
-    
-    if ! systemctl is-active --quiet v2ray; then
-        echo -e "  ${R}◇ V2Ray no está activo${NC}"
-        echo ""
-        echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
-        read -p "  ENTER..."
-        return
-    fi
-    
-    # Intentar obtener logs de V2Ray para ver conexiones activas
-    # Esto depende de la configuración del log
-    if [ -f /var/log/v2ray/access.log ]; then
-        echo -e "  ${C}Analizando logs de conexiones...${NC}"
-        echo ""
-        
-        # Extraer usuarios activos de los logs (últimos 5 minutos)
-        TIEMPO_ACTUAL=$(date +%s)
-        USUARIOS=$(tail -100 /var/log/v2ray/access.log 2>/dev/null | grep -E "accepted|tcp" | grep -oP 'email: \K[^ ]+' | sort | uniq)
-        
-        if [ -z "$USUARIOS" ]; then
-            echo -e "  ${Y}⚠ No se detectaron usuarios conectados en este momento${NC}"
-        else
-            echo -e "  ${NEON}◈${NC} ${W}Usuarios activos (últimas conexiones):${NC}"
-            echo ""
-            echo "$USUARIOS" | while read user; do
-                # Contar conexiones recientes
-                CONEXIONES=$(tail -200 /var/log/v2ray/access.log 2>/dev/null | grep "$user" | wc -l)
-                echo -e "  ${NEON}◈${NC} ${G}${user}${NC}  →  ${Y}Conexiones recientes:${NC} ${W}${CONEXIONES}${NC}"
-            done
-            echo ""
-            TOTAL=$(echo "$USUARIOS" | wc -l)
-            echo -e "  ${NEON}◈${NC} ${W}Total usuarios activos:${NC} ${G}${TOTAL}${NC}"
-        fi
-    else
-        echo -e "  ${Y}⚠ No se encontró log de V2Ray${NC}"
-        echo -e "  ${DIM}Para ver conexiones activas, asegúrate de tener logging habilitado${NC}"
-    fi
-    
-    echo ""
-    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
-    read -p "  ENTER..."
-}
-
-# Ver usuarios ZIV VPN conectados
-usuarios_ziv_online_count() {
-    banner
-    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
-    echo -e "  ${W}🔒 USUARIOS ZIV VPN CONECTADOS${NC}"
-    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
-    echo ""
-    
-    if ! systemctl is-active --quiet zivpn; then
-        echo -e "  ${R}◇ ZIV VPN no está activo${NC}"
-        echo ""
-        echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
-        read -p "  ENTER..."
-        return
-    fi
-    
-    # Ver logs de ZIV VPN
-    if [ -f /var/log/zivpn.log ]; then
-        echo -e "  ${C}Analizando conexiones activas...${NC}"
-        echo ""
-        
-        # Extraer IPs conectadas (últimos 5 minutos)
-        TIEMPO_LIMITE=$(date -d '5 minutes ago' +%s 2>/dev/null || echo "0")
-        CONECTADOS=$(tail -200 /var/log/zivpn.log 2>/dev/null | grep -E "connected|auth" | grep -oP 'from \K[0-9.]+' | sort | uniq)
-        
-        if [ -z "$CONECTADOS" ]; then
-            echo -e "  ${Y}⚠ No hay usuarios conectados en este momento${NC}"
-        else
-            echo -e "  ${NEON}◈${NC} ${W}IPs conectadas recientemente:${NC}"
-            echo ""
-            echo "$CONECTADOS" | while read ip; do
-                # Contar conexiones
-                CONEXIONES=$(tail -200 /var/log/zivpn.log 2>/dev/null | grep "$ip" | wc -l)
-                echo -e "  ${NEON}◈${NC} ${R}IP:${NC} ${W}${ip}${NC}  →  ${Y}Peticiones:${NC} ${G}${CONEXIONES}${NC}"
-            done
-            echo ""
-            TOTAL=$(echo "$CONECTADOS" | wc -l)
-            echo -e "  ${NEON}◈${NC} ${W}Total IPs activas:${NC} ${G}${TOTAL}${NC}"
-        fi
-    else
-        echo -e "  ${Y}⚠ No se encontró log de ZIV VPN${NC}"
-        echo -e "  ${DIM}Para ver conexiones, habilita el logging en /etc/zivpn/config.json${NC}"
-    fi
-    
-    echo ""
-    echo -e "${NEON}◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆${NC}"
-    read -p "  ENTER..."
-}
-
-
 menu_principal
 
 # Auto-instalar comando menu
@@ -2291,14 +3199,4 @@ echo -e "\033[0;32mComando menu instalado\033[0m"
 
 
 
-
-# Convertir HTML a texto plano (eliminar etiquetas)
-
-# Generar versión de texto plano (sin HTML) para SSH y Dropbear
-
-
-# Función que llama al conversor externo (usada desde el menú)
-_convert_banner() {
-    echo "banner edit deshabilitado" >/dev/null
-}
 
